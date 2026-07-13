@@ -1,0 +1,46 @@
+/* ==========================================================================
+   08_qna_detail.html (Q&A 상세 화면) 전용 스타일
+   본문 레이아웃(.notice-detail-wrap 등)은 common.css 공용 스타일 사용
+   ========================================================================== */
+
+.notice-detail-title { margin: 0; }        /* 제목 옆 수정/삭제 버튼 줄 때문에 아래 여백 제거 */
+.notice-detail-body { margin-bottom: 0; }  /* 본문 바로 아래에 관리자 답변 박스가 붙어서 여백 제거 */
+
+/* ---------- 관리자 답변 박스 (질문 내용 아래, 왼쪽에 포인트색 굵은 선이 있는 인용 박스 느낌) ---------- */
+.qna-answer-box {
+  margin-top: 28px; padding: 20px; background: var(--bg-2);
+  border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0;
+}
+.qna-answer-label { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; color: var(--accent); margin-bottom: 12px; } /* "✔ 관리자 답변" 라벨 줄 */
+.qna-answer-date { font-size: 12px; color: var(--text-2); font-weight: 400; margin-left: auto; } /* 라벨 오른쪽 끝에 붙는 답변 날짜 */
+.qna-answer-body { line-height: 1.8; color: var(--text-1); font-size: 14px; white-space: pre-line; }
+.qna-wait-box { margin-top: 28px; padding: 20px; text-align: center; color: var(--text-2); font-size: 13px; background: var(--bg-2); border-radius: var(--radius); } /* 아직 답변이 안 달렸을 때 보여주는 대기 안내 박스 */
+
+/* ---------- 질문에 달리는 일반 회원 댓글 목록 ---------- */
+.qna-comment-section { margin-top: 32px; }
+.qna-comment-section h3 { font-size: 16px; margin: 0 0 16px; } /* "댓글 (3)" 제목 */
+.qna-comment-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.qna-comment-left { display: flex; gap: 10px; }
+.qna-comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-3); flex-shrink: 0; }
+.qna-comment-author { font-weight: 700; font-size: 13px; margin-right: 8px; }
+.qna-comment-date { font-size: 12px; color: var(--text-2); }
+.qna-comment-body { font-size: 14px; color: var(--text-1); margin-top: 4px; }
+.qna-comment-more { color: var(--text-2); cursor: pointer; padding: 0 4px; flex-shrink: 0; } /* 댓글 오른쪽의 "⋮" 더보기 아이콘 */
+
+/* "신고" 클릭 시 댓글 바로 아래로 펼쳐지는 인라인 신고폼 (13_detail.html의 답글 작성폼과 같은 자리·같은 방식) */
+.qna-report-form { flex: 0 0 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding: 12px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; }
+.qna-report-form select, .qna-report-form textarea { background: var(--bg-3); border: 1px solid var(--border); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px; }
+.qna-report-form textarea { min-height: 60px; }
+.qna-report-form .btn-row { justify-content: flex-end; }
+
+/* ---------- 댓글 입력창 + 등록 버튼 줄 ---------- */
+.comment-input-row { display: flex; gap: 10px; margin-top: 16px; }
+.comment-input-row input { flex: 1; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: #fff; }
+.comment-input-row input:focus { outline: none; border-color: var(--accent); }
+
+/* ---------- 챗봇 퀴즈 (객관식 1문제 + OX 1문제, 하루 3회) ---------- */
+#qnaQuizPlay { margin-top: 12px; }
+.quiz-progress { font-size: 11px; color: var(--text-2); margin-bottom: 6px; }
+.quiz-question { font-size: 13px; font-weight: 700; line-height: 1.5; margin-bottom: 4px; }
+#qnaQuizNextBtn { margin-top: 12px; }
+.quiz-result { margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--gold); }

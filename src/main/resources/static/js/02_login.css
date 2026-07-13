@@ -1,0 +1,18 @@
+/* ==========================================================================
+   02_login.html (로그인 화면) 전용 스타일
+   ========================================================================== */
+
+.form-row { margin-bottom:14px; } /* 이 화면은 입력칸이 2개(아이디/비밀번호)뿐이라 여백을 공통값보다 살짝 좁게 */
+.remember-row { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-2); margin:14px 0 20px; } /* "아이디 저장" 체크박스 줄 */
+
+/* ---------- 로그인 버튼과 소셜 로그인 버튼 사이의 "또는" 구분선 ---------- */
+.auth-divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--text-2); font-size:12px; }
+.auth-divider::before, .auth-divider::after { content:""; flex:1; height:1px; background:var(--border); } /* 글자 양옆으로 선을 그어주는 부분 */
+
+/* ---------- 카카오/구글 소셜 로그인 버튼 ---------- */
+.social-btn { display:flex; align-items:center; justify-content:center; gap:8px; font-weight:700; margin-top:10px; }
+.social-btn .social-icon { font-size:14px; font-weight:800; }
+.social-btn.kakao { background:#FEE500; border-color:#FEE500; color:#191600; } /* 카카오 브랜드 노란색 */
+.social-btn.kakao:hover { background:#f7dc00; }
+.social-btn.google { background:#fff; border-color:var(--border); color:#3c4043; } /* 구글 버튼은 흰색 배경 */
+.social-btn.google:hover { background:#f1f1f1; }
