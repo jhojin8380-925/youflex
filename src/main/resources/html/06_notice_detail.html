@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouFlex - 공지사항 상세</title>
+<link rel="stylesheet" href="./assets/css/common.css" />
+<link rel="stylesheet" href="./assets/css/06_notice_detail.css" />
+</head>
+<body data-nav-current="notice">
+
+<header class="site-header">
+  <div class="container">
+    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
+    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
+    <div class="header-actions">
+      <a href="02_login.html" class="btn btn-ghost" data-role-visible="guest">로그인</a>
+      <a href="14_mypage.html" class="btn btn-ghost" data-role-visible="user,critic,admin">마이페이지</a>
+      <a href="#" class="btn btn-ghost" data-role-visible="user,critic,admin">로그아웃</a>
+      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
+      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- 네비게이션 바 영역 -->
+<nav class="category-nav">
+  <div class="container">
+    <ul>
+      <li><a href="04_list.html?cat=all" data-nav="all">전체</a></li>
+      <li><a href="04_list.html?cat=netflix" data-nav="netflix">넷플릭스</a></li>
+      <li><a href="04_list.html?cat=tving" data-nav="tving">티빙</a></li>
+      <li><a href="04_list.html?cat=disney" data-nav="disney">디즈니플러스</a></li>
+      <li><a href="04_list.html?cat=etc" data-nav="etc">기타</a></li>
+      <li style="margin-left:auto"><a href="05_notice.html" data-nav="notice">공지사항</a></li>
+      <li><a href="05_notice.html#qna" data-nav="qna">Q&A</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="notice-detail-wrap">
+    <div class="notice-detail-title-row">
+      <h1 class="notice-detail-title">[서비스 공지] YouFlex 서비스 점검 안내 및 등급 변경 기준 변경</h1>
+      <div class="owner-actions" style="display:flex;gap:8px;flex-shrink:0">
+        <a href="07_notice_update.html" class="btn btn-sm">수정</a>
+        <button class="btn btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="alert('공지사항이 삭제되었습니다. (데모)')">삭제</button>
+      </div>
+    </div>
+    <div class="notice-detail-meta">
+      등록일: 2026-06-25 10:15<br />
+      작성자: 관리자<br />
+      조회수: 1.5K
+    </div>
+    <div class="notice-detail-body">안녕하세요, YouFlex입니다.
+서비스의 안정적인 운영과 새로운 기능 추가를 위해 아래와 같이 정기 점검을 실시할 예정입니다.
+점검 시간 동안 서비스 이용이 일시적으로 중단되오니, 이용에 참고하시기 바랍니다.
+
+1. 점검 일시: 2026-06-27 (토) 02:00 ~ 06:00 (4시간)
+2. 점검 내용: 시스템 최적화 및 서버 업데이트, 등급 신청 기준 변경 반영
+3. 대상 서비스: YouFlex 전체 서비스 (웹/모바일, 앱)
+
+특히, 이번 점검 이후부터는 포인트 획득 및 사용에 따른 등급 신청 방식이 일부 변경됩니다. 자세한 내용은 포인트/등급 안내 페이지를 참고해 주시기 바랍니다.
+
+이용에 불편을 드려 죄송합니다. 더 나은 서비스를 제공하기 위해 최선을 다하겠습니다.</div>
+    <a href="05_notice.html" class="btn btn-primary">목록으로 (To List)</a>
+  </div>
+</main>
+
+
+<div class="overlay-backdrop" id="notificationBackdrop"></div>
+<aside class="slide-panel" id="notificationPanel">
+  <div class="panel-header"><h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button></div>
+  <div class="panel-body">
+    <div class="notification-clear-row"><button class="notification-clear-all" type="button">모두 삭제</button></div>
+    <div class="notification-item">
+      <span class="notification-icon">⚠</span>
+      <div>
+        <div class="notification-text">비속어 사용으로 경고 1회가 부여되었습니다.</div>
+        <div class="notification-time">10분 전</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+    <div class="notification-item">
+      <span class="notification-icon">💬</span>
+      <div>
+        <div class="notification-text">작성하신 질문 "디즈니+ 로그인 오류에 어떻게 대처하나요?"에 관리자 답변이 등록되었습니다.</div>
+        <div class="notification-time">2시간 전</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+    <div class="notification-item">
+      <span class="notification-icon">📝</span>
+      <div>
+        <div class="notification-text">내 게시글 "「오징어게임 3」, 이대로 끝내도 되는가"에 새 댓글이 달렸습니다.</div>
+        <div class="notification-time">어제</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+  </div>
+</aside>
+
+<button class="fab" id="chatbotFab" title="챗봇 실행">🤖</button>
+<div class="overlay-backdrop" id="chatbotBackdrop"></div>
+<aside class="slide-panel" id="chatbotPanel">
+  <div class="panel-header"><h3>🤖 YouFlex 챗봇</h3><button class="panel-close" id="chatbotClose">✕</button></div>
+  <div class="panel-body">
+    <div class="chat-msg"><div class="avatar"></div><div class="bubble">무엇을 도와드릴까요?</div></div>
+    <div class="quiz-box">
+      <div class="quiz-count">🎯 오늘 남은 퀴즈 횟수: 2/3</div>
+      <button class="btn btn-sm btn-primary" id="quizStartBtn">퀴즈 시작</button>
+      <div class="quiz-options" id="quizOptions" style="display:none">
+        <button data-correct="false">디즈니플러스</button>
+        <button data-correct="true">넷플릭스</button>
+        <button data-correct="false">티빙</button>
+        <button data-correct="false">웨이브</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel-input-row"><input type="text" placeholder="질문을 입력하세요" /><button class="btn btn-primary">전송</button></div>
+</aside>
+
+<div class="overlay-backdrop" id="chatroomBackdrop"></div>
+<aside class="slide-panel" id="chatroomPanel">
+  <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
+  <div class="panel-tabs" data-tab-panels>
+    <button class="active" data-tab-target="list">목록</button>
+    <button data-tab-target="chat">채팅</button>
+    <button data-tab-target="create" data-role-visible="critic,admin">개설</button>
+  </div>
+  <div class="panel-body" data-tab-panel="list">
+    <div class="room-list-item"><div><div class="room-name">오늘 개봉작 실시간 토크</div><div class="room-count">18 / 30명</div></div><button class="btn btn-primary btn-sm">입장</button></div>
+  </div>
+  <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
+    <div class="chatroom-title">
+      <span>💬 오늘 개봉작 실시간 토크</span>
+      <button class="btn btn-sm btn-danger" data-role-visible="critic,admin" onclick="giveChatWarning()">⚠ 경고 부여</button>
+    </div>
+    <div class="chatroom-messages" id="chatroomMessages">
+      <div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
+      <div class="chat-msg"><div class="avatar"></div><div class="bubble">다들 이번 편 결말 어떻게 보셨어요?</div></div>
+      <div class="chat-msg me"><div class="avatar"></div><div class="bubble">저는 반전이 좋았어요 ㅋㅋ</div></div>
+    </div>
+    <div class="panel-input-row">
+      <input type="text" id="chat_message_content" name="chat_message_content" placeholder="메시지를 입력하세요" />
+      <button class="btn btn-primary" id="chatroomSendBtn">전송</button>
+    </div>
+  </div>
+  <div class="panel-body" data-tab-panel="create" style="display:none">
+    <label class="text-muted" style="font-size:13px">방 이름</label>
+    <input type="text" id="chatroom_title" name="chatroom_title" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
+    <label class="text-muted" style="font-size:13px">최대 인원</label>
+    <input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="100" value="30" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
+    <button class="btn btn-primary mt-24" id="chatroomCreateBtn">채팅방 개설</button>
+  </div>
+</aside>
+
+<!--
+  ==================================
+  공통 푸터 영역 -> 인섭 추가
+  ==================================
+  -->
+<footer class="site-footer main-footer">
+  <div class="container main-footer-inner">
+    <div class="main-footer-brand">
+      <span class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></span>
+      <p>당신의 콘텐츠 취향을 연결하는<br />OTT 리뷰 &amp; 커뮤니티 플랫폼</p>
+    </div>
+    <div class="main-footer-info">
+      <p>(주)YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;대표: YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;사업자등록번호: 000-00-00000</p>
+      <p>개인정보관리책임자: YouFlex</p>
+      <p>이메일: youflex@youflex.com&nbsp;&nbsp;|&nbsp;&nbsp;고객센터: 00-000-0000</p>
+    </div>
+    <div class="main-footer-meta">
+      <p>&copy; 2026 YouFlex. All rights reserved.</p>
+    </div>
+    <button class="main-footer-top" id="footerTopBtn" title="맨 위로">↑</button>
+  </div>
+</footer>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

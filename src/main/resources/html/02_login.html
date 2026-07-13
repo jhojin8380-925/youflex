@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouFlex - 로그인</title>
+    <link rel="stylesheet" href="./assets/css/common.css" />
+    <link rel="stylesheet" href="./assets/css/02_login.css" />
+  </head>
+  <body>
+
+    <!-- 
+      ================================
+      메인 영역 
+      ================================
+    -->
+    <main class="auth-wrap">
+      <div class="card auth-card">
+        <div class="auth-logo">
+          <a href="01_main.html"
+            ><img src="assets/img/logo.png" alt="YouFlex"
+          /></a>
+        </div>
+
+        <!-- 
+          ================================
+          로그인 폼 영역
+          ================================
+        -->
+        <form
+          onsubmit="
+            event.preventDefault();
+            localStorage.setItem('demoRole', 'user');
+            location.href = '01_main.html';">
+          <div class="form-row">
+
+            <label>아이디</label>
+            <input
+              type="text"
+              id="member_loginid"
+              name="member_loginid"
+              placeholder="아이디를 입력하세요"
+              required
+            />
+          </div>
+          <div class="form-row">
+            
+            <label>비밀번호</label>
+            <input
+              type="password"
+              id="member_pwd"
+              name="member_pwd"
+              placeholder="비밀번호를 입력하세요"
+              required
+            />
+          </div>
+          <label class="remember-row">
+            <input type="checkbox" /> 아이디 저장
+          </label>
+          <button type="submit" class="btn btn-primary btn-block">
+            로그인
+          </button>
+        </form>
+
+        <div class="auth-divider">또는</div>
+        <button
+          type="button"
+          class="btn btn-block social-btn kakao"
+          onclick="socialLogin('카카오')"
+        >
+          <span class="social-icon">💬</span> 카카오로 로그인
+        </button>
+        <button
+          type="button"
+          class="btn btn-block social-btn google"
+          onclick="socialLogin('구글')"
+        >
+          <span class="social-icon">G</span> 구글로 로그인
+        </button>
+
+        <div class="auth-footer">
+          아직 회원이 아니신가요? <a href="03_join.html">회원가입</a>
+        </div>
+      </div>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/02_login.js"></script>
+  </body>
+</html>

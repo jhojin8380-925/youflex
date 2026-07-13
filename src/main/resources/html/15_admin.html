@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouFlex - 관리자 페이지</title>
+<link rel="stylesheet" href="./assets/css/common.css" />
+<link rel="stylesheet" href="./assets/css/15_admin.css" />
+</head>
+<body>
+
+<!-- 
+  =========================================
+  공통 헤더 영역 -- 호진
+  =========================================
+-->
+<header class="site-header">
+  <div class="container">
+    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
+    <div class="header-actions">
+      <span class="badge badge-admin">관리자 페이지</span>
+      <a href="01_main.html" class="btn btn-ghost">홈으로</a>
+    </div>
+  </div>
+</header>
+
+<!-- 
+  =========================================
+  메인 영역 -- 호진
+  =========================================
+-->
+<main class="container">
+  <h1 class="mt-24" style="font-size:22px">관리자 대시보드</h1>
+
+  <!--
+    ========================================= 
+    대시보드 요약 (항상 표시) -- 호진
+    =========================================
+  -->
+  <div class="mt-24">
+    <div class="kpi-grid">
+      <div class="card kpi-card">
+        <div class="label">오늘 가입자 수</div>
+        <div class="value">128</div>
+        <div class="delta">▲ 12% (전일 대비)</div>
+      </div>
+      <div class="card kpi-card">
+        <div class="label">오늘 탈퇴자 수</div>
+        <div class="value">4</div>
+        <div class="delta down">▲ 1건 증가</div>
+      </div>
+      <div class="card kpi-card">
+        <div class="label">오늘 작성 게시글</div>
+        <div class="value">312</div>
+        <div class="delta">▲ 8%</div>
+      </div>
+      <div class="card kpi-card">
+        <div class="label">누적 회원 수</div>
+        <div class="value">48,203</div>
+        <div class="delta">-</div>
+      </div>
+      <div class="card kpi-card">
+        <div class="label">신고 접수 (미처리)</div>
+        <div class="value">7</div>
+        <div class="delta down">확인 필요</div>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    ========================================= 
+    관리자 기능 탭 -- 호진
+    =========================================
+    -->
+  <nav class="admin-nav" data-tab-panels>
+    <button class="active" data-tab-target="users">회원 관리</button>
+    <button data-tab-target="reports">신고 처리</button>
+    <button data-tab-target="qna">Q&A 답변</button>
+    <button data-tab-target="notice">공지사항 등록</button>
+    <button data-tab-target="banner">배너 설정</button>
+  </nav>
+
+  <!--
+    ========================================= 
+    회원 관리 탭 -- 호진
+    =========================================
+  -->
+  <div data-tab-panel="users" class="mt-24">
+    <div class="member-subtabs">
+      <button class="active" data-subtab="list">회원 목록</button>
+      <button data-subtab="promote">등업 신청 대기</button>
+      <button data-subtab="withdraw">탈퇴 신청 대기</button>
+    </div>
+
+    <!-- 
+      =========================================
+      회원 목록 -- 호진
+      =========================================
+      -->
+    <div data-subpanel="list">
+      <div class="member-search-row">
+        <input type="text" id="memberSearchInput" placeholder="회원 아이디, 이름 또는 이메일로 검색" />
+        <button class="btn btn-sm" id="memberSearchBtn">검색</button>
+      </div>
+      <table class="table" id="memberListTable">
+        <thead><tr><th>회원번호</th><th>회원아이디</th><th>회원이름</th><th>회원이메일</th><th>가입일</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1029</td>
+            <td>catmovie29</td>
+            <td>김민준</td><td>catmovie29@example.com</td>
+            <td>2025-03-12</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-danger">경고처리</button>
+              <button class="btn btn-sm">경고 차감</button>
+              <button class="btn btn-sm btn-danger">강제탈퇴</button>
+            </td>
+          </tr>
+          <tr>
+            <td>1030</td>
+            <td>spam2022</td>
+            <td>박서연</td>
+            <td>spam2022@example.com</td>
+            <td>2026-06-29</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-danger">경고처리</button>
+              <button class="btn btn-sm">경고 차감</button>
+              <button class="btn btn-sm btn-danger">강제탈퇴</button>
+            </td>
+          </tr>
+          <tr>
+            <td>1031</td>
+            <td>dramalover</td>
+            <td>이도윤</td>
+            <td>dramalover@example.com</td>
+            <td>2025-11-02</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-danger">경고처리</button>
+              <button class="btn btn-sm">경고 차감</button>
+              <button class="btn btn-sm btn-danger">강제탈퇴</button>
+            </td>
+          </tr>
+          <tr>
+            <td>1032</td>
+            <td>movie123</td>
+            <td>최서준</td>
+            <td>movie123@example.com</td>
+            <td>2025-08-14</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-danger">경고처리</button>
+              <button class="btn btn-sm">경고 차감</button>
+              <button class="btn btn-sm btn-danger">강제탈퇴</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="member-pagination" id="memberPagination"></div>
+    </div>
+
+    <!-- 
+      =========================================
+      등업 신청 -- 호진
+      =========================================
+      -->
+    <div data-subpanel="promote" style="display:none">
+      <table class="table">
+        <thead><tr><th>닉네임</th><th>현재 등급</th><th>신청 등급</th><th>신청일</th><th>상태</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>드라마러버</td>
+            <td>시청자</td>
+            <td>평론가</td>
+            <td>2026-06-28</td>
+            <td>
+              <span class="status-pill status-pending">대기중</span>
+            </td>
+            <td class="actions">
+              <button class="btn btn-sm btn-primary">등업처리</button>
+              <button class="btn btn-sm">반려</button>
+            </td>
+          </tr>
+          <tr><td>무비홀릭</td><td>시청자</td><td>평론가</td><td>2026-06-27</td><td><span class="status-pill status-pending">대기중</span></td>
+            <td class="actions"><button class="btn btn-sm btn-primary">등업처리</button><button class="btn btn-sm">반려</button></td></tr>
+          <tr><td>영화광123</td><td>시청자</td><td>평론가</td><td>2026-06-25</td><td><span class="status-pill status-pending">대기중</span></td>
+            <td class="actions"><button class="btn btn-sm btn-primary">등업처리</button><button class="btn btn-sm">반려</button></td></tr>
+          <tr><td colspan="6" class="text-muted" style="font-size:12px;text-align:center">등업 조건: 게시글 작성 2회 이상 · 경고 0회 · 본인 게시글 좋아요 합산 200회 이상</td></tr>
+        </tbody>
+      </table>
+    </div>  
+
+    <!-- 
+      =========================================
+      탈퇴 신청 -- 호진
+      =========================================
+      -->
+    <div data-subpanel="withdraw" style="display:none">
+      <table class="table">
+        <thead><tr><th>회원번호</th><th>회원아이디</th><th>닉네임</th><th>신청일</th><th>상태</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1030</td>
+            <td>spam2022</td>
+            <td>스팸계정22</td>
+            <td>2026-06-30</td>
+            <td>
+              <span class="status-pill status-pending">대기중</span>
+            </td>
+            <td class="actions">
+              <button class="btn btn-sm btn-danger">탈퇴 승인</button>
+              <button class="btn btn-sm">반려</button>
+            </td>
+          </tr>
+          <tr>
+            <td>1042</td>
+            <td>movie123</td>
+            <td>영화광123</td>
+            <td>2026-06-29</td>
+            <td>
+              <span class="status-pill status-pending">대기중</span>
+            </td>
+            <td class="actions">
+              <button class="btn btn-sm btn-danger">탈퇴 승인</button>
+              <button class="btn btn-sm">반려</button>
+            </td>
+          </tr>
+          <tr><td>1031</td><td>dramalover</td><td>드라마러버</td><td>2026-06-27</td>
+            <td><span class="status-pill status-pending">대기중</span></td>
+            <td class="actions"><button class="btn btn-sm btn-danger">탈퇴 승인</button><button class="btn btn-sm">반려</button></td></tr>
+          <tr><td colspan="6" class="text-muted" style="font-size:12px;text-align:center">탈퇴 승인 시 계정 정보와 작성글/댓글이 삭제되며, 되돌릴 수 없습니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 
+    =========================================
+    신고 처리 -- 호진
+    =========================================
+    -->
+  <div data-tab-panel="reports" class="mt-24" style="display:none">
+    <table class="table">
+      <thead><tr><th>대상</th><th>내용 요약</th><th>신고자</th><th>사유</th><th>접수일</th><th>상태</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-user">게시글</span></td><td>광고성 스팸 게시물입니다</td><td>드라마러버</td><td>스팸/도배</td><td>2026-06-29</td>
+          <td><span class="status-pill status-pending">대기중</span></td>
+          <td class="actions"><a href="13_detail.html" class="btn btn-sm">게시글 이동</a><button class="btn btn-sm">반려</button><button class="btn btn-sm btn-danger">경고처리</button></td></tr>
+        <tr>
+          <td><span class="badge badge-user">댓글</span></td><td>저는 조금 다르게 생각해요...</td><td>영화광123</td><td>욕설/비방</td><td>2026-06-30</td>
+          <td><span class="status-pill status-pending">대기중</span></td>
+          <td class="actions"><a href="13_detail.html" class="btn btn-sm">게시글 이동</a><button class="btn btn-sm">반려</button><button class="btn btn-sm btn-danger">경고처리</button></td></tr>
+        <tr>
+          <td><span class="badge badge-user">게시글</span></td><td>「기생수: 더 그레이」 원작과 비교 리뷰</td><td>무비홀릭</td><td>기타</td><td>2026-06-28</td>
+          <td><span class="status-pill status-active">처리완료 (유지)</span></td>
+          <td class="actions"><a href="13_detail.html" class="btn btn-sm">게시글 이동</a><button class="btn btn-sm" disabled>반려</button><button class="btn btn-sm btn-danger" disabled>경고처리</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 
+    =========================================
+    Q&A 답변 -- 호진
+    =========================================
+    -->
+  <div data-tab-panel="qna" class="mt-24" style="display:none">
+    <table class="table">
+      <thead><tr><th>번호</th><th>제목</th><th>작성자</th><th>등록일</th><th>상태</th><th></th></tr></thead>
+      <tbody>
+        <tr data-question="Q. 티빙 특가 결제는 언제까지 열려있나요?" data-author="영화광123" data-answer="">
+          <td>1</td>
+          <td>Q. 티빙 특가 결제는 언제까지 열려있나요?</td>
+          <td>영화광123</td><td>2026-06-25</td>
+          <td><span class="status-pill status-pending">답변대기</span></td>
+          <td class="actions"><button class="btn btn-sm btn-primary" onclick="openQnaModal(this)">답변하기</button></td>
+        </tr>
+        <tr data-question="Q. 디즈니+ 로그인 오류에 어떻게 대처하나요?" data-author="드라마러버" data-answer="안녕하세요, YouFlex 고객센터입니다.&#10;문의주신 디즈니+ 로그인 오류는 브라우저 캐시 문제로 발생하는 경우가 많습니다. 브라우저의 쿠키와 캐시를 삭제하신 후 다시 로그인을 시도해보시기 바랍니다.&#10;문제가 계속되면 디즈니+ 고객센터로 문의해주시면 더 자세한 안내를 도와드리겠습니다. 감사합니다.">
+          <td>2</td>
+          <td>Q. 디즈니+ 로그인 오류에 어떻게 대처하나요?</td>
+          <td>드라마러버</td><td>2026-06-25</td>
+          <td><span class="status-pill status-active">답변완료</span></td>
+          <td class="actions"><button class="btn btn-sm" onclick="openQnaModal(this)">답변수정</button></td>
+        </tr>
+        <tr data-question="Q. 리뷰어 등업 신청은 어디서 하나요?" data-author="무비홀릭" data-answer="안녕하세요, YouFlex 고객센터입니다.&#10;등업 신청은 마이페이지 내 '등업 신청' 메뉴에서 진행하실 수 있으며, 게시글 작성 2회 이상·경고 0회·본인 게시글 좋아요 합산 200회 이상 조건을 충족하셔야 합니다. 감사합니다.">
+          <td>3</td>
+          <td>Q. 리뷰어 등업 신청은 어디서 하나요?</td>
+          <td>무비홀릭</td><td>2026-06-24</td>
+          <td><span class="status-pill status-active">답변완료</span></td>
+          <td class="actions"><button class="btn btn-sm" onclick="openQnaModal(this)">답변수정</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 
+    =========================================
+    공지사항 등록 -- 호진
+    =========================================
+    -->
+  <div data-tab-panel="notice" class="mt-24" style="display:none">
+    <div class="card" style="max-width:600px">
+      <form id="noticeCreateForm">
+      <div class="form-row" style="margin-bottom:16px">
+        <label>제목</label>
+        <input type="text" id="notice_title" name="notice_title" placeholder="공지 제목" />
+      </div>
+      <div class="form-row">
+        <label>내용</label>
+        <textarea id="notice_content" name="notice_content" rows="6" placeholder="공지 내용을 입력하세요"></textarea>
+      </div>
+      <button type="button" class="btn btn-primary mt-16">공지 등록</button>
+      </form>
+    </div>
+  </div>
+
+  <!--
+    =========================================
+    배너 설정 -- 호진
+    =========================================
+    -->
+  <div data-tab-panel="banner" class="mt-24" style="display:none">
+    <div class="flex-between" style="margin-bottom:12px">
+      <span class="text-muted" style="font-size:12px">메인 화면 상단 히어로 배너에 노출되는 슬라이드를 관리합니다.</span>
+      <button class="btn btn-sm btn-primary" onclick="openBannerModal()">+ 배너 추가</button>
+    </div>
+    <table class="table" id="bannerTable">
+      <thead><tr><th>순서</th><th>이미지</th><th>뱃지</th><th>제목</th><th>설명</th><th></th></tr></thead>
+      <tbody id="bannerTableBody">
+        <tr data-badge="NETFLIX 시리즈" data-title="살인자ㅇ난감" data-desc="우발적 살인에서 시작된 예측 불가 추적 스릴러" data-image="">
+          <td>1</td><td><div class="banner-thumb"></div></td><td>NETFLIX 시리즈</td><td>살인자ㅇ난감</td><td>우발적 살인에서 시작된 예측 불가 추적 스릴러</td>
+          <td class="actions"><button class="btn btn-sm" onclick="openBannerModal(this)">수정</button><button class="btn btn-sm btn-danger" onclick="deleteBannerRow(this)">삭제</button></td>
+        </tr>
+        <tr data-badge="DISNEY+ 시리즈" data-title="아바타: 물의 길" data-desc="판도라 행성에서 펼쳐지는 또 다른 대서사시" data-image="">
+          <td>2</td><td><div class="banner-thumb"></div></td><td>DISNEY+ 시리즈</td><td>아바타: 물의 길</td><td>판도라 행성에서 펼쳐지는 또 다른 대서사시</td>
+          <td class="actions"><button class="btn btn-sm" onclick="openBannerModal(this)">수정</button><button class="btn btn-sm btn-danger" onclick="deleteBannerRow(this)">삭제</button></td>
+        </tr>
+        <tr data-badge="TVING 오리지널" data-title="환승연애3" data-desc="다시 만난 인연, 새로운 설렘의 시작" data-image="">
+          <td>3</td><td><div class="banner-thumb"></div></td><td>TVING 오리지널</td><td>환승연애3</td><td>다시 만난 인연, 새로운 설렘의 시작</td>
+          <td class="actions"><button class="btn btn-sm" onclick="openBannerModal(this)">수정</button><button class="btn btn-sm btn-danger" onclick="deleteBannerRow(this)">삭제</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- 
+  =========================================
+  Q&A 답변 작성/수정 모달 -- 호진
+  =========================================
+  -->
+<div class="report-modal-backdrop" id="qnaModalBackdrop">
+  <div class="report-modal" style="width:480px">
+    <h3>💬 Q&A 답변 작성</h3>
+    <dl>
+      <dt>질문</dt><dd id="qaQuestion"></dd>
+      <dt>작성자</dt><dd id="qaAuthor"></dd>
+    </dl>
+    <form id="qnaAnswerForm">
+    <div class="form-row" style="margin-top:16px">
+      <label>답변 내용</label>
+      <textarea id="admin_answer_content" name="admin_answer_content" rows="5"></textarea>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-sm" onclick="closeQnaModal()">취소</button>
+      <button type="button" class="btn btn-sm btn-primary" onclick="submitQnaAnswer()">답변 등록</button>
+    </div>
+    </form>
+  </div>
+</div>
+
+<!-- 
+  =========================================
+  경고 처리 모달 -- 호진
+  =========================================
+-->
+<div class="report-modal-backdrop" id="warningModalBackdrop">
+  <div class="report-modal" style="width:360px">
+    <h3>⚠ 경고 처리</h3>
+    <form id="warningForm">
+    <div class="form-row" style="margin-bottom:16px">
+      <label>경고 사유</label>
+      <input type="text" id="warning_reason" name="warning_reason" placeholder="경고 사유를 입력하세요" />
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-sm">취소</button>
+      <button type="button" class="btn btn-sm btn-primary">확인</button>
+    </div>
+    </form>
+  </div>
+</div>
+
+<!-- 
+  =========================================
+  경고 차감 모달 -- 호진
+  =========================================
+  -->
+<div class="report-modal-backdrop" id="warningRevokeModalBackdrop">
+  <div class="report-modal" style="width:360px">
+    <h3>➖ 경고 차감</h3>
+    <p class="text-muted" style="font-size:13px;margin:0 0 16px">해당 회원의 누적 경고를 1회 차감합니다.</p>
+    <div class="btn-row">
+      <button class="btn btn-sm">취소</button>
+      <button class="btn btn-sm btn-primary">차감</button>
+    </div>
+  </div>
+</div>
+
+<!-- 
+  =========================================
+  배너 추가/수정 모달 -- 호진
+  ========================================= 
+  -->
+<div class="report-modal-backdrop" id="bannerModalBackdrop">
+  <div class="report-modal" style="width:440px">
+    <h3 id="bannerModalTitle">🖼 배너 추가</h3>
+    <form id="bannerForm">
+    <div class="form-row" style="margin-bottom:12px">
+      <label>배너 이미지</label>
+      <div class="banner-upload-box" id="bannerImageTrigger">
+        <img id="bannerImagePreview" alt="배너 미리보기" style="display:none" />
+        <span id="bannerUploadPlaceholder">📷 클릭하여 이미지 업로드 (선택)</span>
+      </div>
+      <input type="file" id="banner_img" name="banner_img" accept="image/*" style="display:none" />
+    </div>
+    <div class="form-row" style="margin-bottom:12px">
+      <label>뱃지 텍스트</label>
+      <input type="text" id="bannerBadgeInput" placeholder="예: NETFLIX 시리즈" />
+    </div>
+    <div class="form-row" style="margin-bottom:12px">
+      <label>제목</label>
+      <input type="text" id="banner_title" name="banner_title" placeholder="작품 제목" />
+    </div>
+    <div class="form-row" style="margin-bottom:12px">
+      <label>설명</label>
+      <input type="text" id="banner_content" name="banner_content" placeholder="한 줄 소개" />
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-sm" onclick="closeBannerModal()">취소</button>
+      <button type="button" class="btn btn-sm btn-primary" onclick="saveBanner()">저장</button>
+    </div>
+    </form>
+  </div>
+</div>
+
+<!-- 
+  =========================================
+  푸터 영역 -- 호진
+  ========================================= 
+  -->
+<footer class="site-footer main-footer">
+  <div class="container main-footer-inner">
+    <div class="main-footer-brand">
+      <span class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></span>
+      <p>당신의 콘텐츠 취향을 연결하는<br />OTT 리뷰 &amp; 커뮤니티 플랫폼</p>
+    </div>
+    <div class="main-footer-info">
+      <p>(주)YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;대표: YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;사업자등록번호: 000-00-00000</p>
+      <p>개인정보관리책임자: YouFlex</p>
+      <p>이메일: youflex@youflex.com&nbsp;&nbsp;|&nbsp;&nbsp;고객센터: 00-000-0000</p>
+    </div>
+    <div class="main-footer-meta">
+      <p>&copy; 2026 YouFlex. All rights reserved.</p>
+    </div>
+    <button class="main-footer-top" id="footerTopBtn" title="맨 위로">↑</button>
+  </div>
+</footer>
+
+<script src="assets/js/app.js"></script>
+<script src="assets/js/15_admin.js"></script>
+</body>
+</html>

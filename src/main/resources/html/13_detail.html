@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouFlex - 게시글 상세</title>
+<link rel="stylesheet" href="./assets/css/common.css" />
+<link rel="stylesheet" href="./assets/css/13_detail.css" />
+</head>
+<body>
+
+
+<!--  
+  ==================================
+  공통 헤더바  
+  ==================================
+  -->
+<!-- 
+  ==================================
+  비회원(구경꾼) 헤더바
+  ==================================
+  -->
+<!-- <header class="site-header">
+  <div class="container">
+    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
+    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
+    <div class="header-actions">
+      <a href="02_login.html" class="btn btn-ghost">로그인</a>
+    </div>
+  </div>
+</header> -->
+
+<!-- 
+  ==================================
+  회원(시청자이상) 헤더바 
+  ==================================
+  -->
+<header class="site-header">
+  <div class="container">
+    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
+    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
+    <div class="header-actions">
+      <a href="14_mypage.html" class="btn btn-ghost">마이페이지</a>
+      <a href="#" class="btn btn-ghost">로그아웃</a>
+      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
+      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- 
+  ==================================
+  관리자 헤더바 
+  ==================================
+  -->
+<!-- <header class="site-header">
+  <div class="container">
+    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
+    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
+    <div class="header-actions">
+      <a href="02_login.html" class="btn btn-ghost">로그인</a>
+      <a href="15_admin.html" class="btn btn-ghost" style="color:var(--danger)">⚙ 관리자 페이지</a>
+      <a href="14_mypage.html" class="btn btn-ghost">마이페이지</a>
+      <a href="#" class="btn btn-ghost">로그아웃</a>
+      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
+      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
+    </div>
+  </div>
+</header> -->
+
+
+<!-- 
+  ==================================
+  메인 영역 
+  ==================================
+  -->
+<main class="container">
+  <div class="detail-wrap">
+    <div class="detail-meta-top">
+      <span class="badge badge-user">드라마</span>
+      <span>조회수 15,204</span>
+    </div>
+    <h1 class="detail-title">「오징어게임 3」, 이대로 끝내도 되는가 - 결말 완전분석</h1>
+
+    <!-- 
+      ==================================
+      작성자 정보
+      ==================================
+    -->
+    <div class="author-row">
+      <div class="author-info">
+        <div class="author-avatar">
+          <img src="./assets/img/profile/Humpty_Dumpty.webp" class="profile-img" style="object-fit: cover;" alt="프로필 이미지">
+        </div>
+        <div>
+          <div class="author-name">리뷰왕 <span class="badge badge-critic">평론가</span></div>
+          <div class="author-sub">2026-06-30 14:22 작성</div>
+        </div>
+      </div>
+      
+      <!-- 
+        ==================================
+        관리자: 신고 접수된 게시글에 한해 삭제 버튼 노출 (신고 관리 연동) 
+        ==================================
+        -->
+      <div class="owner-actions" data-role-visible="admin">
+        <span class="badge" style="background:rgba(230,57,70,0.15);color:var(--danger)">신고 3건 접수</span>
+        <button class="btn btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="alert('게시글이 삭제되었습니다. (데모)')">관리자 삭제</button>
+      </div>
+    </div>
+
+    <!-- 
+      ==================================
+      별점 및, 수정 삭제 버튼
+      ==================================
+    -->
+    <div class="rating-block">
+      <span class="rating-label">작성자 평점</span>
+      <span class="score section-heading" >★★★★☆</span>
+      <span class="stars section-heading">4.5</span>
+      <!-- 작성자 본인에게만 노출 -->
+      <div class="owner-actions" style="margin-left:auto">
+        <a href="12_update.html" class="btn btn-sm">수정</a>
+        <button class="btn btn-sm">삭제</button>
+      </div>
+    </div>
+    <!-- .text-muted 주석(웅조) -->
+    <!-- <div class="text-muted" style="font-size:13px;margin:-10px 0 10px" data-role-visible="user,critic,admin">
+      내 별점 매기기: <span class="stars" style="cursor:pointer;letter-spacing:2px">☆☆☆☆☆</span> <span style="font-size:12px">(0.5점 단위 선택 가능)</span>
+    </div> -->
+
+    <!-- 사진 영역 수정완료 -->
+    <div class="post-body-img">
+      <img src="./assets/img/netflix/squidgame.png" alt="오징어게임3">
+    </div>
+    <!-- 본문 내용 -->
+    <div class="post-body-text">
+      <p>시즌3 최종화 이후 갈린 팬들의 평가를 정리하고, 결말이 남긴 메시지를 심층 분석합니다. 전체적인 서사 구조와 캐릭터 아크를 짚어보면서, 왜 이런 결말을 선택했는지에 대한 제작진의 의도를 추측해봅니다.</p>
+      <p>특히 마지막 에피소드에서 드러난 상징들은 시즌 전체를 관통하는 주제 의식과 맞닿아 있는데, 이를 하나씩 짚어보겠습니다...</p>
+    </div>
+
+    <!-- 관련작품 -->
+    <div class="related-works">
+      <strong>관련작품</strong>
+      <span class="badge badge-user">오징어게임 시즌1</span>
+      <span class="badge badge-user">오징어게임 시즌2</span>
+    </div>
+    <!-- 취향 카테고리 태그 -->
+    <div class="genre-tags">
+      <span class="genre-tags-label">장르</span>
+      <span class="genre-tag">액션</span>
+      <span class="genre-tag">스릴러</span>
+      <span class="genre-tag">드라마</span>
+      <span class="genre-tag">미스터리</span>
+    </div>
+
+    <div class="interaction-bar">
+      <button class="btn active" data-role-visible="user,critic,admin">❤ 좋아요 892</button>
+      <button class="btn" disabled data-role-visible="guest">❤ 좋아요 892</button>
+      <button class="btn" data-role-visible="user,critic,admin">🔖 북마크</button>
+      <button class="btn" disabled data-role-visible="guest">🔖 북마크</button>
+      <button class="btn btn-ghost" style="margin-left:auto" data-role-visible="user,critic,admin" onclick="openReportModal('post')">🚩 신고</button>
+      <button class="btn btn-ghost" style="margin-left:auto" disabled data-role-visible="guest">🚩 신고</button>
+    </div>
+
+    <section class="comment-section">
+      <h3>댓글 128</h3>
+
+      <form id="commentForm" class="comment-input-row" data-role-visible="user,critic,admin">
+        <input type="text" id="comment_content" name="comment_content" placeholder="댓글을 입력하세요 (비속어 자동 필터링)" />
+        <button type="button" class="btn btn-primary">등록</button>
+      </form>
+      <div class="comment-input-row" data-role-visible="guest">
+        <input type="text" placeholder="로그인 후 댓글 작성이 가능합니다" disabled />
+        <button class="btn" disabled>등록</button>
+      </div>
+
+      <div class="comment-subheading">🏆 베스트 댓글</div>
+      <div class="comment-item best">
+        <div class="c-head"><span class="c-head-left"><span class="c-author">드라마러버</span><span class="badge badge-best">BEST 1</span></span><span class="c-date">2026-06-30 15:01</span></div>
+        <div class="c-body">결말 해석 정말 공감돼요. 저도 비슷하게 느꼈습니다.</div>
+        <div class="comment-actions"><span class="comment-like" data-count="12" onclick="toggleCommentLike(this)">♥ 좋아요 12</span><span onclick="openReportModal('comment')" style="cursor:pointer">신고</span></div>
+      </div>
+
+      <div class="comment-item best">
+        <div class="c-head"><span class="c-head-left"><span class="c-author">영화매니아</span><span class="badge badge-best">BEST 2</span></span><span class="c-date">2026-06-30 15:32</span></div>
+        <div class="c-body">이 정도면 시즌4도 기대해볼만 하네요 ㅋㅋ</div>
+        <div class="comment-actions"><span class="comment-like" data-count="9" onclick="toggleCommentLike(this)">♥ 좋아요 9</span><span onclick="openReportModal('comment')" style="cursor:pointer">신고</span></div>
+      </div>
+
+      <div class="comment-item best">
+        <div class="c-head"><span class="c-head-left"><span class="c-author">낭이</span><span class="badge badge-best">BEST 3</span></span><span class="c-date">2026-06-30 16:02</span></div>
+        <div class="c-body">저는 이 결말이 오히려 신선했어요, 다들 너무 박하게 평가하는 듯</div>
+        <div class="comment-actions"><span class="comment-like" data-count="7" onclick="toggleCommentLike(this)">♥ 좋아요 7</span><span onclick="openReportModal('comment')" style="cursor:pointer">신고</span></div>
+      </div>
+
+      <div class="comment-subheading">전체 댓글</div>
+      <div class="comment-item">
+        <div class="c-head"><span class="c-author">영화광123</span><span class="c-date">2026-06-30 16:20</span></div>
+        <div class="c-body">저는 조금 다르게 생각해요. 결말이 너무 급했다고 봅니다.</div>
+        <div class="comment-actions"><span class="reply-toggle" onclick="toggleReplyForm(this)">답글달기</span><span class="comment-like" data-count="4" onclick="toggleCommentLike(this)">♥ 좋아요 4</span><span onclick="openReportModal('comment')" style="cursor:pointer">신고</span><span onclick="editComment(this)" style="cursor:pointer">수정</span><span onclick="deleteComment(this)" style="cursor:pointer">삭제</span></div>
+        <div class="reply-list">
+          <div class="reply-item">
+            <div class="c-head"><span class="c-author">드라마러버</span><span class="c-date">2026-06-30 16:45</span></div>
+            <div class="c-body">저도 급하다고 느꼈어요, 마지막화가 좀 아쉬웠습니다.</div>
+            <div class="comment-actions"><span class="reply-toggle" onclick="toggleReplyForm(this)">답글달기</span><span onclick="openReportModal('comment')" style="cursor:pointer">신고</span><span onclick="editComment(this)" style="cursor:pointer">수정</span><span onclick="deleteComment(this)" style="cursor:pointer">삭제</span></div>
+            <form class="reply-form" style="display:none" onsubmit="return false">
+              <input type="text" placeholder="답글을 입력하세요" />
+              <button type="button" class="btn btn-primary btn-sm" onclick="submitReplyForm(this)">등록</button>
+            </form>
+          </div>
+        </div>
+        <form class="reply-form" style="display:none" onsubmit="return false">
+          <input type="text" placeholder="답글을 입력하세요" />
+          <button type="button" class="btn btn-primary btn-sm" onclick="submitReplyForm(this)">등록</button>
+        </form>
+      </div>
+
+      <!-- 소프트 삭제된 댓글 예시 -->
+      <div class="comment-item">
+        <div class="c-head"><span class="c-author text-muted">알 수 없음</span><span class="c-date">2026-06-30 17:05</span></div>
+        <div class="c-body text-muted" style="font-style:italic">삭제된 댓글입니다.</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- 신고하기 모달 -->
+<div class="report-modal-backdrop" id="reportModalBackdrop">
+  <div class="report-modal">
+    <h2>🚩 신고하기</h2>
+    <div class="target-chip" id="reportTargetChip">신고 대상: 게시글</div>
+    <form id="reportForm">
+    <div class="form-row">
+      <label>신고 사유</label>
+      <select id="reportReasonSelect">
+        <option>스팸 / 도배</option>
+        <option>욕설 / 비방</option>
+        <option>음란물</option>
+        <option>저작권 침해</option>
+        <option>기타</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>상세 내용</label>
+      <textarea id="reportDetailInput" placeholder="신고 사유를 구체적으로 입력해주세요"></textarea>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn" onclick="closeReportModal()">취소</button>
+      <button type="button" class="btn btn-primary" onclick="submitReportModal()">신고하기</button>
+    </div>
+    </form>
+  </div>
+</div>
+
+<!-- 
+  ==================================
+  공통 푸터 영역
+  ==================================
+  -->
+<footer class="site-footer main-footer">
+  <div class="container main-footer-inner">
+    <div class="main-footer-brand">
+      <span class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></span>
+      <p>당신의 콘텐츠 취향을 연결하는<br />OTT 리뷰 &amp; 커뮤니티 플랫폼</p>
+    </div>
+    <div class="main-footer-info">
+      <p>(주)YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;대표: YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;사업자등록번호: 000-00-00000</p>
+      <p>개인정보관리책임자: YouFlex</p>
+      <p>이메일: youflex@youflex.com&nbsp;&nbsp;|&nbsp;&nbsp;고객센터: 00-000-0000</p>
+    </div>
+    <div class="main-footer-meta">
+      <p>&copy; 2026 YouFlex. All rights reserved.</p>
+    </div>
+    <button class="main-footer-top" id="footerTopBtn" title="맨 위로">↑</button>
+  </div>
+</footer>
+
+<!-- 
+  ================================
+  오버레이 영역
+  ================================
+  -->
+<div class="overlay-backdrop" id="notificationBackdrop"></div>
+
+<!-- 
+  ================================
+  알림 영역
+  ================================
+  -->
+<aside class="slide-panel" id="notificationPanel">
+  <div class="panel-header"><h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button></div>
+  <!-- 알림 내용 -->
+  <div class="panel-body">
+    <div class="notification-clear-row"><button class="notification-clear-all" type="button">모두 삭제</button></div>
+    <div class="notification-item">
+      <span class="notification-icon">⚠</span>
+      <div>
+        <div class="notification-text">비속어 사용으로 경고 1회가 부여되었습니다.</div>
+        <div class="notification-time">10분 전</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+    <div class="notification-item">
+      <span class="notification-icon">💬</span>
+      <div>
+        <div class="notification-text">작성하신 질문 "디즈니+ 로그인 오류에 어떻게 대처하나요?"에 관리자 답변이 등록되었습니다.</div>
+        <div class="notification-time">2시간 전</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+    <div class="notification-item">
+      <span class="notification-icon">📝</span>
+      <div>
+        <div class="notification-text">내 게시글 "「오징어게임 3」, 이대로 끝내도 되는가"에 새 댓글이 달렸습니다.</div>
+        <div class="notification-time">어제</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+  </div>
+</aside>
+
+<!-- 
+  ================================
+  챗봇 영역
+  ================================
+  -->
+<button class="fab" id="chatbotFab" title="챗봇 실행">🤖</button>
+<div class="overlay-backdrop" id="chatbotBackdrop"></div>
+<aside class="slide-panel" id="chatbotPanel">
+  <div class="panel-header"><h3>🤖 YouFlex 챗봇</h3><button class="panel-close" id="chatbotClose">✕</button></div>
+  <div class="panel-body">
+    <div class="chat-msg"><div class="avatar"></div><div class="bubble">무엇을 도와드릴까요? 객관식 1문제 + OX 1문제, 하루 3번까지 풀 수 있어요!</div></div>
+    <div class="quiz-box" id="qnaQuizBox">
+      <div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
+      <button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
+
+      <div id="qnaQuizPlay" style="display:none">
+        <div class="quiz-progress" id="qnaQuizProgress"></div>
+        <div class="quiz-question" id="qnaQuizQuestion"></div>
+        <div class="quiz-options" id="qnaQuizOptions"></div>
+        <button class="btn btn-sm btn-primary" id="qnaQuizNextBtn" style="display:none">다음 문제 ›</button>
+      </div>
+
+      <div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
+    </div>
+  </div>
+  <div class="panel-input-row"><input type="text" placeholder="질문을 입력하세요" /><button class="btn btn-primary">전송</button></div>
+</aside>
+
+<!-- 
+  ================================
+  채팅방 영역
+  ================================
+  -->
+<div class="overlay-backdrop" id="chatroomBackdrop"></div>
+<aside class="slide-panel" id="chatroomPanel">
+  <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
+  <div class="panel-tabs" data-tab-panels>
+    <button class="active" data-tab-target="list">목록</button>
+    <button data-tab-target="chat">채팅</button>
+    <button data-tab-target="create" data-role-visible="critic,admin">개설</button>
+  </div>
+  <div class="panel-body" data-tab-panel="list">
+    <div class="room-list-item"><div><div class="room-name">오늘 개봉작 실시간 토크</div><div class="room-count">18 / 30명</div></div><button class="btn btn-primary btn-sm">입장</button></div>
+  </div>
+  <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
+    <div class="chatroom-title">
+      <span>💬 오늘 개봉작 실시간 토크</span>
+      <button class="btn btn-sm btn-danger" data-role-visible="critic,admin" onclick="giveChatWarning()">⚠ 경고 부여</button>
+    </div>
+    <div class="chatroom-messages" id="chatroomMessages">
+      <div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
+      <div class="chat-msg"><div class="avatar"></div><div class="bubble">다들 이번 편 결말 어떻게 보셨어요?</div></div>
+      <div class="chat-msg me"><div class="avatar"></div><div class="bubble">저는 반전이 좋았어요 ㅋㅋ</div></div>
+    </div>
+    <div class="panel-input-row">
+      <input type="text" id="chat_message_content" name="chat_message_content" placeholder="메시지를 입력하세요" />
+      <button class="btn btn-primary" id="chatroomSendBtn">전송</button>
+    </div>
+  </div>
+  <div class="panel-body" data-tab-panel="create" style="display:none">
+    <label class="text-muted" style="font-size:13px">방 이름</label>
+    <input type="text" id="chatroom_title" name="chatroom_title" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
+    <label class="text-muted" style="font-size:13px">최대 인원</label>
+    <input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
+    <button class="btn btn-primary mt-24" id="chatroomCreateBtn">채팅방 개설</button>
+  </div>
+</aside>
+
+<script src="assets/js/app.js"></script>
+<script src="assets/js/13_detail.js"></script>
+</body>
+</html>

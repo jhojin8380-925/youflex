@@ -1,0 +1,37 @@
+/* ==========================================================================
+   03_join.html (회원가입 화면) 전용 스타일
+   ========================================================================== */
+
+.auth-card { width:100%; max-width:440px; } /* 로그인 화면(380px)보다 입력 항목이 많아서 카드 폭을 좀 더 넓게 */
+.form-row { margin-bottom:14px; }
+
+/* ---------- 아이디 입력칸 + "중복확인" 버튼이 나란히 있는 줄 ---------- */
+.id-check-row { display:flex; gap:8px; }
+.id-check-row input { flex:1; }
+
+/* ---------- 비밀번호 아래 "8자 이상 / 영문 포함 / 숫자 포함 / 특수문자 포함" 체크리스트 ---------- */
+.pw-rules { list-style:none; padding:0; margin:8px 0 0; display:flex; flex-direction:column; gap:4px; }
+.pw-rules li { font-size:12px; color:var(--text-2); display:flex; align-items:center; gap:6px; }
+.pw-rules li.ok { color:var(--success); } /* 조건을 만족하면 초록색으로 바뀜 (JS가 입력할 때마다 검사) */
+.pw-rules li .mark { width:14px; display:inline-block; } /* 체크(✓) / 빈 동그라미(○) 아이콘 자리 */
+
+/* ---------- 비밀번호 확인 입력칸 아래 "일치합니다 / 일치하지 않습니다" 안내 문구 ---------- */
+.pw-match { font-size:12px; margin-top:6px; }
+.pw-match.ok { color:var(--success); }
+.pw-match.no { color:var(--danger); }
+
+/* ---------- 이용약관 박스 + 동의 체크박스 ---------- */
+.terms-box { background:var(--bg-2); border:1px solid var(--border); border-radius:8px; padding:14px; font-size:12px; color:var(--text-2); line-height:1.6; max-height:120px; overflow-y:auto; margin-bottom:12px; } /* 내용이 길면 스크롤되는 작은 박스 */
+.terms-agree { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--text-1); margin-bottom:20px; }
+
+/* ---------- 아이디 중복확인 결과 안내 문구 ---------- */
+.id-status { font-size:12px; margin-top:6px; }
+.id-status.ok { color:var(--success); }
+.id-status.no { color:var(--danger); }
+
+/* ---------- 가입 완료 후 뜨는 "취향(관심 장르) 선택" 모달의 "나중에 설정하기" 링크 ---------- */
+.genre-skip {
+  display:block; width:100%; text-align:center; background:none; border:none;
+  color:var(--text-2); font-size:13px; margin-top:12px; padding:8px;
+}
+.genre-skip:hover { color:var(--text-0); }
