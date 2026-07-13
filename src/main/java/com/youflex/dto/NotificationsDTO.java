@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,5 +17,5 @@ public class NotificationsDTO {
     private int notificationsId;
     private int memberId;
     private String notificationsType;
-    private String notificationsCreatedAt;
+    private LocalDateTime notificationsCreatedAt;
 }

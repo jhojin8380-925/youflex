@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +25,6 @@ public class ReviewDTO {
     private Double reviewRating;
     private String reviewPlatform;
     private Boolean reviewHighlighted;
-    private String reviewCreatedAt;
-    private String reviewUpdatedAt;
+    private LocalDateTime reviewCreatedAt;
+    private LocalDateTime reviewUpdatedAt;
 }

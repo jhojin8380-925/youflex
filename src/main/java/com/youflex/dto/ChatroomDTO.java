@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,5 +18,5 @@ public class ChatroomDTO {
     private int memberId;
     private String chatroomTitle;
     private int chatroomMaxMember;
-    private String chatroomCreatedAt;
+    private LocalDateTime chatroomCreatedAt;
 }

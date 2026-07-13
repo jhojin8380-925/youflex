@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +19,6 @@ public class QnaCommentReportDTO {
     private int memberId;
     private String commentReportReason;
     private String commentReportStatus;
-    private String commentReportCreatedAt;
+    private LocalDateTime commentReportCreatedAt;
     private String commentReportContent;
 }

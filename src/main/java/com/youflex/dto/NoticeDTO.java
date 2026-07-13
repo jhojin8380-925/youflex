@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +17,6 @@ public class NoticeDTO {
     private int noticeId;
     private String noticeTitle;
     private String noticeContent;
-    private String noticeCreatedAt;
-    private String noticeUpdatedAt;
+    private LocalDateTime noticeCreatedAt;
+    private LocalDateTime noticeUpdatedAt;
 }

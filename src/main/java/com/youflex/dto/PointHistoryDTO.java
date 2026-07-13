@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +18,6 @@ public class PointHistoryDTO {
     private int memberId;
     private int pointHistoryAmount;
     private String pointHistoryType;
-    private String pointHistoryCreatedAt;
-    private String pointHistoryUpdatedAt;
+    private LocalDateTime  pointHistoryCreatedAt;
+    private LocalDateTime  pointHistoryUpdatedAt;
 }

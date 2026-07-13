@@ -1,4 +1,7 @@
+
 package com.youflex.dto;
+
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +18,6 @@ public class AdminAnswerDTO {
     private int adminAnswerId;
     private int qnaId;
     private String adminAnswerContent;
-    private String adminAnswerCreatedAt;
-    private String adminAnswerUpdatedAt;
+    private LocalDateTime adminAnswerCreatedAt;
+    private LocalDateTime adminAnswerUpdatedAt;
 }

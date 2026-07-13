@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,5 +18,5 @@ public class QuizAttemptDTO {
     private int quizId;
     private int memberId;
     private Boolean quizAttemptCheck;
-    private String quizAttemptedAt;
+    private LocalDateTime quizAttemptedAt;
 }

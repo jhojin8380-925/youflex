@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +23,7 @@ public class MemberDTO {
     private String memberGrade;
     private int memberPoint;
     private String memberDeleteStatus;
-    private String memberCreatedAt;
+    private LocalDateTime memberCreatedAt;
     private String memberProfileImg;
     private String memberGradeStatus;
 }

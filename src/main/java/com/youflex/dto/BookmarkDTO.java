@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,5 +17,5 @@ public class BookmarkDTO {
     private int bookmarkId;
     private int reviewId;
     private int memberId;
-    private String bookmarkCreatedAt;
+    private LocalDateTime bookmarkCreatedAt;
 }

@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +19,6 @@ public class CommentDTO {
     private int reviewId;
     private int parentId;
     private String commentContent;
-    private String commentCreatedAt;
-    private String commentUpdatedAt;
+    private LocalDateTime commentCreatedAt;
+    private LocalDateTime commentUpdatedAt;
 }

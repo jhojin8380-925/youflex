@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,8 +18,8 @@ public class QnaDTO {
     private int memberId;
     private String qnaTitle;
     private String qnaContent;
-    private String qnaCreatedAt;
-    private String qnaUpdatedAt;
+    private LocalDateTime qnaCreatedAt;
+    private LocalDateTime qnaUpdatedAt;
     private int qnaStatus;
     private String qnaIsSecret;
 }

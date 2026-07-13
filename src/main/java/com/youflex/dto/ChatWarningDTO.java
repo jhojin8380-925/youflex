@@ -1,5 +1,7 @@
 package com.youflex.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,5 +19,5 @@ public class ChatWarningDTO {
     private int chatroomId;
     private int chatMessageId;
     private String chatWarningReason;
-    private String chatWarningCreatedAt;
+    private LocalDateTime chatWarningCreatedAt;
 }

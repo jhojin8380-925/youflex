@@ -17,5 +17,5 @@ public class ReviewDraftDTO {
     private int genreCategoryId;
     private String reviewDraftTitle;
     private String reviewDraftContent;
-    private String reviewDraftSavedAt;
+    private ReviewDTO reviewDraftSavedAt;
 }
