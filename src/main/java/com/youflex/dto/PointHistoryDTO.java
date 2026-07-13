@@ -4,12 +4,10 @@ import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +16,7 @@ public class PointHistoryDTO {
     private int memberId;
     private int pointHistoryAmount;
     private String pointHistoryType;
-    private LocalDateTime  pointHistoryCreatedAt;
-    private LocalDateTime  pointHistoryUpdatedAt;
+    private String pointHistoryReason;
+    private LocalDateTime pointHistoryCreatedAt;
+    private LocalDateTime pointHistoryUpdatedAt;
 }

@@ -4,12 +4,10 @@ import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,6 +22,10 @@ public class MemberDTO {
     private int memberPoint;
     private String memberDeleteStatus;
     private LocalDateTime memberCreatedAt;
+    private LocalDateTime memberDeletedAt;
     private String memberProfileImg;
     private String memberGradeStatus;
+
+    // join 조회용 (DB 컬럼 아님)
+    private int warningCount;
 }
