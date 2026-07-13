@@ -1,0 +1,195 @@
+/* ==========================================================================
+   01_main.html (메인 화면) 전용 스타일
+   상단 히어로 배너 슬라이더 + "인기 리뷰글" 랭킹 카드 + 공지사항 미리보기 목록
+   ========================================================================== */
+
+/* ---------- 인기 리뷰글: 순위 카드 (1~5위, 넷플릭스/티빙 등 플랫폼 탭별로 5개씩) ---------- */
+.rank-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:16px; }
+.rank-card { display:block; position:relative; border-radius:var(--radius); overflow:hidden; background:var(--bg-1); border:1px solid var(--border); }
+.rank-card:hover { border-color:var(--accent); }
+.rank-thumb { aspect-ratio:16/10; background:linear-gradient(150deg,var(--bg-3),var(--bg-2)); display:flex; align-items:center; justify-content:center; color:var(--text-2); font-size:12px; }
+.rank-number { position:absolute; top:8px; left:8px; width:26px; height:26px; border-radius:50%; background:rgba(0,0,0,0.65); color:#fff; font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:center; } /* 썸네일 위 왼쪽 위 순위 숫자(①②③...) */
+.rank-rating { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.65); color:var(--gold); font-size:11px; font-weight:700; padding:3px 7px; border-radius:999px; } /* 썸네일 위 오른쪽 위 별점 뱃지 */
+.rank-body { padding:10px 12px 14px; }
+.rank-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+.rank-meta { font-size:11px; color:var(--text-2); }
+
+/* ---------- 공지사항 미리보기 목록 (메인 화면 하단) ---------- */
+.notice-list { border-top:1px solid var(--border); margin-top:16px; }
+.notice-row { display:grid; grid-template-columns:auto 1fr auto auto auto; align-items:center; gap:18px; padding:13px 4px; border-bottom:1px solid var(--border); font-size:13px; } /* 공지뱃지 | 제목 | 작성자 | 날짜 | 조회수 */
+.notice-badge { background:var(--accent); color:#fff; font-size:10px; font-weight:800; padding:3px 7px; border-radius:4px; }
+.notice-meta { color:var(--text-2); font-size:12px; white-space:nowrap; }
+
+/* ---------- 랭킹 영역 위, 넷플릭스/티빙/디즈니+/기타 플랫폼 전환 탭 ---------- */
+.platform-tabs { display:flex; gap:8px; margin-top:16px; }
+.platform-tabs button { padding:8px 18px; border-radius:999px; border:1px solid var(--border); background:var(--bg-2); color:var(--text-1); font-size:13px; font-weight:600; }
+.platform-tabs button.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+/* ---------- 히어로 배너 슬라이더: 좌우 화살표 버튼 ---------- */
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-arrow:hover { background: rgba(0, 0, 0, 0.65); }
+.hero-arrow.prev { left: 16px; }
+.hero-arrow.next { right: 16px; }
+
+/* ---------- 히어로 배너 슬라이더: 슬라이드 하나하나(전환 애니메이션은 JS가 .active 클래스를 옮겨가며 처리) ---------- */
+.hero-slide-content {
+  display: none;
+
+  /* 부모인 .hero-slider와 똑같은 크기로 강제 확장 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* 글자 콘텐츠 배치용 패딩 (원하시는 대로 조절) - 상단만 200px, 나머지는 60px */
+  /* 배너 글자 위치조정 -나영- */
+  padding: 10px 15px 10px;
+  box-sizing: border-box;
+}
+.hero-slide-content.active {
+  display: block; /* 또는 flex, 레이아웃에 맞춰 선택 */
+}
+
+.hero-banner-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* object-fit: cover;  */
+  z-index: 1;        /* 가장 뒤로 보내기*/
+}
+
+.hero-slider {
+  position: relative;
+  margin-top: 20px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  height: 380px;
+  background: linear-gradient(120deg, #3a1c25, #1c2027 70%);
+  display: flex;
+  align-items: flex-end; /* 슬라이드 안의 글자를 배너 아래쪽에 배치 */
+  border: 1px solid var(--border);
+}
+
+.hero-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+/* .hero-slide-content 안의 badge/h1/p: 이미지(z-index:1)보다 위로 띄우고 흰색으로 표시 */
+.hero-slide-content .hero-badge {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+
+  /* 수정 부분 */
+  /* padding-top: 20px; */
+}
+.hero-slide-content h1 {
+  font-size: 32px;
+  margin: 0 0 12px;
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+}
+.hero-slide-content p {
+  color: #ffffff;
+  margin: 0 0 20px;
+  line-height: 1.5;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 16px;
+  color: var(--text-2);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* 배너 아래쪽 오른쪽에 있는 점(●●●) 인디케이터 - 현재 몇 번째 슬라이드인지 표시 */
+.hero-dots {
+  position: absolute;
+  bottom: 16px;
+  right: 24px;
+  display: flex;
+  gap: 6px;
+}
+.hero-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+.hero-dots span.active {
+  background: var(--accent);
+  width: 20px;
+  border-radius: 4px; /* 현재 슬라이드 점만 길게 강조 */
+}
+/* 베스트 리뷰글 이미지 조정 -나영- */
+.list-img{
+  width: 100%;
+  height: 229px;
+}
+/* ---------- 섹션 제목 꾸미기 -나영- ---------- */
+.section-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin: 32px 0 20px;   /* 0 → 32px 로 변경 */
+  /* 텍스트에 그라데이션 입히기 */
+  background: linear-gradient(90deg, #ffffff 0%, #ffd47a 60%, var(--accent) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: heading-shine 4s ease-in-out infinite, heading-fade-in 0.6s ease-out;
+}
+/* ---------- "인기 리뷰글" 제목 보라색 꾸미기 -나영- ---------- */
+.section-heading--purple {
+  background: linear-gradient(90deg, #ffd47a 0%, #ff6b8b 60%, #c86dd7 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+
+/* 그라데이션이 천천히 좌우로 움직이는 효과 (불꽃이 일렁이는 느낌) */
+@keyframes heading-shine {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+/* 페이지 들어올 때 제목이 살짝 아래에서 떠오르며 나타나는 효과 */
+@keyframes heading-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

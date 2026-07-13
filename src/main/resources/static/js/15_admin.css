@@ -1,0 +1,74 @@
+/* ==========================================================================
+   15_admin.html (관리자 화면) 전용 스타일
+   회원관리/신고처리/Q&A답변/공지등록/배너설정 탭 + KPI 대시보드 + 각종 모달
+   ========================================================================== */
+
+/* ---------- 회원관리/신고처리/Q&A답변/공지등록/배너설정 상단 큰 탭 메뉴 ---------- */
+.admin-nav { display:flex; gap:6px; margin-top:24px; flex-wrap:wrap; }
+.admin-nav button { padding:10px 16px; border-radius:6px; border:1px solid var(--border); background:var(--bg-2); color:var(--text-1); font-size:13px; font-weight:600; }
+.admin-nav button.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+/* ---------- 회원관리 탭 안의 "회원목록/등업신청대기/탈퇴신청대기" 작은 서브 탭 ---------- */
+.member-subtabs { display:flex; gap:6px; margin-top:20px; margin-bottom:8px; flex-wrap:wrap; }
+.member-subtabs button { padding:8px 14px; border-radius:6px; border:1px solid var(--border); background:none; color:var(--text-2); font-size:13px; font-weight:600; }
+.member-subtabs button.active { color:var(--text-0); border-color:var(--accent); background:rgba(230,57,70,0.1); }
+
+/* ---------- 회원 검색창 + 페이지네이션(회원목록 5명씩 보기) ---------- */
+.member-search-row { display:flex; gap:8px; margin-top:16px; }
+.member-search-row input { flex:1; max-width:320px; background:var(--bg-2); border:1px solid var(--border); border-radius:6px; padding:10px; color:#fff; font-size:13px; }
+.member-search-row input:focus { outline:none; border-color:var(--accent); }
+.member-pagination { display:flex; justify-content:center; gap:6px; margin:20px 0; }
+.member-pagination button { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:6px; border:1px solid var(--border); background:none; color:var(--text-1); font-size:13px; }
+.member-pagination button.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+/* ---------- 대시보드 요약 (오늘 가입자수/탈퇴자수/게시글수/누적회원/미처리 신고) 카드 5개 ---------- */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-top:20px; }
+.kpi-card { padding:20px; }
+.kpi-card .label { font-size:12px; color:var(--text-2); margin-bottom:8px; }
+.kpi-card .value { font-size:28px; font-weight:800; }
+.kpi-card .delta { font-size:12px; color:var(--success); margin-top:6px; }   /* 전일 대비 증가/양호 - 초록 */
+.kpi-card .delta.down { color:var(--danger); }                                /* 전일 대비 나쁜 방향 - 빨강 */
+
+.form-row textarea { min-height:auto; } /* common.css 기본 textarea(min-height:280px)는 관리자 폼(공지 내용, Q&A 답변)엔 너무 커서 화면에 맞게 자동 높이로 재정의 */
+
+/* 회원목록/신고처리/Q&A/배너 표 오른쪽 끝, 버튼들이 모여있는 칸 */
+.table td.actions { display:flex; gap:6px; justify-content:flex-end; }
+
+/* ---------- 상태 표시 알약 뱃지 (대기중/처리완료/블랙리스트 등) ---------- */
+.status-pill { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; }
+.status-active { background:rgba(53,196,107,0.15); color:var(--success); }
+.status-blacklist { background:rgba(230,57,70,0.15); color:var(--danger); }
+.status-pending { background:rgba(245,197,24,0.15); color:var(--gold); }
+
+/* ---------- Q&A 답변 모달 안 <dl> 형태의 "질문 / 작성자" 정보 표시 ---------- */
+.report-modal dl { margin:0; font-size:13px; }
+.report-modal dt { color:var(--text-2); margin-top:12px; }
+.report-modal dd { margin:2px 0 0; }
+
+.btn-row { justify-content:flex-end; } /* 관리자 모달들은 취소/확인 버튼을 오른쪽으로 몰아서 배치 (common.css 기본은 flex:1로 꽉 채움) */
+
+/* ---------- 배너 설정 표: 순서/이미지 칸 너비 고정 + 버튼 칸 왼쪽 정렬 ----------
+   .table td.actions 의 display:flex 를 그대로 쓰면 그 칸만 표(table) 레이아웃에서
+   빠져나가 버려서, 이미지/설명 칸보다 셀 높이가 낮아지고 밑줄(border-bottom)이
+   행 전체 높이가 아니라 버튼 높이에 맞춰 짧게/삐뚤게 그려짐 -> table-cell로 되돌리고
+   버튼 간격은 flex gap 대신 margin으로 줌 */
+#bannerTable td.actions {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: left;
+  white-space: nowrap;
+}
+#bannerTable td.actions button { margin-right: 6px; }
+#bannerTable td.actions button:last-child { margin-right: 0; }
+#bannerTable th:nth-child(1), #bannerTable td:nth-child(1) { width:50px; } /* "순서" 칸 */
+#bannerTable th:nth-child(2), #bannerTable td:nth-child(2) { width:76px; } /* "이미지" 칸 */
+.banner-thumb { width:60px; height:34px; border-radius:4px; background:linear-gradient(150deg,var(--bg-3),var(--bg-2)); overflow:hidden; }
+.banner-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* 배너 추가/수정 모달 안, 이미지 업로드 미리보기 박스 */
+.banner-upload-box {
+  border:1px dashed var(--border); border-radius:8px; padding:16px; text-align:center;
+  color:var(--text-2); font-size:13px; background:var(--bg-2); cursor:pointer;
+  aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.banner-upload-box img { width:100%; height:100%; object-fit:cover; }

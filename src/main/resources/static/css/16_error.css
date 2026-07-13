@@ -1,0 +1,40 @@
+/* ==========================================================================
+   16_error.html (오류 화면 404 / 500) 전용 스타일
+   ?code=404 또는 ?code=500 쿼리 파라미터에 따라 JS가 문구/아이콘만 바꿔치기함
+   ========================================================================== */
+
+/* 화면 전체를 세로 가운데 정렬하는 래퍼 */
+.error-wrap {
+  min-height: calc(100vh - 41px); /* 41px는 상단 dev-pagebar 높이만큼 빼서 나머지 화면을 꽉 채움 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+.error-logo { margin-bottom: 32px; }
+.error-logo img { height: 32px; }
+
+/* 큼직하게 보여주는 "404" / "500" 숫자 */
+.error-code {
+  font-size: 96px;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+/* 숫자 위에 뜨는 이모지 아이콘 (🛰️ 404, 🛠️ 500) */
+.error-illust {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+/* 오류 설명 문구 */
+.error-msg {
+  font-size: 16px;
+  color: var(--text-1);
+  margin: 16px 0 32px;
+}

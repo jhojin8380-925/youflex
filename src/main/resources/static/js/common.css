@@ -1,0 +1,632 @@
+/* ==========================================================================
+   YouFlex 공통 스타일시트 (common.css)
+   모든 화면(HTML)에서 <link> 로 불러다 쓰는 공통 디자인 규칙 모음입니다.
+   각 화면 전용 스타일은 assets/css/화면이름.css 에 따로 있고,
+   이 파일에는 "여러 화면에서 같이 쓰는" 스타일만 모아둡니다.
+   ========================================================================== */
+
+/* ---------- 색상/공통 변수 ----------
+   사이트 전체에서 쓰는 색상, 둥근 모서리 값, 헤더 높이 등을
+   변수(--이름)로 미리 정의해둔 곳입니다.
+   여기 값만 바꾸면 사이트 전체 색상 톤을 한번에 바꿀 수 있습니다. */
+:root {
+  --bg-0: #0b0d10;       /* 가장 어두운 배경(페이지 바탕색) */
+  --bg-1: #14171c;       /* 카드/패널 배경 */
+  --bg-2: #1c2027;       /* 입력창, 버튼 등 한 단계 밝은 배경 */
+  --bg-3: #262b33;       /* 아바타, 썸네일 placeholder 등 */
+  --border: #2c313a;     /* 테두리 색 */
+  --text-0: #f5f6f7;     /* 가장 밝은 글자색 (제목 등) */
+  --text-1: #c7cbd1;     /* 본문 글자색 */
+  --text-2: #888f99;     /* 회색 보조 글자색 (날짜, 안내문 등) */
+  --accent: #e63946;     /* 포인트 색(빨강) - 버튼, 배지, 강조 텍스트 */
+  --accent-hover: #ff4b5c; /* accent 색 버튼에 마우스 올렸을 때 색 */
+  --gold: #f5c518;       /* 별점/포인트 관련 강조색 */
+  --success: #35c46b;    /* 성공/정답 표시 색 (초록) */
+  --danger: #e63946;     /* 경고/삭제/오류 표시 색 (빨강) */
+  --radius: 8px;         /* 사이트 전체 기본 둥근 모서리 값 */
+  --header-h: 64px;      /* 상단 헤더 높이 */
+}
+
+/* 브라우저마다 다른 기본 여백/스타일을 통일시키는 리셋(reset) 코드 */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-0);
+  color: var(--text-0);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }        /* 링크 밑줄/파란색 제거 */
+ul { list-style: none; margin: 0; padding: 0; }      /* 목록 점(•) 제거 */
+button { font-family: inherit; cursor: pointer; }    /* 버튼 글꼴 통일 + 마우스 커서 */
+img { max-width: 100%; display: block; }             /* 이미지가 부모 영역을 넘치지 않게 */
+
+/* 모든 페이지의 본문 영역을 가운데 정렬하고 최대 너비를 제한하는 공통 래퍼 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ==========================================================================
+   1. 상단 헤더 바 (로고 + 검색창 + 로그인/마이페이지/알림/채팅 버튼)
+   -> 로그인, 회원가입 화면을 제외한 거의 모든 화면 상단에 사용
+   ========================================================================== */
+.site-header {
+  position: sticky;   /* 스크롤해도 화면 위에 붙어있음 */
+  top: 0;
+  z-index: 100;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(11,13,16,0.95), rgba(11,13,16,0.8));
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(6px); /* 뒤에 있는 내용이 살짝 비쳐 보이는 유리 느낌 효과 */
+}
+
+.site-header .container {
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* 로고 | 검색창(가운데, 넓게) | 버튼 영역 */
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+/* 헤더 왼쪽의 YouFlex 로고 이미지 영역 */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  white-space: nowrap;
+}
+.logo img { height: 100%; width: auto; display: block; }
+
+/* 헤더 가운데의 통합 검색창 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  max-width: 480px;
+  width: 25rem;
+  margin: 0 auto;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-0);
+  font-size: 14px;
+}
+.search-bar input::placeholder { color: var(--text-2); }
+.search-bar .icon { color: var(--text-2); margin-right: 8px; }
+
+/* 헤더 오른쪽의 로그인/로그아웃/마이페이지 버튼 묶음 */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+/* 알림 종 모양, 채팅방 말풍선 모양의 동그란 아이콘 버튼 */
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  position: relative; /* 안에 있는 숫자 뱃지(.badge)를 오른쪽 위에 겹쳐 띄우기 위한 기준점 */
+}
+.icon-btn:hover { background: var(--bg-3); color: var(--text-0); }
+/* 아이콘 버튼 오른쪽 위에 떠 있는 빨간 숫자 알림 개수 뱃지 */
+.icon-btn .badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+/* ==========================================================================
+  2. 버튼 공통 스타일
+  -> 사이트 전체에서 쓰는 모든 버튼(등록, 취소, 로그인, 삭제 등)의 기본 모양
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-0);
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.15s;
+}
+.btn:hover { background: var(--bg-3); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; } /* 강조(주) 버튼 - 빨간색 */
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-ghost { background: transparent; }       /* 배경 없이 테두리만 있는 버튼 */
+.btn-sm { padding: 6px 12px; font-size: 12px; } /* 작은 크기 버튼 (표 안 버튼 등) */
+.btn-block { width: 100%; }                    /* 가로 폭 꽉 채우는 버튼 */
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; } /* 비활성화된 버튼 (흐리게 + 클릭 금지 커서) */
+/* 삭제/경고처럼 위험한 동작을 나타내는 빨간 톤 버튼 (경고처리, 배너 삭제 등) */
+.btn-danger { background:rgba(230,57,70,0.15); border-color:var(--danger); color:var(--danger); }
+.btn-danger:hover { background:rgba(230,57,70,0.28); }
+
+/* ==========================================================================
+  3. 장르/플랫폼 카테고리 네비게이션 바 (헤더 바로 아래, 전체/넷플릭스/티빙 등 메뉴)
+   ========================================================================== */
+.category-nav {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+.category-nav ul {
+  display: flex;
+  gap: 8px;
+  padding: 10px 0;
+  overflow-x: auto; /* 메뉴가 많아지면 좌우로 스크롤 가능하게 */
+}
+.category-nav a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.category-nav a:hover { background: var(--bg-2); color: var(--text-0); }
+.category-nav a.active { background: var(--accent); color: #fff; } /* 현재 선택된 카테고리 강조 */
+
+/* "인기 리뷰글", "공지사항" 같은 섹션 제목 + 오른쪽 "더보기" 링크 한 줄 */
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 40px 0 16px;
+}
+.section-title h2 { font-size: 20px; margin: 0; }
+.section-title .more { font-size: 13px; color: var(--text-2); }
+
+
+/* ==========================================================================
+  4. 게시글 카드 (그리드 형태) - 메인/목록 화면에서 리뷰 미리보기 카드
+   ========================================================================== */
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* 화면 너비에 맞춰 카드 개수 자동 조절 */
+  gap: 20px;
+}
+
+.post-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.post-card:hover { transform: translateY(-2px); border-color: var(--accent); } /* 마우스 올리면 살짝 떠오르는 효과 */
+.post-thumb {
+  aspect-ratio: 16/10; /* 썸네일 이미지 자리 비율 고정 */
+  background: linear-gradient(135deg, var(--bg-3), var(--bg-2));
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-2); font-size: 12px;
+}
+.post-card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.post-card-title { font-size: 15px; font-weight: 700; line-height: 1.35; }
+.post-card-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); }
+.post-card-stats { display: flex; gap: 10px; font-size: 12px; color: var(--text-2); }
+
+/* 게시글 목록(리스트) 형태 - 마이페이지 "내 글" 탭 등에서 사용하는 가로로 긴 한 줄짜리 카드 */
+.post-row-list { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.post-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto; /* 썸네일 | 제목/부제 | 날짜·조회수 */
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+.post-row:last-child { border-bottom: none; }
+.post-row:hover { background: var(--bg-2); }
+.post-row-thumb { width: 90px; height: 56px; border-radius: 4px; background: var(--bg-3); }
+.post-row-title { font-size: 14px; font-weight: 600; }
+.post-row-sub { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+.post-row-right { font-size: 12px; color: var(--text-2); text-align: right; }
+
+/* ==========================================================================
+   5. 오른쪽 아래 떠 있는 챗봇 버튼 (FAB, Floating Action Button)
+   ========================================================================== */
+.fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: none;
+  box-shadow: 0 6px 20px rgba(230,57,70,0.4);
+  z-index: 302; /* 채팅방/알림 패널보다 위에 보이도록 다른 오버레이보다 z-index를 높게 설정 */
+  transition: right 0.2s ease;
+}
+.fab:hover { background: var(--accent-hover); }
+
+/* 채팅방/알림 패널이 열려있는 동안에는 챗봇 FAB/팝업이 패널에 가려지지 않도록 왼쪽으로 비켜줌
+   (body 태그에 JS로 chatroom-open / notification-open 클래스를 붙였다 뗐다 하는 방식으로 동작) */
+body.chatroom-open #chatbotFab,
+body.notification-open #chatbotFab { right: 408px; }
+body.chatroom-open #chatbotPanel.slide-panel,
+body.notification-open #chatbotPanel.slide-panel { right: 408px; }
+
+/* ==========================================================================
+   6. 오버레이 패널 공통 껍데기 (챗봇 / 채팅방 / 알림이 모두 이 구조를 재사용함)
+   구조: 반투명 배경(.overlay-backdrop) + 오른쪽에서 슬라이드로 나타나는 패널(.slide-panel)
+   ========================================================================== */
+.overlay-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4); /* 패널 뒤 화면을 어둡게 눌러주는 반투명 배경 */
+  z-index: 300;
+  display: none;
+}
+.overlay-backdrop.open { display: block; } /* JS가 open 클래스를 붙이면 나타남 */
+
+.slide-panel {
+  position: fixed;
+  top: 0; right: 0;
+  height: 100%;
+  width: 380px;
+  max-width: 92vw;
+  background: var(--bg-1);
+  border-left: 1px solid var(--border);
+  z-index: 301;
+  transform: translateX(100%); /* 평소에는 화면 오른쪽 밖으로 숨겨둠 */
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+.slide-panel.open { transform: translateX(0); } /* open 되면 화면 안으로 슬라이드 */
+
+/* 챗봇은 채팅방과 달리 전체 슬라이드 패널이 아니라, FAB 버튼 바로 위에 뜨는 작은 팝업으로 표시 */
+#chatbotBackdrop.overlay-backdrop { background: transparent; pointer-events: none; } /* 챗봇은 배경을 안 어둡게, 클릭도 안 막음 */
+#chatbotPanel.slide-panel {
+  top: auto;
+  left: auto;
+  right: 28px;
+  bottom: 96px;
+  height: auto;
+  max-height: min(520px, 70vh);
+  width: 360px;
+  border-left: none;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  transform: translateY(16px) scale(0.96); /* 평소엔 살짝 작고 아래로 내려가 숨겨진 상태 */
+  transform-origin: bottom right;
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease, right 0.2s ease;
+  pointer-events: none;
+}
+#chatbotPanel.slide-panel.open {
+  transform: translateY(0) scale(1); /* 열리면 제자리로 커지면서 나타남 */
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 패널 맨 위, 제목 + 닫기(X) 버튼이 있는 줄 (알림/챗봇/채팅방 공통) */
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-header h3 { margin: 0; font-size: 16px; }
+.panel-close { background: none; border: none; color: var(--text-2); font-size: 20px; }
+.notification-clear-row { text-align: right; } /* 알림 패널 헤더 구분선 바로 아래, "모두 삭제" 버튼을 오른쪽 끝에 배치하는 줄 */
+.notification-clear-all { background: none; border: none; color: var(--text-2); font-size: 12px; cursor: pointer; } /* "모두 삭제" - UI만, 기능 미구현 */
+.notification-clear-all:hover { color: var(--text-0); }
+
+/* 채팅방 패널 안의 "목록 / 채팅 / 개설" 탭 버튼 줄 */
+.panel-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.panel-tabs button {
+  flex: 1; background: none; border: none; padding: 12px; color: var(--text-2);
+  font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent;
+}
+.panel-tabs button.active { color: var(--text-0); border-color: var(--accent); }
+
+/* 패널 안쪽 스크롤되는 본문 영역 (탭마다 이 클래스를 공유) */
+.panel-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* 채팅 탭을 열었을 때 맨 위에 뜨는 "현재 채팅방 이름 + 경고 부여 버튼" 줄 */
+.chatroom-title {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--text-0); flex-shrink: 0;
+}
+
+/* 실제 채팅 메시지들이 쌓이는 스크롤 영역 */
+.chatroom-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* 채팅 말풍선 스타일 (챗봇 대화, 채팅방 대화 공용) */
+.chat-msg { display: flex; gap: 8px; max-width: 85%; }
+.chat-msg .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-3); flex-shrink: 0; }
+.chat-msg .bubble { background: var(--bg-2); padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; }
+.chat-msg.me { align-self: flex-end; flex-direction: row-reverse; }        /* 내가 보낸 메시지는 오른쪽 정렬 */
+.chat-msg.me .bubble { background: var(--accent); color: #fff; }
+.chat-msg.system { align-self: center; font-size: 11px; color: var(--text-2); background: none; } /* "OOO님이 입장했습니다" 같은 시스템 안내 문구 */
+.chat-msg.system.warning { color: var(--danger); font-weight: 700; } /* 경고 부여 알림 문구는 빨간색으로 강조 */
+
+/* 패널 맨 아래, 메시지 입력창 + 전송 버튼 줄 (챗봇/채팅방 공용) */
+.panel-input-row {
+  display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.panel-input-row input {
+  flex: 1; background: var(--bg-2); border: 1px solid var(--border); border-radius: 999px;
+  padding: 10px 16px; color: var(--text-0); outline: none; font-size: 13px;
+}
+
+/* 챗봇 패널 안의 OTT 상식 퀴즈 영역 */
+.quiz-box { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.quiz-box .quiz-count { font-size: 12px; color: var(--gold); margin-bottom: 8px; }
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.quiz-options button { padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-3); color: var(--text-0); font-size: 13px; }
+.quiz-options button.correct { background: var(--success); border-color: var(--success); color: #04240f; } /* 정답 클릭 시 초록색 */
+.quiz-options button.wrong { background: var(--danger); border-color: var(--danger); }                     /* 오답 클릭 시 빨간색 */
+
+/* 채팅방 "목록" 탭에서 보여주는 개설된 채팅방 한 줄(방 이름 + 인원수 + 입장버튼) */
+.room-list-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.room-list-item .room-name { font-size: 14px; font-weight: 600; }
+.room-list-item .room-count { font-size: 12px; color: var(--text-2); }
+
+.participant-list { display: flex; flex-direction: column; gap: 6px; }
+.participant-list li { font-size: 12px; color: var(--text-1); padding: 4px 0; }
+
+/* 알림 패널 안에 뜨는 알림 한 줄 (경고/답변완료/댓글 알림 등) */
+.notification-item { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.notification-icon { font-size: 18px; flex-shrink: 0; }
+.notification-text { font-size: 13px; color: var(--text-1); line-height: 1.5; }
+.notification-time { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+.notification-delete {
+  margin-left: auto; flex-shrink: 0; align-self: flex-start;
+  width: 20px; height: 20px; border-radius: 50%; border: none; background: none;
+  color: var(--text-2); font-size: 12px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+} /* 알림 각 줄 오른쪽 끝의 개별 삭제(✕) 버튼 - UI만, 삭제 기능은 미구현 */
+.notification-delete:hover { background: var(--bg-2); color: var(--text-0); }
+
+/* ==========================================================================
+   8. 페이지 맨 아래 공통 푸터
+   ========================================================================== */
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+  padding: 32px 0;
+  color: var(--text-2);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   9. 회원 등급 뱃지 / 별점
+   -> 작성자 이름 옆에 붙는 "평론가", "관리자" 같은 등급 표시, 게시글 별점(★★★★☆)
+   ========================================================================== */
+.badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.badge-user { background: var(--bg-3); color: var(--text-1); }      /* 일반 회원(시청자) */
+.badge-critic { background: #3a2f6b; color: #c9b8ff; }              /* 평론가(고급회원) - 보라색 */
+.badge-admin { background: var(--accent); color: #fff; }            /* 관리자 - 빨간색 */
+.badge-best { background: var(--gold); color: #1a1400; }            /* 베스트 댓글 표시 - 골드색 */
+
+.stars { color: var(--gold); letter-spacing: 1px; font-size: 14px; } /* ★★★★☆ 별점 텍스트 색상 */
+
+/* ==========================================================================
+   10. 자주 쓰는 유틸리티 클래스 (레이아웃/여백을 매번 새로 안 만들고 재사용)
+   ========================================================================== */
+.flex { display: flex; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.gap-8 { gap: 8px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; }
+.mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; } .mt-40 { margin-top: 40px; }
+.text-muted { color: var(--text-2); } /* 흐린 회색 보조 텍스트 */
+.card {
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+} /* 카드형 박스(테두리+배경+둥근모서리+안쪽여백)가 필요할 때 붙이는 범용 클래스 */
+
+/* ==========================================================================
+   11. 로그인 / 회원가입 화면 전용 레이아웃
+   ========================================================================== */
+.auth-wrap { min-height: calc(100vh - 41px); display:flex; align-items:center; justify-content:center; padding:40px 20px; } /* 화면 정가운데에 로그인 카드 배치 */
+.auth-card { width:100%; max-width:380px; }
+.auth-logo { text-align:center; margin-bottom:24px; }
+.auth-logo img { height:36px; }
+.auth-footer { text-align:center; margin-top:20px; font-size:13px; color:var(--text-2); }
+.auth-footer a { color:var(--accent); font-weight:600; }
+
+/* ==========================================================================
+   12. 폼(입력 form) 공통 스타일
+   -> 로그인/회원가입/글쓰기/수정/마이페이지/관리자 등 입력폼이 있는 거의 모든 화면에서 사용
+   ========================================================================== */
+.form-row { margin-bottom:18px; }                                     /* 라벨+입력창 한 묶음의 아래 여백 */
+.form-row label { display:block; font-size:13px; color:var(--text-2); margin-bottom:6px; }
+.form-row input,
+.form-row select,
+.form-row textarea {
+  width:100%; background:var(--bg-2); border:1px solid var(--border); border-radius:6px;
+  padding:11px; color:#fff; font-size:14px; font-family:inherit;
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus { outline:none; border-color:var(--accent); } /* 입력 중일 때 테두리를 포인트 색으로 */
+.form-row textarea { resize:vertical; min-height:280px; line-height:1.6; } /* 본문 입력창은 세로로만 크기 조절 가능 */
+.row-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }     /* 카테고리/플랫폼처럼 두 입력을 나란히 배치할 때 */
+.hint-line { font-size:12px; color:var(--text-2); margin-top:6px; }   /* 입력창 아래 작은 안내 문구 */
+.upload-box {
+  border:1px dashed var(--border); border-radius:8px; padding:24px; text-align:center;
+  color:var(--text-2); font-size:13px; background:var(--bg-1);
+} /* 이미지 업로드 영역의 점선 테두리 박스 */
+
+/* ==========================================================================
+   13. 데이터 표(테이블) 공통 스타일
+   -> 마이페이지 포인트 내역, 관리자 회원목록/신고처리/배너 표 등에서 사용
+   ========================================================================== */
+.table { width:100%; border-collapse:collapse; margin-top:16px; }
+.table th, .table td { text-align:left; padding:12px; border-bottom:1px solid var(--border); font-size:13px; }
+.table th { color:var(--text-2); font-weight:600; }
+
+/* ==========================================================================
+   14. 확인창(target-chip, btn-row) + 신고/경고/Q&A 답변 모달 공용 껍데기
+   -> 게시글 신고, 관리자 경고처리/Q&A답변/배너추가 모달 등에서 재사용
+   ========================================================================== */
+.target-chip { font-size:12px; color:var(--text-2); background:var(--bg-2); border:1px solid var(--border); border-radius:6px; padding:8px 10px; margin-bottom:16px; } /* "신고 대상: 게시글" 같은 안내용 알약 모양 chip */
+.btn-row { display:flex; gap:8px; margin-top:20px; } /* 모달 하단의 취소/확인 버튼 줄 */
+
+.report-modal-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:400;
+  display:none; align-items:center; justify-content:center; padding:20px;
+} /* 모달 뒤 화면을 어둡게 눌러주는 반투명 배경 */
+.report-modal-backdrop.open { display:flex; }
+.report-modal { background:var(--bg-1); border:1px solid var(--border); border-radius:8px; padding:24px; max-width:92vw; } /* 모달 카드 본체 (가운데 정렬은 backdrop이 flex로 처리) */
+.report-modal h2, .report-modal h3 { margin:0 0 16px; font-size:16px; }
+
+/* ==========================================================================
+   15. 공지사항 / Q&A 상세 화면 공용 레이아웃
+   -> 공지 상세/수정, Q&A 상세/작성/수정 화면에서 공통으로 사용하는 카드형 본문 박스
+   ========================================================================== */
+.notice-detail-wrap {
+  max-width: 780px; margin: 32px auto;
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px;
+}
+.notice-detail-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; } /* 제목 + 수정/삭제 버튼을 한 줄에 배치 */
+.notice-detail-title { font-size: 20px; font-weight: 800; margin: 0 0 16px; }
+.notice-detail-meta { font-size: 13px; color: var(--text-2); line-height: 1.9; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; } /* 작성자/등록일/조회수 안내 영역 */
+.notice-detail-body { line-height: 1.8; color: var(--text-1); font-size: 14px; white-space: pre-line; margin-bottom: 28px; } /* white-space: pre-line -> 줄바꿈 문자를 그대로 살려서 보여줌 */
+
+/* ==========================================================================
+   16. 관심 장르(취향) 선택 모달
+   -> 회원가입 완료 직후, 마이페이지 "취향 선택" 버튼에서 공용으로 사용
+   ========================================================================== */
+.genre-modal-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:400;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.genre-modal-backdrop.open { display:flex; }
+.genre-modal-card {
+  background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+  padding:32px; width:100%; max-width:420px; max-height:88vh; overflow-y:auto; text-align:center;
+}
+.genre-title { font-size:20px; margin:0 0 6px; }
+.genre-sub { font-size:12px; color:var(--text-2); margin:0 0 20px; }
+.genre-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; text-align:left; } /* 장르 칩들을 3열 격자로 배치 */
+.genre-chip {
+  display:flex; align-items:center; justify-content:space-between; gap:6px;
+  padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+  background:var(--bg-2); color:var(--text-1); font-size:13px; font-weight:600;
+} /* 클릭해서 선택/해제하는 장르 버튼 하나 (예: "액션") */
+.genre-chip .chip-check {
+  width:18px; height:18px; border-radius:50%; flex-shrink:0;
+  border:1px solid var(--border); background:var(--bg-3);
+  display:flex; align-items:center; justify-content:center; font-size:11px; color:transparent;
+} /* 칩 오른쪽의 동그란 체크 표시 - 선택 안 됐을 땐 글자색이 투명이라 안 보임 */
+.genre-chip.selected { border-color:var(--accent); color:var(--text-0); }                                  /* 선택된 칩은 테두리를 포인트 색으로 */
+.genre-chip.selected .chip-check { border-color:var(--accent); background:var(--accent); color:#fff; }      /* 선택된 칩의 체크 표시는 흰색 글자로 보이게 */
+
+/* ==========================================================================
+   17. 개발용 상단 페이지 이동 바 (dev-pagebar)
+   -> 실제 서비스에는 없는, 와이어프레임 화면들 사이를 빠르게 옮겨다니기 위한 개발 전용 메뉴
+      (모든 화면 맨 위에 공통으로 붙어있고, "데모 등급" 셀렉트 박스도 여기 포함)
+   ========================================================================== */
+.dev-pagebar {
+  background: #000;
+  border-bottom: 1px solid #333;
+  font-size: 12px;
+  padding: 8px 24px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.dev-pagebar a { color: #888; }
+.dev-pagebar a.current { color: var(--accent); font-weight: 700; } /* 지금 보고 있는 화면의 링크만 강조 표시 */
+.dev-pagebar a:hover { color: #fff; }
+
+/* ---------- 공통 푸터 (로고+소개 / 사업자정보 / 저작권+약관링크 / 맨위로) ---------- */
+.main-footer { text-align: left; padding: 40px 0; }
+.main-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+.main-footer-brand { flex-shrink: 0; }
+.main-footer-brand .logo img { height: 28px; }
+.main-footer-brand p { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-2); }
+.main-footer-info { font-size: 13px; line-height: 2; color: var(--text-2); }
+.main-footer-meta { flex-shrink: 0; text-align: right; font-size: 13px; line-height: 2; color: var(--text-2); }
+.main-footer-links a { color: var(--text-2); }
+.main-footer-links a:hover { color: var(--text-1); }
+.main-footer-top {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-1);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.main-footer-top:hover { background: var(--bg-3); }
+/* ----------  공통 페이지네이션 -나영- ---------- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+}
+.page-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.page-btn.prev, .page-btn.next { font-weight: 400; color: var(--text-2); }

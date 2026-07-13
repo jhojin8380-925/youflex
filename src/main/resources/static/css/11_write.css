@@ -1,0 +1,163 @@
+/* ==========================================================================
+   11_write.html (리뷰 글쓰기 화면) 전용 스타일
+   왼쪽 큰 작성 폼 + 오른쪽 임시저장 목록 사이드바, 2단 그리드 레이아웃
+   ========================================================================== */
+
+.write-page-grid { display:grid; grid-template-columns:1fr 280px; gap:24px; align-items:start; max-width:1060px; margin:32px auto; } /* 왼쪽 작성폼 | 오른쪽 임시저장 사이드바 */
+.write-wrap { max-width: none; margin: 0; } /* common.css .notice-detail-wrap류와 달리 폭 제한 없이 그리드 칸을 꽉 채움 */
+/* '장르'버튼 넣을 박스 추가(웅조) */
+.review-genre-box{
+  display: flex;
+}
+/* "♡ 취향 선택" 알약 버튼 수정(웅조)*/
+.review-genre-box{
+  align-items: center;
+  justify-content: center;
+}
+.review-genre-box >button{
+  align-items: center;
+  justify-content: center;
+}
+.taste-btn {
+  display:inline-flex; align-items:center; gap:6px; background:var(--bg-3); border:1px solid var(--border);
+  border-radius:999px; padding:5px 14px; font-size:12px; font-weight:600; color:var(--text-1);
+  margin-left:auto; width: 120px; height: 40px;
+}
+.taste-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* 대표 이미지 영역 수정 완료 */
+.upload-box {
+   display: flex;
+   padding: 0;
+
+  /* 이미지가 꽉 차게 이미지를 감싸는 부모 요소의 여백 및 테두리 설정 (필요시) */
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden; /* 이미지가 부모의 둥근 모서리를 벗어나지 않게 함 */
+  width: 100%;
+}
+
+.upload-box img {
+  display: block;      /* 인라인 블록 속성을 제거하여 하단 여백 해결 (핵심) */
+  width: 100%;         /* 부모 요소의 너비에 맞춤 */
+  height: auto;        /* 비율 유지 */
+  object-fit: cover;   /* 이미지가 비율을 유지하며 부모 영역을 꽉 채우도록 함 (잘림 방지) */
+}
+
+
+/* ---------- 오른쪽 "임시저장 목록" 사이드바 ---------- */
+.draft-sidebar { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:sticky; top:20px; } /* 스크롤해도 화면에 붙어있게 sticky */
+.draft-sidebar h3 { font-size:15px; margin:0 0 14px; }
+.draft-item { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; margin-bottom:10px; } /* 임시저장 글 하나(제목+시간 | 불러오기/삭제 버튼) */
+.draft-item:hover { border-color:var(--accent); }
+.draft-info { min-width:0; flex:1; }
+.draft-item .draft-title { font-size:13px; font-weight:700; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } /* 제목이 길면 "..."으로 줄여서 표시 */
+.draft-item .draft-time { font-size:11px; color:var(--text-2); white-space:nowrap; }
+.draft-actions { display:flex; gap:4px; flex-shrink:0; }
+.draft-actions button { padding:5px 8px; font-size:11px; white-space:nowrap; } /* "불러오기"/"삭제" 작은 버튼 */
+
+/* ---------- 작성폼 하단, "임시저장 / 등록" 버튼이 있는 툴바 ---------- */
+.write-toolbar { display:flex; justify-content:space-between; align-items:center; margin-top:24px; }
+.autosave-hint { font-size:12px; color:var(--text-2); }         /* "임시저장된 내용 없음" / "임시저장됨 (HH:MM)" 안내 문구 */
+.autosave-hint.saved { color:var(--success); }                  /* 저장 성공하면 초록색으로 강조 */
+
+
+
+/* [애니메이션 최적화] 
+  0%에서 200%까지 부드럽게 수평 이동하도록 세팅하여 
+  색상 간의 경계가 완전히 밀려나며 완벽한 무한 루프를 완성합니다.
+*/
+@keyframes shine-left-to-right {
+  0% { background-position: 200% center; }
+  100% { background-position: 0% center; }
+}
+
+/* 별점(웅조) */
+.form-group{
+  padding-bottom: 20px;
+}
+
+/* ── 별점 ── */
+/* .stars { color: #f39c12; font-size: 1.1rem; letter-spacing: 2px; }
+.stars-sm { color: #f39c12; font-size: 0.9rem; }
+.rating-input { display: flex; gap: 6px; }
+.rating-input span {
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.1s;
+}
+.rating-input span.active { color: #f39c12; } */
+.rating-input {
+  display: flex;
+  gap: 2px;
+}
+
+/* 별 하나를 감싸는 상자 */
+.star-box {
+  position: relative;
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  color: #444; /* 기본 빈 별 색상 */
+  cursor: pointer;
+  line-height: 1; /* 1 또는 1.2, normal 등으로 조절 */
+}
+
+/* 반 쪼개지는 별들의 공통 스타일 */
+.star-box .half {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: auto; /* 마우스 이벤트 감지 */
+}
+
+/* 왼쪽 반 칸 설정 */
+.star-box .half.left {
+  width: 50%;
+  z-index: 2;
+}
+
+/* 오른쪽 반 칸 설정 (글자가 전체 다 보이지만 left 영역 뒤로 숨음) */
+.star-box .half.right {
+  z-index: 1;
+}
+
+/* 활성화(노란색) 상태 스타일 */
+.star-box .half.active {
+  color: #f39c12;
+}
+
+/* ---------- 별점 폭죽 효과 파티클 CSS ---------- */
+.star-particle {
+  position: fixed; /* 뷰포트 기준 절대 좌표 배치를 위함 */
+  pointer-events: none; /* 마우스 이벤트를 방해하지 않음 */
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  z-index: 9999;
+  animation: explodeParticle 0.6s ease-out forwards;
+}
+
+@keyframes explodeParticle {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    /* 자바스크립트에서 설정한 커스텀 프로퍼티(--tx, --ty) 방향으로 퍼짐 */
+    transform: translate(var(--tx), var(--ty)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* 대표이미지 수정(웅조) */
+.wrap-representative-img > input{
+  width: 27%;
+  background-color: rgba(11,13,16,0.95);
+  border: none;
+  padding: 0px;
+}
