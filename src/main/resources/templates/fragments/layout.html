@@ -7,31 +7,26 @@
 	  공통 헤더바  
 	  ==================================
 	  -->
-	<!-- 
-	  ==================================
-	  비회원(구경꾼) 헤더바
-	  ==================================
-	  -->
-	<header class="site-header" th:if="${}">
+	<header class="site-header" th:fragment="header">
 	  <div class="container">
-	    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
-	    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
-	    <div class="header-actions">
+	    <a th:href="@{/}" class="logo"><img th:src="@{/img/logo.png}" alt="YouFlex" /></a>
+	    <div class="search-bar">
+			<span class="icon">🔍</span>
+			<input type="text" placeholder="콘텐츠, 게시글 통합 검색" />
+		</div>
+		
+		<!-- 비 로그인 시(비회원) -->
+	    <div class="header-actions" th:if="${session.loginMember == null}">
 	      <a href="02_login.html" class="btn btn-ghost">로그인</a>
 	    </div>
-	  </div>
-	</header>
 
-	<!-- 
-	  ==================================
-	  회원(시청자이상) 헤더바 
-	  ==================================
-	  -->
-	<header class="site-header">
-	  <div class="container">
-	    <a href="./01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
-	    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
-	    <div class="header-actions">
+		<!-- 로그인 시(회원) -->
+	    <div class="header-actions" th:unless="${session.loginMember == null}">
+		  <!-- 관리자만 뜸 -->
+		  <a th:href="@{./admin}"
+			th:if="${session.loginMember.memberRole == 'ADMIN'}"
+		  	class="btn btn-ghost" 
+			style="color:var(--danger)">⚙ 관리자 페이지</a>
 	      <a href="./14_mypage.html" class="btn btn-ghost">마이페이지</a>
 	      <a href="./01_main.html" class="btn btn-ghost">로그아웃</a>
 	      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
@@ -40,25 +35,6 @@
 	  </div>
 	</header>
 
-	<!-- 
-	  ==================================
-	  관리자 헤더바
-	  ==================================
-	  -->
-	<!-- <header class="site-header">
-	  <div class="container">
-	    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
-	    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
-	    <div class="header-actions">
-	      <a href="02_login.html" class="btn btn-ghost">로그인</a>
-	      <a href="15_admin.html" class="btn btn-ghost" style="color:var(--danger)">⚙ 관리자 페이지</a>
-	      <a href="14_mypage.html" class="btn btn-ghost">마이페이지</a>
-	      <a href="./01_main.html" class="btn btn-ghost">로그아웃</a>
-	      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
-	      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
-	    </div>
-	  </div>
-	</header> -->
 	
 	<!-- 
   ==================================
