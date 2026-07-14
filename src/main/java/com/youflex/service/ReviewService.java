@@ -49,4 +49,7 @@ public class ReviewService {
 	public void update(ReviewDTO reviewDTO) {
 		reviewMapper.update(reviewDTO);
 	}
+	
+//	5) 게시글 삭제
+	
 }
