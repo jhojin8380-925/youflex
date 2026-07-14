@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouFlex - 공지사항 상세</title>
+<link rel="stylesheet" th:href="@{/assets/css/common.css}" />
+<link rel="stylesheet" th:href="@{/assets/css/06_notice_detail.css}" />
+</head>
+<body data-nav-current="notice">
+
+<header><!-- 목록과 동일, 생략 --></header>
+<nav class="category-nav"><!-- 동일, 생략 --></nav>
+
+<main class="container">
+  <div class="notice-detail-wrap">
+    <div class="notice-detail-title-row">
+      <h1 class="notice-detail-title" th:text="${notice.noticeTitle}">제목</h1>
+      <!-- 관리자만 수정/삭제 버튼 노출 -->
+      <div class="owner-actions" style="display:flex;gap:8px;flex-shrink:0" sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/notice/{id}/edit(id=${notice.noticeId})}" class="btn btn-sm">수정</a>
+        <button class="btn btn-sm" style="border-color:var(--danger);color:var(--danger)"
+                th:onclick="|deleteNotice(${notice.noticeId})|">삭제</button>
+      </div>
+    </div>
+    <div class="notice-detail-meta">
+      등록일: <span th:text="${#temporals.format(notice.noticeCreatedAt, 'yyyy-MM-dd HH:mm')}">2026-06-25 10:15</span><br />
+      작성자: 관리자<br />
+      조회수: <span th:text="${notice.noticeHit}">1.5K</span>
+    </div>
+    <div class="notice-detail-body" th:text="${notice.noticeContent}">본문</div>
+    <a th:href="@{/notice}" class="btn btn-primary">목록으로 (To List)</a>
+  </div>
+</main>
+
+<!-- 패널들 동일, 생략 -->
+
+<script th:src="@{/assets/js/app.js}"></script>
+<script>
+  function deleteNotice(id) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    fetch(`/api/notice/${id}`, { method: 'DELETE' })
+      .then(res => { if (res.ok) location.href = '/notice'; });
+  }
+</script>
+</body>
+</html>

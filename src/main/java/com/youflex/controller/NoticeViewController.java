@@ -25,9 +25,10 @@ public class NoticeViewController {
     }
 
     @GetMapping("/{noticeId}")
-    public String noticeDetail(@PathVariable int noticeId, Model model) {
+    public String noticeDetail(@PathVariable("noticeId") int noticeId, Model model) {
         NoticeDTO notice = noticeService.getNoticeDetail(noticeId);
         model.addAttribute("notice", notice);
-        return "/notice/notice_detail";
+        return "/notice/detail";
+
     }
 }
