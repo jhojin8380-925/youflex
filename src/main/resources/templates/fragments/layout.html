@@ -17,11 +17,7 @@
 		
 		<!-- 비 로그인 시(비회원) -->
 	    <div class="header-actions" th:if="${session.loginMember == null}">
-<<<<<<< HEAD
 	      <a th:href="@{login.html}" class="btn btn-ghost">로그인</a>
-=======
-	      <a href="02_login.html" class="btn btn-ghost">로그인</a>
->>>>>>> main
 	    </div>
 
 		<!-- 로그인 시(회원) -->
@@ -36,10 +32,6 @@
 	      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
 	      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
 	    </div>
-<<<<<<< HEAD
-
-=======
->>>>>>> main
 	  </div>
 	</header>
 
@@ -49,7 +41,6 @@
   공통 네비게이션 바 -- 호진
   ==================================
   -->
-<<<<<<< HEAD
 <nav class="category-nav" th:fragment="nav">
   <div class="container">
     <ul>
@@ -60,24 +51,11 @@
       <li><a th:href="@{#}" data-nav="etc">기타</a></li>
       <li style="margin-left:auto"><a th:href="@{#}" data-nav="notice">공지사항</a></li>
       <li><a th:href="@{#}" data-nav="qna">Q&A</a></li>
-=======
-<nav class="category-nav">
-  <div class="container">
-    <ul>
-      <li><a href="04_list.html?cat=all" data-nav="all">전체</a></li>
-      <li><a href="04_list.html?cat=netflix" data-nav="netflix">넷플릭스</a></li>
-      <li><a href="04_list.html?cat=tving" data-nav="tving">티빙</a></li>
-      <li><a href="04_list.html?cat=disney" data-nav="disney">디즈니플러스</a></li>
-      <li><a href="04_list.html?cat=etc" data-nav="etc">기타</a></li>
-      <li style="margin-left:auto"><a href="05_notice.html" data-nav="notice">공지사항</a></li>
-      <li><a href="05_notice.html#qna" data-nav="qna">Q&A</a></li>
->>>>>>> main
     </ul>
   </div>
 </nav>
 
 <!-- 
-<<<<<<< HEAD
   ==================================
   푸터 영역 
   ==================================
@@ -113,8 +91,6 @@
     </footer>
 
 <!-- 
-=======
->>>>>>> main
   ================================
   오버레이 영역
   ================================
@@ -201,14 +177,7 @@
   <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
     <div class="chatroom-title">
       <span>💬 오늘 개봉작 실시간 토크</span>
-<<<<<<< HEAD
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm btn-danger" data-role-visible="critic,admin" onclick="giveChatWarning()">⚠ 경고 부여</button>
-        <button class="btn btn-sm btn-ghost" onclick="confirmRoomLeave()">🚪 나가기</button>
-      </div>
-=======
       <button class="btn btn-sm btn-danger" data-role-visible="critic,admin" onclick="giveChatWarning()">⚠ 경고 부여</button>
->>>>>>> main
     </div>
     <div class="chatroom-messages" id="chatroomMessages">
       <div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
