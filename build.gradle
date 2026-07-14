@@ -38,3 +38,10 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// @RequestParam 등에 이름을 명시하지 않아도 Spring이 리플렉션으로 파라미터명을
+// 읽어올 수 있게 컴파일 시 파라미터명을 바이트코드에 남김. 이게 없으면
+// "Name for argument of type [...] not specified" 에러가 남.
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs << '-parameters'
+}

@@ -25,7 +25,7 @@
 	    <div class="header-actions" th:unless="${session.loginMember == null}">
 		  <!-- 관리자만 뜸 -->
 		  <a th:href="@{./admin}"
-			th:if="${session.loginMember.memberRole == 'ADMIN'}"
+			th:if="${session.loginMember.memberGrade == '관리자'}"
 		  	class="btn btn-ghost" 
 			style="color:var(--danger)">⚙ 관리자 페이지</a>
 	      <a href="./14_mypage.html" class="btn btn-ghost">마이페이지</a>

@@ -305,9 +305,11 @@ function initChatroomChat() {
   }
 }
 
-// ---- 취향/장르 선택 칩 (회원가입 / 마이페이지 공용) ----
+// ---- 취향/장르 선택 칩 (마이페이지 등 공용. 회원가입 취향 선택(#genreGrid)은
+//      최대 3개 제한이 있어서 join.js에서 별도로 처리하므로 여기서는 제외) ----
 function initGenreChips() {
   document.querySelectorAll(".genre-chip").forEach((chip) => {
+    if (chip.closest("#genreGrid")) return;
     chip.addEventListener("click", () => chip.classList.toggle("selected"));
   });
 }

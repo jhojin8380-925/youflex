@@ -34,7 +34,7 @@ public class NoticeController {
 
     // 공지사항 상세 조회
     @GetMapping("/{noticeId}")
-    public ResponseEntity<NoticeDTO> getNoticeDetail(@PathVariable int noticeId) {
+    public ResponseEntity<NoticeDTO> getNoticeDetail(@PathVariable("noticeId") int noticeId) {
         NoticeDTO notice = noticeService.getNoticeDetail(noticeId);
         return ResponseEntity.ok(notice);
     }
@@ -49,7 +49,7 @@ public class NoticeController {
 
     // 공지사항 수정 (관리자 전용)
     @PutMapping("/{noticeId}")
-    public ResponseEntity<Void> updateNotice(@PathVariable int noticeId,
+    public ResponseEntity<Void> updateNotice(@PathVariable("noticeId") int noticeId,
                                               @RequestBody NoticeDTO noticeDTO) {
         // TODO: 관리자 권한 체크 필요
         noticeDTO.setNoticeId(noticeId);
@@ -59,7 +59,7 @@ public class NoticeController {
 
     // 공지사항 삭제 (관리자 전용)
     @DeleteMapping("/{noticeId}")
-    public ResponseEntity<Void> deleteNotice(@PathVariable int noticeId) {
+    public ResponseEntity<Void> deleteNotice(@PathVariable("noticeId") int noticeId) {
         // TODO: 관리자 권한 체크 필요
         noticeService.deleteNotice(noticeId);
         return ResponseEntity.noContent().build();
