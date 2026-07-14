@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.NoticeMapper">
+
+    <resultMap id="noticeResultMap" type="com.youflex.dto.NoticeDTO">
+        <id property="noticeId" column="notice_id" />
+        <result property="noticeTitle" column="notice_title" />
+        <result property="noticeContent" column="notice_content" />
+        <result property="noticeHit" column="notice_hit" />
+        <result property="noticeCreatedAt" column="notice_created_at" />
+        <result property="noticeUpdatedAt" column="notice_updated_at" />
+    </resultMap>
+
+    <select id="selectNoticeList" resultMap="noticeResultMap">
+        SELECT notice_id, notice_title, notice_content, notice_hit,
+               notice_created_at, notice_updated_at
+        FROM notice
+        ORDER BY notice_created_at DESC
+    </select>
+
+    <select id="selectNoticeById" parameterType="int" resultMap="noticeResultMap">
+        SELECT notice_id, notice_title, notice_content, notice_hit,
+               notice_created_at, notice_updated_at
+        FROM notice
+        WHERE notice_id = #{noticeId}
+    </select>
+
+    <update id="increaseNoticeHit" parameterType="int">
+        UPDATE notice
+        SET notice_hit = notice_hit + 1
+        WHERE notice_id = #{noticeId}
+    </update>
+
+    <insert id="insertNotice" parameterType="com.youflex.dto.NoticeDTO" useGeneratedKeys="true" keyProperty="noticeId">
+        INSERT INTO notice (notice_title, notice_content, notice_hit, notice_created_at, notice_updated_at)
+        VALUES (#{noticeTitle}, #{noticeContent}, 0, NOW(), NOW())
+    </insert>
+
+    <update id="updateNotice" parameterType="com.youflex.dto.NoticeDTO">
+        UPDATE notice
+        SET notice_title = #{noticeTitle},
+            notice_content = #{noticeContent},
+            notice_updated_at = NOW()
+        WHERE notice_id = #{noticeId}
+    </update>
+
+    <delete id="deleteNotice" parameterType="int">
+        DELETE FROM notice
+        WHERE notice_id = #{noticeId}
+    </delete>
+
+</mapper>

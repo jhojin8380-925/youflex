@@ -1,0 +1,14 @@
+/* ==========================================================================
+   09_qna_write.html (질문 작성 화면) 전용 스타일
+   본문 레이아웃(.notice-detail-wrap, .form-row 등)은 common.css 공용 스타일 사용
+   ========================================================================== */
+
+.notice-detail-title { margin: 0 0 20px; }
+
+/* ---------- "공개 / 비공개" 라디오 버튼 줄 ---------- */
+.visibility-options { display:flex; gap:16px; }
+.visibility-option { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:400; color:var(--text-1); cursor:pointer; margin-bottom:0; }
+.visibility-option input { width:auto; accent-color:var(--accent); } /* common.css의 .form-row input이 width:100%를 강제하므로, 라디오 버튼만 원래 크기로 되돌림 */
+
+/* 하단 "취소 / 등록" 버튼 줄 */
+.edit-toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
