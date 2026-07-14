@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.youflex.dto.ReviewDTO;
-import com.youflex.mapper.BookmarkMapper;
 import com.youflex.mapper.CommentMapper;
 import com.youflex.mapper.ReviewDraftMapper;
 import com.youflex.mapper.ReviewLikeMapper;
@@ -21,7 +20,6 @@ public class ReviewService {
 	private final CommentMapper commentMapper;
 	// 좋아요, 북마크, 신고, 게시글 입시저장
 	private final ReviewLikeMapper reviewLikeMapper;
-	private final BookmarkMapper bookmarkMapper;
 	private final ReviewReportMapper reviewReportMapper;
 	private final ReviewDraftMapper reviewDraftMapper;
 	

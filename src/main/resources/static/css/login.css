@@ -5,6 +5,10 @@
 .form-row { margin-bottom:14px; } /* 이 화면은 입력칸이 2개(아이디/비밀번호)뿐이라 여백을 공통값보다 살짝 좁게 */
 .remember-row { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-2); margin:14px 0 20px; } /* "아이디 저장" 체크박스 줄 */
 
+/* 로그인 실패 메시지 (join.css의 id-status 스타일과 동일하게 맞춤) */
+.id-status { font-size:12px; margin-top:6px; }
+.id-status.no { color:var(--danger); }
+
 /* ---------- 로그인 버튼과 소셜 로그인 버튼 사이의 "또는" 구분선 ---------- */
 .auth-divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--text-2); font-size:12px; }
 .auth-divider::before, .auth-divider::after { content:""; flex:1; height:1px; background:var(--border); } /* 글자 양옆으로 선을 그어주는 부분 */
