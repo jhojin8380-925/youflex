@@ -33,9 +33,7 @@
           id="signupForm"
           th:action="@{/join}"
           method="post"
-          onsubmit="
-            event.preventDefault();
-            openGenreModal();">
+        >
           <div class="form-row">
             <label>아이디</label>
             <div class="id-check-row">
@@ -63,12 +61,7 @@
               required
             />
             <ul class="pw-rules" id="pwRules">
-              <li id="rule-len"><span class="mark">○</span> 8자 이상</li>
-              <li id="rule-letter"><span class="mark">○</span> 영문 포함</li>
-              <li id="rule-digit"><span class="mark">○</span> 숫자 포함</li>
-              <li id="rule-special">
-                <span class="mark">○</span> 특수문자 포함
-              </li>
+              <li id="rule-len"><span class="mark">○</span> 4자 이상</li>
             </ul>
           </div>
 
@@ -137,11 +130,13 @@
       </div>
     </main>
 
-    <!-- 
+    <!--
       ================================
-      회원가입 완료 직후: 관심 장르 선택 
+      회원가입 완료 직후: 관심 장르 선택
       ================================
-      - 백 엔드 설명 - DB 에 장르 카테고리에 값 넣고 th:each 로 뽑아와서 표시
+      genre_category 테이블 값을 MemberController가 model로 내려준 ${genres}로 뿌림.
+      선택한 칩의 data-genre-id를 join.js가 모아서 hidden input(genreCategoryIds)으로
+      제출 폼에 추가함(최대 3개, join.js에서 제한). 실제 저장은 preference_mapping 테이블.
       -->
     <div class="genre-modal-backdrop" id="genreModalBackdrop">
       <div class="genre-modal-card">
@@ -149,61 +144,12 @@
           <img th:src="@{/img/logo.png}" alt="YouFlex" />
         </div>
         <h2 class="genre-title">카테고리 선택</h2>
-        <p class="genre-sub">관심 있는 장르를 선택해주세요 (복수 선택 가능)</p>
+        <p class="genre-sub">관심 있는 장르를 선택해주세요 (최대 3개)</p>
         <div class="genre-grid" id="genreGrid">
-          <button type="button" class="genre-chip" data-genre="액션">
-            <span>액션</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="모험">
-            <span>모험</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="애니메이션">
-            <span>애니메이션</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="코미디">
-            <span>코미디</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="범죄">
-            <span>범죄</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="다큐멘터리">
-            <span>다큐멘터리</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="드라마">
-            <span>드라마</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="가족">
-            <span>가족</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="판타지">
-            <span>판타지</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="역사">
-            <span>역사</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="공포">
-            <span>공포</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="뮤지컬">
-            <span>뮤지컬</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="미스터리">
-            <span>미스터리</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="로맨스">
-            <span>로맨스</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="SF">
-            <span>SF</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="스릴러">
-            <span>스릴러</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="서부극">
-            <span>서부극</span> <span class="chip-check">✓</span>
-          </button>
-          <button type="button" class="genre-chip" data-genre="예능">
-            <span>예능</span> <span class="chip-check">✓</span>
+          <button type="button" class="genre-chip"
+                  th:each="genre : ${genres}"
+                  th:attr="data-genre-id=${genre.genreCategoryId}">
+            <span th:text="${genre.genreCategoryName}"></span> <span class="chip-check">✓</span>
           </button>
         </div>
         <button

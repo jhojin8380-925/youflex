@@ -6,20 +6,19 @@
 <!-- namespace를 com.youflex.mapper.MemberMapper로 수정(기존 값은 오타로 인터페이스와 불일치) -->
 <mapper namespace="com.youflex.mapper.MemberMapper">
 
-    <!-- 로그인 시 아이디/비번 검증, 회원가입 시 아이디 중복확인에 재사용.
-         member 테이블명은 실제 DB와 다르면 여기만 고치면 됨. -->
+    <!-- 로그인 시 아이디/비번 검증, 회원가입 시 아이디 중복확인에 재사용. -->
     <select id="findByLoginId" parameterType="string" resultType="com.youflex.dto.MemberDTO">
         SELECT *
         FROM member
         WHERE member_loginid = #{memberLoginid}
     </select>
 
-    <!-- 회원가입 시 필요한 컬럼만 저장. member_grade/point 등은 DB 기본값에 맡김.
-         member_role은 서비스단(MemberService.join)에서 'USER'로 강제 설정한 값이 들어옴
-         (사용자가 폼에 role을 끼워넣어 관리자로 자가 승격하는 것을 막기 위함). -->
+    <!-- 회원가입 시 필요한 컬럼만 저장. point 등 나머지는 DB 기본값에 맡김.
+         member_grade는 서비스단(MemberService.join)에서 '일반'으로 강제 설정한 값이 들어옴
+         (사용자가 폼에 등급을 끼워넣어 관리자로 자가 승격하는 것을 막기 위함). -->
     <insert id="insertMember" parameterType="com.youflex.dto.MemberDTO" useGeneratedKeys="true" keyProperty="memberId">
-        INSERT INTO member (member_loginid, member_pwd, member_name, member_email, member_phone, member_role)
-        VALUES (#{memberLoginid}, #{memberPwd}, #{memberName}, #{memberEmail}, #{memberPhone}, #{memberRole})
+        INSERT INTO member (member_loginid, member_pwd, member_name, member_email, member_phone, member_grade)
+        VALUES (#{memberLoginid}, #{memberPwd}, #{memberName}, #{memberEmail}, #{memberPhone}, #{memberGrade})
     </insert>
 
 </mapper>

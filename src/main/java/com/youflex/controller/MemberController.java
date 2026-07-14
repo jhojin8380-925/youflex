@@ -1,5 +1,6 @@
 package com.youflex.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CookieValue;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
 import com.youflex.dto.MemberDTO;
+import com.youflex.service.GenreCategoryService;
 import com.youflex.service.MemberService;
 
 import jakarta.servlet.http.Cookie;
@@ -26,6 +28,7 @@ public class MemberController {
     private static final int REMEMBER_ID_MAX_AGE = 60 * 60 * 24 * 30; // 30일
 
     private final MemberService memberService;
+    private final GenreCategoryService genreCategoryService;
 
     // 로그인 폼 진입 시 rememberedId 쿠키가 있으면 아이디 입력창에 미리 채워줌
     @GetMapping("/login")
@@ -36,9 +39,9 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String memberLoginid,
-                         @RequestParam String memberPwd,
-                         @RequestParam(required = false) String rememberId,
+    public String login(@RequestParam("memberLoginid") String memberLoginid,
+                         @RequestParam("memberPwd") String memberPwd,
+                         @RequestParam(value = "rememberId", required = false) String rememberId,
                          HttpSession session,
                          HttpServletResponse response,
                          Model model) {
@@ -70,28 +73,34 @@ public class MemberController {
         return "redirect:/";
     }
 
+    // 취향 선택 모달을 genre_category 테이블 값으로 채우기 위해 목록을 같이 넘김
     @GetMapping("/join")
-    public String joinForm() {
+    public String joinForm(Model model) {
+        model.addAttribute("genres", genreCategoryService.getAllGenres());
         return "member/join";
     }
 
     // MemberDTO를 폼 파라미터로 직접 바인딩. join.html의 input name이 memberLoginid 등
-    // DTO 필드명과 일치해야 자동 바인딩됨(memberRole 같은 민감 필드는 폼에 없으므로 바인딩 안 됨).
+    // DTO 필드명과 일치해야 자동 바인딩됨(memberGrade 같은 민감 필드는 폼에 없으므로 바인딩 안 됨).
+    // genreCategoryIds는 취향 선택 모달에서 선택한 장르마다 추가되는 hidden input들이 리스트로 바인딩된 것.
     @PostMapping("/join")
-    public String join(MemberDTO memberDTO, Model model) {
+    public String join(MemberDTO memberDTO,
+                        @RequestParam(value = "genreCategoryIds", required = false) List<Integer> genreCategoryIds,
+                        Model model) {
         // JS 중복확인 버튼을 안 눌렀거나 우회한 경우를 대비한 서버단 재검증
         if (memberService.isLoginIdTaken(memberDTO.getMemberLoginid())) {
             model.addAttribute("joinError", "이미 사용 중인 아이디입니다.");
+            model.addAttribute("genres", genreCategoryService.getAllGenres());
             return "member/join";
         }
-        memberService.join(memberDTO);
+        memberService.join(memberDTO, genreCategoryIds);
         return "redirect:/login";
     }
 
     // join.html의 "중복확인" 버튼이 fetch로 호출하는 AJAX 엔드포인트
     @GetMapping("/join/check-id")
     @ResponseBody
-    public Map<String, Boolean> checkLoginId(@RequestParam String loginId) {
+    public Map<String, Boolean> checkLoginId(@RequestParam("loginId") String loginId) {
         return Map.of("available", !memberService.isLoginIdTaken(loginId));
     }
 }

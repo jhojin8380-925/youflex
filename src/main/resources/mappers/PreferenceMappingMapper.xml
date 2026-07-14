@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.youflex.mapper.PreferenceMappingMapper">
+
+    <insert id="insertPreferences">
+        INSERT INTO preference_mapping (member_id, genre_category_id)
+        VALUES
+        <foreach collection="genreCategoryIds" item="genreCategoryId" separator=",">
+            (#{memberId}, #{genreCategoryId})
+        </foreach>
+    </insert>
+
+</mapper>
