@@ -1,9 +1,0 @@
-/* ==========================================================================
-   07_notice_update.html (공지사항 수정 화면) 전용 스타일
-   본문 레이아웃(.notice-detail-wrap, .form-row 등)은 common.css 공용 스타일 사용
-   ========================================================================== */
-
-.notice-detail-title { margin: 0 0 20px; } /* 수정 화면은 제목 옆에 버튼이 없어서 아래 여백을 살려둠 */
-
-/* 하단 "취소 / 수정 완료" 버튼 줄 */
-.edit-toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }

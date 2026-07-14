@@ -9,31 +9,18 @@
   </head>
   <body>
  
+    <!-- 
+    ==================================
+      공통 헤더바
+    ==================================
+    -->
     <header th:replace="~{fragments/layout :: header}"></header>
     <!-- 
-  ==================================
-  공통 네비게이션 바
-  ==================================
-  -->
-    <nav class="category-nav">
-      <div class="container">
-        <ul>
-          <li><a href="04_list.html?cat=all" data-nav="all">전체</a></li>
-          <li>
-            <a href="04_list.html?cat=netflix" data-nav="netflix">넷플릭스</a>
-          </li>
-          <li><a href="04_list.html?cat=tving" data-nav="tving">티빙</a></li>
-          <li>
-            <a href="04_list.html?cat=disney" data-nav="disney">디즈니플러스</a>
-          </li>
-          <li><a href="04_list.html?cat=etc" data-nav="etc">기타</a></li>
-          <li style="margin-left: auto">
-            <a href="05_notice.html" data-nav="notice">공지사항</a>
-          </li>
-          <li><a href="05_notice.html#qna" data-nav="qna">Q&A</a></li>
-        </ul>
-      </div>
-    </nav>
+    ==================================
+      공통 네비게이션 바
+    ==================================
+    -->
+    <nav class="category-nav" th:replace="~{fragments/layout :: nav}"></nav>
 
     <!-- 
   ==================================
@@ -463,35 +450,7 @@
   푸터 영역 
   ==================================
   -->
-    <footer class="site-footer main-footer">
-      <div class="container main-footer-inner">
-        <div class="main-footer-brand">
-          <span class="logo"
-            ><img src="assets/img/logo.png" alt="YouFlex"
-          /></span>
-          <p>
-            당신의 콘텐츠 취향을 연결하는<br />OTT 리뷰 &amp; 커뮤니티 플랫폼
-          </p>
-        </div>
-        <div class="main-footer-info">
-          <p>
-            (주)YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;대표:
-            YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;사업자등록번호: 000-00-00000
-          </p>
-          <p>개인정보관리책임자: YouFlex</p>
-          <p>
-            이메일: youflex@youflex.com&nbsp;&nbsp;|&nbsp;&nbsp;고객센터:
-            00-000-0000
-          </p>
-        </div>
-        <div class="main-footer-meta">
-          <p>&copy; 2026 YouFlex. All rights reserved.</p>
-        </div>
-        <button class="main-footer-top" id="footerTopBtn" title="맨 위로">
-          ↑
-        </button>
-      </div>
-    </footer>
+    <footer class="site-footer main-footer" th:replace="~{fragments/layout :: footer}"></footer>
 
     <!-- 
   ================================
@@ -704,7 +663,7 @@
       </div>
     </aside>
 
-    <script src="assets/js/app.js"></script>
+    <script src="/js/app.js"></script>
     <script>
       document
         .getElementById("footerTopBtn")
