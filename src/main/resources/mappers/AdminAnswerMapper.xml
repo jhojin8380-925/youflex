@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.AdminAnswerMapper">
+
+    <resultMap id="adminAnswerResultMap" type="com.youflex.dto.AdminAnswerDTO">
+        <id property="adminAnswerId" column="admin_answer_id" />
+        <result property="qnaId" column="qna_id" />
+        <result property="adminAnswerContent" column="admin_answer_content" />
+        <result property="adminAnswerCreatedAt" column="admin_answer_created_at" />
+        <result property="adminAnswerUpdatedAt" column="admin_answer_updated_at" />
+        <result property="qnaTitle" column="qna_title" />
+    </resultMap>
+
+    <!-- qna당 답변 1개라고 가정, 여러 개 쌓이는 구조면 LIMIT 1 대신 리스트로 바꿔야 함 -->
+    <select id="selectAnswerByQnaId" parameterType="int" resultMap="adminAnswerResultMap">
+        SELECT a.admin_answer_id, a.qna_id, a.admin_answer_content,
+               a.admin_answer_created_at, a.admin_answer_updated_at, q.qna_title
+        FROM admin_answer a
+        JOIN qna q ON a.qna_id = q.qna_id
+        WHERE a.qna_id = #{qnaId}
+        ORDER BY a.admin_answer_created_at DESC
+        LIMIT 1
+    </select>
+
+    <insert id="insertAnswer" parameterType="com.youflex.dto.AdminAnswerDTO" useGeneratedKeys="true" keyProperty="adminAnswerId">
+        INSERT INTO admin_answer (qna_id, admin_answer_content, admin_answer_created_at, admin_answer_updated_at)
+        VALUES (#{qnaId}, #{adminAnswerContent}, NOW(), NOW())
+    </insert>
+
+    <update id="updateAnswer" parameterType="com.youflex.dto.AdminAnswerDTO">
+        UPDATE admin_answer
+        SET admin_answer_content = #{adminAnswerContent},
+            admin_answer_updated_at = NOW()
+        WHERE admin_answer_id = #{adminAnswerId}
+    </update>
+
+    <delete id="deleteAnswer" parameterType="int">
+        DELETE FROM admin_answer WHERE admin_answer_id = #{adminAnswerId}
+    </delete>
+
+</mapper>

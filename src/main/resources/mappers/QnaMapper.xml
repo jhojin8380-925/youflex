@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.QnaMapper">
+
+    <resultMap id="qnaResultMap" type="com.youflex.dto.QnaDTO">
+        <id property="qnaId" column="qna_id" />
+        <result property="memberId" column="member_id" />
+        <result property="qnaTitle" column="qna_title" />
+        <result property="qnaContent" column="qna_content" />
+        <result property="qnaHit" column="qna_hit" />
+        <result property="qnaCreatedAt" column="qna_created_at" />
+        <result property="qnaUpdatedAt" column="qna_updated_at" />
+        <result property="qnaStatus" column="qna_status" />
+        <result property="qnaIsSecret" column="qna_is_secret" />
+        <result property="memberName" column="member_name" />
+    </resultMap>
+
+    <select id="selectQnaList" resultMap="qnaResultMap">
+        SELECT q.qna_id, q.member_id, q.qna_title, q.qna_content, q.qna_hit,
+               q.qna_created_at, q.qna_updated_at, q.qna_status, q.qna_is_secret,
+               m.member_name
+        FROM qna q
+        JOIN member m ON q.member_id = m.member_id
+        ORDER BY q.qna_created_at DESC
+    </select>
+
+    <select id="selectQnaById" parameterType="int" resultMap="qnaResultMap">
+        SELECT q.qna_id, q.member_id, q.qna_title, q.qna_content, q.qna_hit,
+               q.qna_created_at, q.qna_updated_at, q.qna_status, q.qna_is_secret,
+               m.member_name
+        FROM qna q
+        JOIN member m ON q.member_id = m.member_id
+        WHERE q.qna_id = #{qnaId}
+    </select>
+
+    <update id="increaseQnaHit" parameterType="int">
+        UPDATE qna SET qna_hit = qna_hit + 1 WHERE qna_id = #{qnaId}
+    </update>
+
+<insert id="insertQna" parameterType="com.youflex.dto.QnaDTO" useGeneratedKeys="true" keyProperty="qnaId">
+    INSERT INTO qna (member_id, qna_title, qna_content, qna_hit, qna_created_at, qna_updated_at, qna_status, qna_is_secret)
+    VALUES (
+        #{memberId}, 
+        #{qnaTitle}, 
+        #{qnaContent}, 
+        0, 
+        NOW(), 
+        NOW(), 
+        '답변대기', 
+        #{qnaIsSecret} <!-- Service에서 변환된 '비밀' 또는 '공개' 값이 들어감 -->
+    )
+</insert>
+
+    <update id="updateQna" parameterType="com.youflex.dto.QnaDTO">
+        UPDATE qna
+        SET qna_title = #{qnaTitle},
+            qna_content = #{qnaContent},
+            qna_is_secret = #{qnaIsSecret},
+            qna_updated_at = NOW()
+        WHERE qna_id = #{qnaId}
+    </update>
+
+    <update id="updateQnaStatus">
+        UPDATE qna SET qna_status = #{qnaStatus} WHERE qna_id = #{qnaId}
+    </update>
+
+    <delete id="deleteQna" parameterType="int">
+        DELETE FROM qna WHERE qna_id = #{qnaId}
+    </delete>
+
+</mapper>

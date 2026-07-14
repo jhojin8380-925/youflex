@@ -1,43 +1,22 @@
 package com.youflex.service;
 
 import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.youflex.dto.NoticeDTO;
-import com.youflex.mapper.NoticeMapper;
 
-import lombok.RequiredArgsConstructor;
-
-@Service
-@RequiredArgsConstructor
-public class NoticeService {
-
-    private final NoticeMapper noticeMapper;
+public interface NoticeService {
 
     // 공지사항 목록 조회
-    public List<NoticeDTO> getNoticeList() {
-        return noticeMapper.selectNoticeList();
-    }
+    List<NoticeDTO> getNoticeList();
 
-    // 공지사항 상세 조회 (조회수 증가 후 조회)
-    public NoticeDTO getNoticeDetail(int noticeId) {
-        noticeMapper.increaseNoticeHit(noticeId);
-        return noticeMapper.selectNoticeById(noticeId);
-    }
+    // 공지사항 상세 조회 (조회수 증가 포함)
+    NoticeDTO getNoticeDetail(int noticeId);
 
     // 공지사항 등록
-    public void createNotice(NoticeDTO noticeDTO) {
-        noticeMapper.insertNotice(noticeDTO);
-    }
+    void createNotice(NoticeDTO noticeDTO);
 
     // 공지사항 수정
-    public void updateNotice(NoticeDTO noticeDTO) {
-        noticeMapper.updateNotice(noticeDTO);
-    }
+    void updateNotice(NoticeDTO noticeDTO);
 
     // 공지사항 삭제
-    public void deleteNotice(int noticeId) {
-        noticeMapper.deleteNotice(noticeId);
-    }
+    void deleteNotice(int noticeId);
 }

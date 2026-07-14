@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.QnaCommentReportMapper">
+
+    <resultMap id="qnaCommentReportResultMap" type="com.youflex.dto.QnaCommentReportDTO">
+        <id property="qnaCommentReportId" column="qna_comment_report_id" />
+        <result property="qnaCommentId" column="qna_comment_id" />
+        <result property="memberId" column="member_id" />
+        <result property="qnaCommentReportReason" column="qna_comment_report_reason" />
+        <result property="qnaCommentReportStatus" column="qna_comment_report_status" />
+        <result property="qnaCommentReportCreatedAt" column="qna_comment_report_created_at" />
+        <result property="qnaCommentReportContent" column="qna_comment_report_content" />
+        <result property="memberName" column="member_name" />
+        <result property="qnaCommentContent" column="qna_comment_content" />
+    </resultMap>
+
+    <insert id="insertCommentReport" parameterType="com.youflex.dto.QnaCommentReportDTO">
+        INSERT INTO qna_comment_report (qna_comment_id, member_id, qna_comment_report_reason, qna_comment_report_status, qna_comment_report_created_at, qna_comment_report_content)
+        VALUES (#{qnaCommentId}, #{memberId}, #{qnaCommentReportReason}, 'WAIT', NOW(), #{qnaCommentReportContent})
+    </insert>
+
+    <select id="selectCommentReportList" resultMap="qnaCommentReportResultMap">
+        SELECT cr.qna_comment_report_id, cr.qna_comment_id, cr.member_id, cr.qna_comment_report_reason,
+               cr.qna_comment_report_status, cr.qna_comment_report_created_at, cr.qna_comment_report_content,
+               m.member_name, c.qna_comment_content
+        FROM qna_comment_report cr
+        JOIN member m ON cr.member_id = m.member_id
+        JOIN qna_comment c ON cr.qna_comment_id = c.qna_comment_id
+        ORDER BY cr.qna_comment_report_created_at DESC
+    </select>
+
+    <update id="updateCommentReportStatus">
+        UPDATE qna_comment_report SET qna_comment_report_status = #{qnaCommentReportStatus} WHERE qna_comment_report_id = #{qnaCommentReportId}
+    </update>
+
+</mapper>

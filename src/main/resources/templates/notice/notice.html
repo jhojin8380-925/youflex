@@ -1,113 +1,153 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>YouFlex - 공지사항 / Q&A</title>
-<link rel="stylesheet" th:href="@{/assets/css/common.css}" />
-<link rel="stylesheet" th:href="@{/assets/css/05_notice.css}" />
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>YouFlex - 공지사항 / Q&A</title>
+	<link rel="stylesheet" th:href="@{/assets/css/common.css}" />
+	<link rel="stylesheet" th:href="@{/assets/css/05_notice.css}" />
 </head>
+
+<!-- data-nav-current: 상단 네비게이션에서 현재 활성화된 메뉴(notice)를 표시하기 위한 속성 -->
 <body data-nav-current="notice">
 
-<header class="site-header">
-  <div class="container">
-    <a th:href="@{/}" class="logo"><img th:src="@{/assets/img/logo.png}" alt="YouFlex" /></a>
-    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
-    <div class="header-actions">
-      <a th:href="@{/login}" class="btn btn-ghost" data-role-visible="guest">로그인</a>
-      <a th:href="@{/mypage}" class="btn btn-ghost" data-role-visible="user,critic,admin">마이페이지</a>
-      <a href="#" class="btn btn-ghost" data-role-visible="user,critic,admin">로그아웃</a>
-      <!-- 알림/채팅 뱃지 숫자는 AJAX로 별도 갱신 (JS에서 fetch 후 .badge에 채워넣기) -->
-      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge" id="notificationCount">0</span></button>
-      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge" id="chatroomCount">0</span></button>
-    </div>
-  </div>
-</header>
+	<!--
+	==================================
+	  공통 헤더바
+	==================================
+	-->
+	<header th:replace="~{fragments/layout :: header}"></header>
 
-<nav class="category-nav">
-  <div class="container">
-    <ul>
-      <li><a th:href="@{/list(cat='all')}" data-nav="all">전체</a></li>
-      <li><a th:href="@{/list(cat='netflix')}" data-nav="netflix">넷플릭스</a></li>
-      <li><a th:href="@{/list(cat='tving')}" data-nav="tving">티빙</a></li>
-      <li><a th:href="@{/list(cat='disney')}" data-nav="disney">디즈니플러스</a></li>
-      <li><a th:href="@{/list(cat='etc')}" data-nav="etc">기타</a></li>
-      <li style="margin-left:auto"><a th:href="@{/notice}" data-nav="notice">공지사항</a></li>
-      <li><a th:href="@{/notice(hash='qna')}" data-nav="qna">Q&A</a></li>
-    </ul>
-  </div>
-</nav>
+	<!--
+==================================
+  공통 네비게이션 바
+==================================
+-->
+	<nav class="category-nav" th:replace="~{fragments/layout :: nav}"></nav>
+
+
 
 <main class="container">
+
+  <!-- 공지사항 / Q&A 탭 전환 버튼 (탭 전환 동작은 05_notice.js에서 data-tab-target 기준으로 처리) -->
   <div class="notice-tabs" data-tab-panels>
     <button class="active" data-tab-target="notice">공지사항</button>
     <button data-tab-target="qna">Q&A</button>
   </div>
 
   <!-- 공지사항: 서버에서 렌더링된 실제 데이터 -->
-  <div data-tab-panel="notice" class="mt-24">
-    <table class="notice-table">
-      <thead><tr><th class="num">No</th><th>제목</th><th class="meta">작성자</th><th class="meta">날짜</th><th class="meta">조회수</th></tr></thead>
-      <tbody>
-        <tr th:if="${#lists.isEmpty(noticeList)}">
-          <td colspan="5" style="text-align:center;color:var(--text-2)">등록된 공지사항이 없습니다.</td>
-        </tr>
-        <tr th:each="notice, stat : ${noticeList}">
-          <td class="num"><span class="badge" th:text="${noticeList.size() - stat.index}">1</span></td>
-          <td>
-            <a class="title-link"
-               th:href="@{/notice/{id}(id=${notice.noticeId})}"
-               th:text="${notice.noticeTitle}">제목</a>
-          </td>
-          <td class="meta">관리자</td>
-          <td class="meta" th:text="${#temporals.format(notice.noticeCreatedAt, 'yyyy-MM-dd')}">2026-06-28</td>
-          <td class="meta" th:text="'👁 ' + ${notice.noticeHit}">👁 1.2K</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+	<div data-tab-panel="notice" class="mt-24">
+		<table class="notice-table">
+			<thead>
+				<tr>
+					<th class="num">No</th>
+					<th>제목</th>
+					<th class="meta">작성자</th>
+					<th class="meta">날짜</th>
+					<th class="meta">조회수</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- 등록된 공지사항이 없을 경우 안내 문구 표시 -->
+				<tr th:if="${#lists.isEmpty(noticeList)}">
+					<td colspan="5" style="text-align:center;color:var(--text-2)">등록된 공지사항이 없습니다.</td>
+				</tr>
+				<!-- 공지사항 목록 반복 출력 -->
+				<tr th:each="notice, stat : ${noticeList}">
+					<!-- 번호: 최신순 정렬을 가정하고 역순 번호 매김 (총 개수 - 현재 인덱스) -->
+					<td class="num"><span class="badge" th:text="${noticeList.size() - stat.index}">1</span></td>
+					<td>
+						<!-- 제목 클릭 시 상세 페이지로 이동 -->
+						<a class="title-link" th:href="@{/notice/{id}(id=${notice.noticeId})}"
+							th:text="${notice.noticeTitle}">제목</a>
+					</td>
+					<!-- 작성자는 공지사항 특성상 항상 "관리자"로 고정 표기 (DB 값 미사용) -->
+					<td class="meta">관리자</td>
+					<td class="meta" th:text="${#temporals.format(notice.noticeCreatedAt, 'yyyy-MM-dd')}">2026-06-28
+					</td>
+					<td class="meta" th:text="'👁 ' + ${notice.noticeHit}">👁 1.2K</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
-  <!-- Q&A: 여기는 아직 QnaService 없으니 자리만 유지, 추후 동일 패턴 적용 -->
-  <div data-tab-panel="qna" class="mt-24" style="display:none">
-    <div style="text-align:right;margin-bottom:12px">
-      <a th:href="@{/qna/write}" class="btn btn-sm btn-primary">질문 작성</a>
-    </div>
-    <table class="notice-table">
-      <thead><tr><th class="num">No</th><th>제목</th><th class="meta">작성자</th><th class="meta">날짜</th><th class="meta">조회수</th><th class="meta">답변상태</th></tr></thead>
-      <tbody>
-        <!-- TODO: QnaMapper/Service 만들면 th:each로 교체 -->
-      </tbody>
-    </table>
-  </div>
-</main>
+	<!-- Q&A: 여기는 아직 QnaService 없으니 자리만 유지, 추후 동일 패턴 적용 -->
+	<!-- 초기 display:none 처리되어 있으며, 탭 클릭 시 JS가 notice/qna 패널을 토글함 -->
+	<div data-tab-panel="qna" class="mt-24" style="display:none">
+		<!-- 질문 작성 페이지로 이동하는 버튼 -->
+		<div style="text-align:right;margin-bottom:12px">
+			<a th:href="@{/qna/write}" class="btn btn-sm btn-primary">질문 작성</a>
+		</div>
+		<table class="notice-table">
+			<thead>
+				<tr>
+					<th class="num">No</th>
+					<th>제목</th>
+					<th class="meta">작성자</th>
+					<th class="meta">날짜</th>
+					<th class="meta">조회수</th>
+					<th class="meta">답변상태</th>
+				</tr>
+			</thead>
+			<tbody>
+			  <tr th:if="${#lists.isEmpty(qnaList)}">
+			    <td colspan="6" style="text-align:center;color:var(--text-2)">등록된 질문이 없습니다.</td>
+			  </tr>
+			  <tr th:each="qna, stat : ${qnaList}">
+			    <td class="num"><span class="badge" th:text="${qnaList.size() - stat.index}">1</span></td>
+			    <td>
+			      <a class="title-link" th:href="@{/qna/{id}(id=${qna.qnaId})}" th:text="${qna.qnaTitle}">제목</a>
+			    </td>
+			    <td class="meta" th:text="${qna.memberName}">닉네임</td>
+			    <td class="meta" th:text="${#temporals.format(qna.qnaCreatedAt, 'yyyy-MM-dd')}">2026-06-28</td>
+			    <td class="meta" th:text="'👁 ' + ${qna.qnaHit}">👁 0</td>
+			    <td class="meta" th:text="${qna.qnaStatus}">답변대기</td>
+			  </tr>
+			</tbody>
+		</table>
+	</div>
+	</main>
 
-<!-- 알림/챗봇/채팅방 패널: HTML 구조만 유지, 내용은 전부 AJAX로 채워짐 -->
-<div class="overlay-backdrop" id="notificationBackdrop"></div>
-<aside class="slide-panel" id="notificationPanel">
-  <div class="panel-header"><h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button></div>
-  <div class="panel-body" id="notificationBody">
-    <!-- app.js가 fetch('/api/notifications') 결과로 이 안을 채움 -->
-  </div>
-</aside>
+	<!-- 알림/챗봇/채팅방 패널: HTML 구조만 유지, 내용은 전부 AJAX로 채워짐 -->
 
-<button class="fab" id="chatbotFab" title="챗봇 실행">🤖</button>
-<div class="overlay-backdrop" id="chatbotBackdrop"></div>
-<aside class="slide-panel" id="chatbotPanel">
-  <!-- 기존 구조 그대로, JS가 상태 관리 -->
-  ...
-</aside>
+	<!-- 알림 패널 열림 시 배경을 어둡게 처리하는 오버레이 -->
+	<div class="overlay-backdrop" id="notificationBackdrop"></div>
+	<!-- 알림 슬라이드 패널 -->
+	<aside class="slide-panel" id="notificationPanel">
+		<div class="panel-header">
+			<h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button>
+		</div>
+		<div class="panel-body" id="notificationBody">
+			<!-- app.js가 fetch('/api/notifications') 결과로 이 안을 채움 -->
+		</div>
+	</aside>
 
-<div class="overlay-backdrop" id="chatroomBackdrop"></div>
-<aside class="slide-panel" id="chatroomPanel">
-  <!-- 기존 구조 그대로 -->
-  ...
-</aside>
+	<!-- 챗봇 실행 플로팅 버튼 (FAB) -->
+	<button class="fab" id="chatbotFab" title="챗봇 실행">��</button>
+	<!-- 챗봇 패널 열림 시 배경 오버레이 -->
+	<div class="overlay-backdrop" id="chatbotBackdrop"></div>
+	<aside class="slide-panel" id="chatbotPanel">
+		<!-- 기존 구조 그대로, JS가 상태 관리 -->
+		...
+	</aside>
 
-<footer class="site-footer main-footer">
-  <!-- 그대로 -->
-</footer>
+	<!-- 채팅방 패널 열림 시 배경 오버레이 -->
+	<div class="overlay-backdrop" id="chatroomBackdrop"></div>
+	<aside class="slide-panel" id="chatroomPanel">
+		<!-- 기존 구조 그대로 -->
+		...
+	</aside>
 
-<script th:src="@{/assets/js/app.js}"></script>
-<script th:src="@{/assets/js/05_notice.js}"></script>
+	<!-- 공통 푸터 -->
+	<footer class="site-footer main-footer">
+		<!-- 그대로 -->
+	</footer>
+
+	<!-- 공통 스크립트: 알림/챗봇/채팅방 등 공통 UI 동작 처리 -->
+	<script th:src="@{/assets/js/app.js}"></script>
+	<!-- 공지사항/Q&A 페이지 전용 스크립트: 탭 전환 등 처리 -->
+	<script th:src="@{/assets/js/05_notice.js}"></script>
 </body>
+
 </html>

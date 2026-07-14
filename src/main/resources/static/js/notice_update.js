@@ -4,5 +4,5 @@ document.getElementById('noticeSaveBtn').addEventListener('click', () => {
     return;
   }
   alert('공지사항이 수정되었습니다. (데모)');
-  location.href = '06_notice_detail.html';
+  location.href = '/notice';
 });

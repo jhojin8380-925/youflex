@@ -1,7 +1,6 @@
 package com.youflex.dto;
 
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +18,6 @@ public class QnaCommentReportDTO {
     private String qnaCommentReportStatus;
     private LocalDateTime qnaCommentReportCreatedAt;
     private String qnaCommentReportContent;
-
     // join 조회용 (DB 컬럼 아님)
     private String memberName;
     private String qnaCommentContent;

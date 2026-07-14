@@ -9,5 +9,5 @@ document.getElementById('qnaSaveBtn').addEventListener('click', () => {
   }
   const visibility = document.querySelector('input[name="qna_is_secret"]:checked').value === 'Y' ? '비공개' : '공개';
   alert(`질문이 수정되었습니다. (${visibility}, 데모)`);
-  location.href = '08_qna_detail.html';
+  location.href = '/notice?hash=qna';
 });
