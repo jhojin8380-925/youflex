@@ -109,66 +109,219 @@ function renumberBannerRows() {
   });
 }
 
+// ==========================================================================
+// 관리자 - 회원 관리 탭 (회원 목록 / 등업 신청 대기 / 탈퇴 신청 대기)
+// ==========================================================================
+const MEMBER_API_BASE = "/api/admin/members";
+
+function escapeHtml(value) {
+  if (value == null) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// 관리자 API 공용 fetch 래퍼. 실패 시 서버가 내려준 message(있으면)로 에러를 던짐.
+async function adminFetch(url, options) {
+  const res = await fetch(url, Object.assign({ headers: { "Content-Type": "application/json" } }, options || {}));
+  if (!res.ok) {
+    let message = "요청 처리 중 오류가 발생했습니다.";
+    try {
+      const body = await res.json();
+      if (body && body.message) message = body.message;
+    } catch (e) {
+      // 응답 바디가 없거나 JSON이 아닌 경우 기본 메시지 사용
+    }
+    throw new Error(message);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+const memberListState = { keyword: "", page: 1 };
+
+function renderMemberRow(m) {
+  const tr = document.createElement("tr");
+  tr.dataset.memberId = m.memberId;
+  tr.dataset.memberName = m.memberName;
+  tr.innerHTML = `
+    <td>${m.memberId}</td>
+    <td>${escapeHtml(m.memberLoginid) || "-"}</td>
+    <td>${escapeHtml(m.memberName)}</td>
+    <td>${escapeHtml(m.memberEmail)}</td>
+    <td>${(m.memberCreatedAt || "").slice(0, 10)}</td>
+    <td>${m.warningCount ?? 0}/3</td>
+    <td class="actions">
+      <button type="button" class="btn btn-sm btn-danger" onclick="openWarningModal(this)">경고처리</button>
+      <button type="button" class="btn btn-sm" onclick="openWarningRevokeModal(this)">경고 차감</button>
+      <button type="button" class="btn btn-sm btn-danger" onclick="forceWithdrawMember(this)">강제탈퇴</button>
+    </td>`;
+  return tr;
+}
+
+function renderMemberPagination(totalPages, currentPage) {
+  const paginationEl = document.getElementById("memberPagination");
+  if (!paginationEl) return;
+  paginationEl.innerHTML = "";
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = i;
+    btn.className = i === currentPage ? "active" : "";
+    btn.addEventListener("click", () => loadMemberList(i));
+    paginationEl.appendChild(btn);
+  }
+}
+
+async function loadMemberList(page) {
+  memberListState.page = page || 1;
+  const tbody = document.getElementById("memberListBody");
+  if (!tbody) return;
+  try {
+    const params = new URLSearchParams({ keyword: memberListState.keyword, page: memberListState.page });
+    const data = await adminFetch(`${MEMBER_API_BASE}?${params.toString()}`);
+    tbody.innerHTML = "";
+    if (!data.members.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center">등록된 회원이 없습니다.</td></tr>';
+    } else {
+      data.members.forEach((m) => tbody.appendChild(renderMemberRow(m)));
+    }
+    renderMemberPagination(data.totalPages, data.page);
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
 (function initMemberList() {
-  const PAGE_SIZE = 5;
   const searchInput = document.getElementById("memberSearchInput");
   const searchBtn = document.getElementById("memberSearchBtn");
-  const tbody = document.querySelector("#memberListTable tbody");
-  const paginationEl = document.getElementById("memberPagination");
-  const allRows = Array.from(tbody.querySelectorAll("tr"));
-  let currentPage = 1;
+  const table = document.getElementById("memberListTable");
+  if (!searchInput || !searchBtn || !table) return;
 
-  function getFilteredRows() {
-    const term = searchInput.value.trim().toLowerCase();
-    if (!term) return allRows;
-    return allRows.filter((row) => {
-      const id = row.children[1].textContent.toLowerCase();
-      const name = row.children[2].textContent.toLowerCase();
-      const email = row.children[3].textContent.toLowerCase();
-      return id.includes(term) || name.includes(term) || email.includes(term);
-    });
-  }
-
-  function render() {
-    const filtered = getFilteredRows();
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    if (currentPage > totalPages) currentPage = totalPages;
-
-    allRows.forEach((row) => (row.style.display = "none"));
-    const start = (currentPage - 1) * PAGE_SIZE;
-    filtered.slice(start, start + PAGE_SIZE).forEach((row) => (row.style.display = ""));
-
-    paginationEl.innerHTML = "";
-    if (filtered.length === 0) {
-      paginationEl.innerHTML = '<span class="text-muted" style="font-size:13px">검색 결과가 없습니다.</span>';
-      return;
-    }
-    for (let i = 1; i <= totalPages; i++) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = i;
-      btn.className = i === currentPage ? "active" : "";
-      btn.addEventListener("click", () => {
-        currentPage = i;
-        render();
-      });
-      paginationEl.appendChild(btn);
-    }
-  }
-
-  searchBtn.addEventListener("click", () => {
-    currentPage = 1;
-    render();
-  });
+  const triggerSearch = () => {
+    memberListState.keyword = searchInput.value.trim();
+    loadMemberList(1);
+  };
+  searchBtn.addEventListener("click", triggerSearch);
   searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      currentPage = 1;
-      render();
-    }
+    if (e.key === "Enter") triggerSearch();
   });
 
-  render();
+  // 서버가 최초 렌더한 1페이지 기준 총 개수/페이지 크기로 페이지네이션 버튼만 먼저 그림
+  const totalCount = Number(table.dataset.totalCount || 0);
+  const pageSize = Number(table.dataset.pageSize || 5);
+  renderMemberPagination(Math.max(1, Math.ceil(totalCount / pageSize)), 1);
 })();
+
+// ---- 경고 처리 모달 ----
+function openWarningModal(btn) {
+  const row = btn.closest("tr");
+  document.getElementById("warning_target_member_id").value = row.dataset.memberId;
+  document.getElementById("warning_reason").value = "";
+  document.getElementById("warningModalBackdrop").classList.add("open");
+}
+function closeWarningModal() {
+  document.getElementById("warningModalBackdrop").classList.remove("open");
+}
+async function submitWarning() {
+  const memberId = document.getElementById("warning_target_member_id").value;
+  const reason = document.getElementById("warning_reason").value.trim();
+  if (!reason) {
+    alert("경고 사유를 입력해주세요.");
+    return;
+  }
+  try {
+    await adminFetch(`${MEMBER_API_BASE}/${memberId}/warning`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
+    closeWarningModal();
+    alert("경고가 부여되었습니다. (누적 3회 시 자동 강제탈퇴 처리됩니다)");
+    await loadMemberList(memberListState.page);
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// ---- 경고 차감 모달 ----
+function openWarningRevokeModal(btn) {
+  const row = btn.closest("tr");
+  document.getElementById("warning_revoke_target_member_id").value = row.dataset.memberId;
+  document.getElementById("warningRevokeModalBackdrop").classList.add("open");
+}
+function closeWarningRevokeModal() {
+  document.getElementById("warningRevokeModalBackdrop").classList.remove("open");
+}
+async function submitWarningRevoke() {
+  const memberId = document.getElementById("warning_revoke_target_member_id").value;
+  try {
+    await adminFetch(`${MEMBER_API_BASE}/${memberId}/warning/revoke`, { method: "POST" });
+    closeWarningRevokeModal();
+    alert("경고가 차감되었습니다.");
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// ---- 강제탈퇴 (회원 목록 탭) ----
+async function forceWithdrawMember(btn) {
+  const row = btn.closest("tr");
+  if (!confirm(`${row.dataset.memberName} 회원을 강제탈퇴 처리하시겠습니까?`)) return;
+  try {
+    await adminFetch(`${MEMBER_API_BASE}/${row.dataset.memberId}/force-withdraw`, { method: "POST" });
+    row.remove();
+    alert("강제탈퇴 처리되었습니다. (탈퇴 신청 대기 탭에서 최종 승인/반려할 수 있습니다)");
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// ---- 등업 신청 대기 탭 ----
+async function approveGrade(btn) {
+  const row = btn.closest("tr");
+  if (!confirm(`${row.dataset.memberName} 회원을 우수회원으로 등업하시겠습니까?`)) return;
+  try {
+    await adminFetch(`${MEMBER_API_BASE}/${row.dataset.memberId}/grade/approve`, { method: "POST" });
+    row.remove();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+async function rejectGrade(btn) {
+  const row = btn.closest("tr");
+  if (!confirm(`${row.dataset.memberName} 회원의 등업 신청을 반려하시겠습니까?`)) return;
+  try {
+    await adminFetch(`${MEMBER_API_BASE}/${row.dataset.memberId}/grade/reject`, { method: "POST" });
+    row.remove();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// ---- 탈퇴 신청 대기 탭 ----
+async function approveWithdraw(btn) {
+  const row = btn.closest("tr");
+  if (!confirm(`${row.dataset.memberName} 회원을 탈퇴 승인하시겠습니까?\n계정 정보와 작성글/댓글이 모두 삭제되며 되돌릴 수 없습니다.`)) return;
+  try {
+    await adminFetch(`${MEMBER_API_BASE}/${row.dataset.memberId}/withdraw/approve`, { method: "POST" });
+    row.remove();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+async function rejectWithdraw(btn) {
+  const row = btn.closest("tr");
+  if (!confirm(`${row.dataset.memberName} 회원의 탈퇴 신청을 반려하고 계정을 복구하시겠습니까?`)) return;
+  try {
+    await adminFetch(`${MEMBER_API_BASE}/${row.dataset.memberId}/withdraw/reject`, { method: "POST" });
+    row.remove();
+  } catch (e) {
+    alert(e.message);
+  }
+}
 
 document.querySelectorAll(".member-subtabs button").forEach((btn) => {
   btn.addEventListener("click", () => {

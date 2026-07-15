@@ -10,19 +10,11 @@
 <body>
 
 <!-- 
-  =========================================
-  공통 헤더 영역 -- 호진
-  =========================================
+==================================
+공통 헤더바
+==================================
 -->
-<header class="site-header">
-  <div class="container">
-    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
-    <div class="header-actions">
-      <span class="badge badge-admin">관리자 페이지</span>
-      <a href="01_main.html" class="btn btn-ghost">홈으로</a>
-    </div>
-  </div>
-</header>
+<header th:replace="~{fragments/layout :: header}"></header>
 
 <!-- 
   =========================================
@@ -102,55 +94,26 @@
         <input type="text" id="memberSearchInput" placeholder="회원 아이디, 이름 또는 이메일로 검색" />
         <button class="btn btn-sm" id="memberSearchBtn">검색</button>
       </div>
-      <table class="table" id="memberListTable">
-        <thead><tr><th>회원번호</th><th>회원아이디</th><th>회원이름</th><th>회원이메일</th><th>가입일</th><th></th></tr></thead>
-        <tbody>
-          <tr>
-            <td>1029</td>
-            <td>catmovie29</td>
-            <td>김민준</td><td>catmovie29@example.com</td>
-            <td>2025-03-12</td>
+      <table class="table" id="memberListTable"
+             th:data-total-count="${memberTotalCount}"
+             th:data-page-size="${memberPageSize}">
+        <thead><tr><th>회원번호</th><th>회원아이디</th><th>회원이름</th><th>회원이메일</th><th>가입일</th><th>경고</th><th></th></tr></thead>
+        <tbody id="memberListBody">
+          <tr th:each="m : ${memberList}" th:data-member-id="${m.memberId}" th:data-member-name="${m.memberName}">
+            <td th:text="${m.memberId}">1029</td>
+            <td th:text="${m.memberLoginid} ?: '-'">catmovie29</td>
+            <td th:text="${m.memberName}">김민준</td>
+            <td th:text="${m.memberEmail}">catmovie29@example.com</td>
+            <td th:text="${#temporals.format(m.memberCreatedAt, 'yyyy-MM-dd')}">2025-03-12</td>
+            <td th:text="|${m.warningCount}/3|">0/3</td>
             <td class="actions">
-              <button class="btn btn-sm btn-danger">경고처리</button>
-              <button class="btn btn-sm">경고 차감</button>
-              <button class="btn btn-sm btn-danger">강제탈퇴</button>
+              <button type="button" class="btn btn-sm btn-danger" onclick="openWarningModal(this)">경고처리</button>
+              <button type="button" class="btn btn-sm" onclick="openWarningRevokeModal(this)">경고 차감</button>
+              <button type="button" class="btn btn-sm btn-danger" onclick="forceWithdrawMember(this)">강제탈퇴</button>
             </td>
           </tr>
-          <tr>
-            <td>1030</td>
-            <td>spam2022</td>
-            <td>박서연</td>
-            <td>spam2022@example.com</td>
-            <td>2026-06-29</td>
-            <td class="actions">
-              <button class="btn btn-sm btn-danger">경고처리</button>
-              <button class="btn btn-sm">경고 차감</button>
-              <button class="btn btn-sm btn-danger">강제탈퇴</button>
-            </td>
-          </tr>
-          <tr>
-            <td>1031</td>
-            <td>dramalover</td>
-            <td>이도윤</td>
-            <td>dramalover@example.com</td>
-            <td>2025-11-02</td>
-            <td class="actions">
-              <button class="btn btn-sm btn-danger">경고처리</button>
-              <button class="btn btn-sm">경고 차감</button>
-              <button class="btn btn-sm btn-danger">강제탈퇴</button>
-            </td>
-          </tr>
-          <tr>
-            <td>1032</td>
-            <td>movie123</td>
-            <td>최서준</td>
-            <td>movie123@example.com</td>
-            <td>2025-08-14</td>
-            <td class="actions">
-              <button class="btn btn-sm btn-danger">경고처리</button>
-              <button class="btn btn-sm">경고 차감</button>
-              <button class="btn btn-sm btn-danger">강제탈퇴</button>
-            </td>
+          <tr th:if="${#lists.isEmpty(memberList)}">
+            <td colspan="7" class="text-muted" style="text-align:center">등록된 회원이 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -164,29 +127,28 @@
       -->
     <div data-subpanel="promote" style="display:none">
       <table class="table">
-        <thead><tr><th>닉네임</th><th>현재 등급</th><th>신청 등급</th><th>신청일</th><th>상태</th><th></th></tr></thead>
-        <tbody>
-          <tr>
-            <td>드라마러버</td>
+        <thead><tr><th>닉네임</th><th>현재 등급</th><th>신청 등급</th><th>가입일</th><th>상태</th><th></th></tr></thead>
+        <tbody id="gradeRequestBody">
+          <!-- 등업 신청 경로는 일반(시청자) -> 우수(평론가) 한 단계뿐이라 등급 라벨은 고정 표기.
+               DB에 신청일 컬럼이 없어 가입일로 대체 표시함. -->
+          <tr th:each="m : ${gradeRequests}" th:data-member-id="${m.memberId}" th:data-member-name="${m.memberName}">
+            <td th:text="${m.memberName}">드라마러버</td>
             <td>시청자</td>
             <td>평론가</td>
-            <td>2026-06-28</td>
-            <td>
-              <span class="status-pill status-pending">대기중</span>
-            </td>
+            <td th:text="${#temporals.format(m.memberCreatedAt, 'yyyy-MM-dd')}">2026-06-28</td>
+            <td><span class="status-pill status-pending">대기중</span></td>
             <td class="actions">
-              <button class="btn btn-sm btn-primary">등업처리</button>
-              <button class="btn btn-sm">반려</button>
+              <button type="button" class="btn btn-sm btn-primary" onclick="approveGrade(this)">등업처리</button>
+              <button type="button" class="btn btn-sm" onclick="rejectGrade(this)">반려</button>
             </td>
           </tr>
-          <tr><td>무비홀릭</td><td>시청자</td><td>평론가</td><td>2026-06-27</td><td><span class="status-pill status-pending">대기중</span></td>
-            <td class="actions"><button class="btn btn-sm btn-primary">등업처리</button><button class="btn btn-sm">반려</button></td></tr>
-          <tr><td>영화광123</td><td>시청자</td><td>평론가</td><td>2026-06-25</td><td><span class="status-pill status-pending">대기중</span></td>
-            <td class="actions"><button class="btn btn-sm btn-primary">등업처리</button><button class="btn btn-sm">반려</button></td></tr>
+          <tr th:if="${#lists.isEmpty(gradeRequests)}">
+            <td colspan="6" class="text-muted" style="text-align:center">등업 신청 대기 중인 회원이 없습니다.</td>
+          </tr>
           <tr><td colspan="6" class="text-muted" style="font-size:12px;text-align:center">등업 조건: 게시글 작성 2회 이상 · 경고 0회 · 본인 게시글 좋아요 합산 200회 이상</td></tr>
         </tbody>
       </table>
-    </div>  
+    </div>
 
     <!-- 
       =========================================
@@ -195,37 +157,24 @@
       -->
     <div data-subpanel="withdraw" style="display:none">
       <table class="table">
-        <thead><tr><th>회원번호</th><th>회원아이디</th><th>닉네임</th><th>신청일</th><th>상태</th><th></th></tr></thead>
-        <tbody>
-          <tr>
-            <td>1030</td>
-            <td>spam2022</td>
-            <td>스팸계정22</td>
-            <td>2026-06-30</td>
-            <td>
-              <span class="status-pill status-pending">대기중</span>
-            </td>
-            <td class="actions">
-              <button class="btn btn-sm btn-danger">탈퇴 승인</button>
-              <button class="btn btn-sm">반려</button>
-            </td>
-          </tr>
-          <tr>
-            <td>1042</td>
-            <td>movie123</td>
-            <td>영화광123</td>
-            <td>2026-06-29</td>
-            <td>
-              <span class="status-pill status-pending">대기중</span>
-            </td>
-            <td class="actions">
-              <button class="btn btn-sm btn-danger">탈퇴 승인</button>
-              <button class="btn btn-sm">반려</button>
-            </td>
-          </tr>
-          <tr><td>1031</td><td>dramalover</td><td>드라마러버</td><td>2026-06-27</td>
+        <thead><tr><th>회원번호</th><th>회원아이디</th><th>닉네임</th><th>탈퇴일</th><th>상태</th><th></th></tr></thead>
+        <tbody id="withdrawRequestBody">
+          <!-- 탈퇴신청은 즉시 소프트 삭제(member_delete_status='탈퇴')되고 이 목록에 노출됨.
+               탈퇴 승인 = 계정/작성글/댓글 완전 삭제(복구 불가), 반려 = 정상 상태로 복구. -->
+          <tr th:each="m : ${withdrawnMembers}" th:data-member-id="${m.memberId}" th:data-member-name="${m.memberName}">
+            <td th:text="${m.memberId}">1030</td>
+            <td th:text="${m.memberLoginid} ?: '-'">spam2022</td>
+            <td th:text="${m.memberName}">스팸계정22</td>
+            <td th:text="${m.memberDeletedAt != null ? #temporals.format(m.memberDeletedAt, 'yyyy-MM-dd') : '-'}">2026-06-30</td>
             <td><span class="status-pill status-pending">대기중</span></td>
-            <td class="actions"><button class="btn btn-sm btn-danger">탈퇴 승인</button><button class="btn btn-sm">반려</button></td></tr>
+            <td class="actions">
+              <button type="button" class="btn btn-sm btn-danger" onclick="approveWithdraw(this)">탈퇴 승인</button>
+              <button type="button" class="btn btn-sm" onclick="rejectWithdraw(this)">반려</button>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(withdrawnMembers)}">
+            <td colspan="6" class="text-muted" style="text-align:center">탈퇴 대기 중인 회원이 없습니다.</td>
+          </tr>
           <tr><td colspan="6" class="text-muted" style="font-size:12px;text-align:center">탈퇴 승인 시 계정 정보와 작성글/댓글이 삭제되며, 되돌릴 수 없습니다.</td></tr>
         </tbody>
       </table>
@@ -376,13 +325,14 @@
   <div class="report-modal" style="width:360px">
     <h3>⚠ 경고 처리</h3>
     <form id="warningForm">
+    <input type="hidden" id="warning_target_member_id" />
     <div class="form-row" style="margin-bottom:16px">
       <label>경고 사유</label>
       <input type="text" id="warning_reason" name="warning_reason" placeholder="경고 사유를 입력하세요" />
     </div>
     <div class="btn-row">
-      <button type="button" class="btn btn-sm">취소</button>
-      <button type="button" class="btn btn-sm btn-primary">확인</button>
+      <button type="button" class="btn btn-sm" onclick="closeWarningModal()">취소</button>
+      <button type="button" class="btn btn-sm btn-primary" onclick="submitWarning()">확인</button>
     </div>
     </form>
   </div>
@@ -396,10 +346,11 @@
 <div class="report-modal-backdrop" id="warningRevokeModalBackdrop">
   <div class="report-modal" style="width:360px">
     <h3>➖ 경고 차감</h3>
+    <input type="hidden" id="warning_revoke_target_member_id" />
     <p class="text-muted" style="font-size:13px;margin:0 0 16px">해당 회원의 누적 경고를 1회 차감합니다.</p>
     <div class="btn-row">
-      <button class="btn btn-sm">취소</button>
-      <button class="btn btn-sm btn-primary">차감</button>
+      <button type="button" class="btn btn-sm" onclick="closeWarningRevokeModal()">취소</button>
+      <button type="button" class="btn btn-sm btn-primary" onclick="submitWarningRevoke()">차감</button>
     </div>
   </div>
 </div>
@@ -464,7 +415,7 @@
   </div>
 </footer>
 
-<script src="assets/js/app.js"></script>
-<script src="assets/js/15_admin.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/admin.js"></script>
 </body>
 </html>
