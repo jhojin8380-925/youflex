@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>YouFlex - 글쓰기</title>
+	<link rel="stylesheet" th:href="@{/css/common.css}" />
+	<link rel="stylesheet" th:href="@{/css/write.css}" />
+</head>
+
+<body>
+
+
+	<!--  
+  ==================================
+  공통 헤더바  
+  ==================================
+  -->
+	<!-- 
+  ==================================
+  비회원(구경꾼) 헤더바
+  ==================================
+  -->
+	<!-- <header class="site-header">
+  <div class="container">
+    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
+    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
+    <div class="header-actions">
+      <a href="02_login.html" class="btn btn-ghost">로그인</a>
+    </div>
+  </div>
+</header> -->
+
+	<!-- 
+  ==================================
+  회원(시청자이상) 헤더바 
+  ==================================
+  -->
+	<header th:replace="~{fragments/layout :: header}"></header>
+
+	<!-- 
+  ==================================
+  관리자 헤더바 
+  ==================================
+  -->
+	<!-- <header class="site-header">
+  <div class="container">
+    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
+    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
+    <div class="header-actions">
+      <a href="02_login.html" class="btn btn-ghost">로그인</a>
+      <a href="15_admin.html" class="btn btn-ghost" style="color:var(--danger)">⚙ 관리자 페이지</a>
+      <a href="14_mypage.html" class="btn btn-ghost">마이페이지</a>
+      <a href="#" class="btn btn-ghost">로그아웃</a>
+      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
+      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
+    </div>
+  </div>
+</header> -->
+
+
+	<!-- 
+  ==================================
+  메인 영역
+  ==================================
+-->
+	<main class="container">
+		
+		<!-- enctype="multipart/form-data" 사진 파일을 전송하기 위해 작성 -->
+		<form class="card" th:action="@{/review/write}" method="post" enctype="multipart/form-data"></form>
+		
+		<div class="write-page-grid">
+			<div class="write-wrap">
+				<!-- '장르'버튼 넣을 div박스 추가(웅조) -->
+				<div class="review-genre-box">
+					<h1>리뷰 작성</h1>
+					<button type="button" class="taste-btn box" id="tasteBtn"><span>❤️ 취향 선택</span></button>
+				</div>
+
+				<!-- 
+      ==================================
+      리뷰 작성 폼
+      ==================================
+    -->
+				<form id="reviewForm" th:action="@{/review/write}" method="post" enctype="multipart/form-data">
+					<div class="row-2">
+						<div class="form-row">
+							<label>카테고리 (장르)</label>
+							<select id="genre_category_id" name="genreCategoryId">
+								<option value="1">영화</option>
+								<option value="2">드라마</option>
+								<option value="3">예능</option>
+								<option value="4">애니메이션</option>
+								<option value="5">다큐멘터리</option>
+							</select>
+						</div>
+						<div class="form-row">
+							<label>플랫폼</label>
+							<select id="review_platform" name="reviewPlatform">
+								<option>넷플릭스</option>
+								<option>티빙</option>
+								<option>디즈니+</option>
+								<option>웨이브</option>
+								<option>쿠팡플레이</option>
+								<option>기타</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- 제목 작성 영역 -->
+					<div class="form-row">
+						<label>제목</label>
+						<input type="text" id="review_title" name="reviewTitle" placeholder="제목을 입력하세요" />
+					</div>
+
+					<!-- 별점 수정(웅조) -->
+					<div class="form-group">
+						<label><span class="gradient-star-text">관람평 (⭐/5.0)</span></label>
+						<!-- <div class="rating-input">
+					<span class="active">★</span>
+					<span class="active">★</span>
+					<span class="active">★</span>
+					<span class="active">★</span>
+					<span>★</span>
+				</div> -->
+						<div class="rating-input">
+							<div class="star-box" data-value="1">
+								<span class="half left">★</span>
+								<span class="half right">★</span>
+							</div>
+							<div class="star-box" data-value="2">
+								<span class="half left">★</span>
+								<span class="half right">★</span>
+							</div>
+							<div class="star-box" data-value="3">
+								<span class="half left">★</span>
+								<span class="half right">★</span>
+							</div>
+							<div class="star-box" data-value="4">
+								<span class="half left">★</span>
+								<span class="half right">★</span>
+							</div>
+							<div class="star-box" data-value="5">
+								<span class="half left">★</span>
+								<span class="half right">★</span>
+							</div>
+						</div>
+						<!-- 별점값 js에서 클릭시 value를 업데이트 -->
+						<input type="hidden" name="reviewRating" value="4">
+						<div class="text-muted text-sm mt-8">별을 클릭해서 별점을 선택하세요 (1~5점)</div>
+					</div>
+
+					<!-- 대표이미지 수정(웅조) -->
+					<div class="form-row">
+						<label>대표 이미지</label>
+						<div class="wrap-representative-img">
+							<!-- <div class="upload-box"> -->
+							<!-- <input> 추가완료 -->
+							<input type="file" name="imgFile" id="imgInput" accept="image/*" style="font-size:0.85rem;"
+								class="representative-img">
+							<img id="imgPreview" alt="미리보기"
+								style="display:none; max-width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-top:10px;">
+						</div>
+					</div>
+
+					<!-- 본문 내용 작성 -->
+					<div class="form-row">
+						<label>본문</label>
+						<textarea id="review_content" name="reviewContent" placeholder="리뷰 내용을 입력하세요"></textarea>
+						<div class="hint-line">※ 등록된 내용은 비속어 필터링이 자동 적용됩니다.</div>
+					</div>
+
+					<div class="form-row">
+						<label>관련작품</label>
+						<input type="text" id="review_related" name="reviewRelated"
+							placeholder="관련 작품명을 입력하세요 (예: 오징어게임 3)" />
+					</div>
+
+					<!-- 임시저장 영역 -->
+					<div class="write-toolbar">
+						<span class="autosave-hint" id="autosaveHint">임시저장된 내용 없음</span>
+						<div class="flex gap-8" style="align-items:center">
+							<span class="text-muted" style="font-size:12px">제목과 내용만 저장 가능합니다</span>
+							<button type="button" class="btn" id="draftBtn">임시저장</button>
+							<button type="submit" class="btn btn-primary" id="submitBtn">등록</button>
+						</div>
+					</div>
+				</form>
+			</div>
+
+			<!-- 
+    ==================================
+    임시저장 영역 
+    ==================================
+    -->
+			<aside class="draft-sidebar">
+				<h3>임시저장 목록</h3>
+				<div id="draftList"></div>
+				<p class="text-muted" id="draftEmptyMsg" style="font-size:12px">임시저장된 글이 없습니다.</p>
+			</aside>
+		</div>
+	</main>
+
+	<!-- 
+  ================================
+  오버레이 영역
+  ================================
+  -->
+	<div class="overlay-backdrop" id="notificationBackdrop"></div>
+
+	<!-- 
+  ================================
+  알림 영역
+  ================================
+  -->
+	<aside class="slide-panel" id="notificationPanel">
+		<div class="panel-header">
+			<h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button>
+		</div>
+		<!-- 알림 내용 -->
+		<div class="panel-body">
+			<div class="notification-clear-row"><button class="notification-clear-all" type="button">모두 삭제</button>
+			</div>
+			<div class="notification-item">
+				<span class="notification-icon">⚠</span>
+				<div>
+					<div class="notification-text">비속어 사용으로 경고 1회가 부여되었습니다.</div>
+					<div class="notification-time">10분 전</div>
+				</div>
+				<button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+			</div>
+			<div class="notification-item">
+				<span class="notification-icon">💬</span>
+				<div>
+					<div class="notification-text">작성하신 질문 "디즈니+ 로그인 오류에 어떻게 대처하나요?"에 관리자 답변이 등록되었습니다.</div>
+					<div class="notification-time">2시간 전</div>
+				</div>
+				<button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+			</div>
+			<div class="notification-item">
+				<span class="notification-icon">📝</span>
+				<div>
+					<div class="notification-text">내 게시글 "「오징어게임 3」, 이대로 끝내도 되는가"에 새 댓글이 달렸습니다.</div>
+					<div class="notification-time">어제</div>
+				</div>
+				<button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+			</div>
+		</div>
+	</aside>
+
+	<!-- 
+  ================================
+  챗봇 영역
+  ================================
+  -->
+	<button class="fab" id="chatbotFab" title="챗봇 실행">🤖</button>
+	<div class="overlay-backdrop" id="chatbotBackdrop"></div>
+	<aside class="slide-panel" id="chatbotPanel">
+		<div class="panel-header">
+			<h3>🤖 YouFlex 챗봇</h3><button class="panel-close" id="chatbotClose">✕</button>
+		</div>
+		<div class="panel-body">
+			<div class="chat-msg">
+				<div class="avatar"></div>
+				<div class="bubble">무엇을 도와드릴까요? 객관식 1문제 + OX 1문제, 하루 3번까지 풀 수 있어요!</div>
+			</div>
+			<div class="quiz-box" id="qnaQuizBox">
+				<div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
+				<button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
+
+				<div id="qnaQuizPlay" style="display:none">
+					<div class="quiz-progress" id="qnaQuizProgress"></div>
+					<div class="quiz-question" id="qnaQuizQuestion"></div>
+					<div class="quiz-options" id="qnaQuizOptions"></div>
+					<button class="btn btn-sm btn-primary" id="qnaQuizNextBtn" style="display:none">다음 문제 ›</button>
+				</div>
+
+				<div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
+			</div>
+		</div>
+		<div class="panel-input-row"><input type="text" placeholder="질문을 입력하세요" /><button
+				class="btn btn-primary">전송</button></div>
+	</aside>
+
+	<!-- 
+  ================================
+  채팅방 영역
+  ================================
+  -->
+	<div class="overlay-backdrop" id="chatroomBackdrop"></div>
+	<aside class="slide-panel" id="chatroomPanel">
+		<div class="panel-header">
+			<h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button>
+		</div>
+		<div class="panel-tabs" data-tab-panels>
+			<button class="active" data-tab-target="list">목록</button>
+			<button data-tab-target="chat">채팅</button>
+			<button data-tab-target="create" data-role-visible="critic,admin">개설</button>
+		</div>
+		<div class="panel-body" data-tab-panel="list">
+			<div class="room-list-item">
+				<div>
+					<div class="room-name">오늘 개봉작 실시간 토크</div>
+					<div class="room-count">18 / 30명</div>
+				</div><button class="btn btn-primary btn-sm">입장</button>
+			</div>
+		</div>
+		<div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
+			<div class="chatroom-title">
+				<span>💬 오늘 개봉작 실시간 토크</span>
+				<button class="btn btn-sm btn-danger" data-role-visible="critic,admin" onclick="giveChatWarning()">⚠ 경고
+					부여</button>
+			</div>
+			<div class="chatroom-messages" id="chatroomMessages">
+				<div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
+				<div class="chat-msg">
+					<div class="avatar"></div>
+					<div class="bubble">다들 이번 편 결말 어떻게 보셨어요?</div>
+				</div>
+				<div class="chat-msg me">
+					<div class="avatar"></div>
+					<div class="bubble">저는 반전이 좋았어요 ㅋㅋ</div>
+				</div>
+			</div>
+			<div class="panel-input-row">
+				<input type="text" id="chat_message_content" name="chat_message_content" placeholder="메시지를 입력하세요" />
+				<button class="btn btn-primary" id="chatroomSendBtn">전송</button>
+			</div>
+		</div>
+		<div class="panel-body" data-tab-panel="create" style="display:none">
+			<label class="text-muted" style="font-size:13px">방 이름</label>
+			<input type="text" id="chatroom_title" name="chatroom_title"
+				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
+			<label class="text-muted" style="font-size:13px">최대 인원</label>
+			<input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10"
+				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
+			<button class="btn btn-primary mt-24" id="chatroomCreateBtn">채팅방 개설</button>
+		</div>
+	</aside>
+
+	<!-- 취향(관심 장르) 선택 -->
+	<div class="genre-modal-backdrop" id="genreModalBackdrop">
+		<div class="genre-modal-card">
+			<h2 class="genre-title">취향 선택</h2>
+			<p class="genre-sub">관심 있는 장르를 선택해주세요 (복수 선택 가능)</p>
+			<div class="genre-grid" id="genreGrid">
+				<button type="button" class="genre-chip selected" data-genre="액션"><span>액션</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="모험"><span>모험</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="애니메이션"><span>애니메이션</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="코미디"><span>코미디</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="범죄"><span>범죄</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="다큐멘터리"><span>다큐멘터리</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip selected" data-genre="드라마"><span>드라마</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="가족"><span>가족</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="판타지"><span>판타지</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="역사"><span>역사</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="공포"><span>공포</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="뮤지컬"><span>뮤지컬</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="미스터리"><span>미스터리</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="로맨스"><span>로맨스</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip selected" data-genre="SF"><span>SF</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="스릴러"><span>스릴러</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="서부극"><span>서부극</span>
+					<span class="chip-check">✓</span></button>
+				<button type="button" class="genre-chip" data-genre="예능"><span>예능</span>
+					<span class="chip-check">✓</span></button>
+			</div>
+			<div class="genre-modal-actions">
+				<button type="button" class="btn" id="genreCancelBtn">취소</button>
+				<button type="button" class="btn btn-primary" id="genreSaveBtn">저장</button>
+			</div>
+		</div>
+	</div>
+
+	<!--==================================
+  푸터 영역 
+  ==================================
+  -->
+	<footer th:replace="~{fragments/layout :: footer}">
+	</footer>
+ 
+	<script th:src="@{/js/app.js}"></script>
+	<script th:src="@{/js/write.js}"></script>
+</body>
+
+</html>
