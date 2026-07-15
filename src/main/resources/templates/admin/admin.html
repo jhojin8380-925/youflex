@@ -188,20 +188,32 @@
     -->
   <div data-tab-panel="reports" class="mt-24" style="display:none">
     <table class="table">
-      <thead><tr><th>대상</th><th>내용 요약</th><th>신고자</th><th>사유</th><th>접수일</th><th>상태</th><th></th></tr></thead>
-      <tbody>
-        <tr>
-          <td><span class="badge badge-user">게시글</span></td><td>광고성 스팸 게시물입니다</td><td>드라마러버</td><td>스팸/도배</td><td>2026-06-29</td>
-          <td><span class="status-pill status-pending">대기중</span></td>
-          <td class="actions"><a href="13_detail.html" class="btn btn-sm">게시글 이동</a><button class="btn btn-sm">반려</button><button class="btn btn-sm btn-danger">경고처리</button></td></tr>
-        <tr>
-          <td><span class="badge badge-user">댓글</span></td><td>저는 조금 다르게 생각해요...</td><td>영화광123</td><td>욕설/비방</td><td>2026-06-30</td>
-          <td><span class="status-pill status-pending">대기중</span></td>
-          <td class="actions"><a href="13_detail.html" class="btn btn-sm">게시글 이동</a><button class="btn btn-sm">반려</button><button class="btn btn-sm btn-danger">경고처리</button></td></tr>
-        <tr>
-          <td><span class="badge badge-user">게시글</span></td><td>「기생수: 더 그레이」 원작과 비교 리뷰</td><td>무비홀릭</td><td>기타</td><td>2026-06-28</td>
-          <td><span class="status-pill status-active">처리완료 (유지)</span></td>
-          <td class="actions"><a href="13_detail.html" class="btn btn-sm">게시글 이동</a><button class="btn btn-sm" disabled>반려</button><button class="btn btn-sm btn-danger" disabled>경고처리</button></td></tr>
+      <thead><tr><th>대상</th><th>내용 요약</th><th>작성자</th><th>신고자</th><th>사유</th><th>접수일</th><th>상태</th><th></th></tr></thead>
+      <tbody id="reportListBody">
+        <tr th:each="r : ${reportList}"
+            th:data-report-type="${r.reportType}"
+            th:data-report-id="${r.reportId}"
+            th:data-reported-member-id="${r.reportedMemberId}"
+            th:data-reported-member-name="${r.reportedMemberName}">
+          <td><span class="badge badge-user" th:text="${r.reportTypeLabel}">게시글</span></td>
+          <td th:text="${r.contentSummary}">광고성 스팸 게시물입니다</td>
+          <td th:text="${r.reportedMemberName}">무비홀릭</td>
+          <td th:text="${r.reporterName}">드라마러버</td>
+          <td th:text="${r.reason}">스팸/도배</td>
+          <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-06-29</td>
+          <td>
+            <span class="status-pill status-pending" th:unless="${r.status == '처리완료'}">대기중</span>
+            <span class="status-pill status-active" th:if="${r.status == '처리완료'}">처리완료 (유지)</span>
+          </td>
+          <td class="actions">
+            <a th:if="${r.detailUrl != null}" th:href="@{${r.detailUrl}}" class="btn btn-sm">게시글 이동</a>
+            <button type="button" class="btn btn-sm" th:disabled="${r.status == '처리완료'}" onclick="rejectReport(this)">반려</button>
+            <button type="button" class="btn btn-sm btn-danger" th:disabled="${r.status == '처리완료'}" onclick="openReportWarningModal(this)">경고처리</button>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(reportList)}">
+          <td colspan="8" class="text-muted" style="text-align:center">접수된 신고가 없습니다.</td>
+        </tr>
       </tbody>
     </table>
   </div>

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.youflex.dto.MemberDTO;
+import com.youflex.service.AdminReportService;
 import com.youflex.service.MemberService;
 
 import jakarta.servlet.http.HttpSession;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminViewController {
 
     private final MemberService memberService;
+    private final AdminReportService adminReportService;
 
     @GetMapping
     public String adminPage(HttpSession session, Model model) {
@@ -36,6 +38,9 @@ public class AdminViewController {
         model.addAttribute("memberPageSize", memberService.getMemberPageSize());
         model.addAttribute("gradeRequests", memberService.getGradeUpgradeRequests());
         model.addAttribute("withdrawnMembers", memberService.getWithdrawnMembers());
+
+        // 신고 처리 탭 - 검색/페이징이 없어 전체 목록을 SSR로 한 번에 내려줌
+        model.addAttribute("reportList", adminReportService.getAllReports());
 
         return "admin/admin";
     }

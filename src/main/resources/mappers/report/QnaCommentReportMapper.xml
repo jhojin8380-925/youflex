@@ -13,20 +13,28 @@
         <result property="qnaCommentReportContent" column="qna_comment_report_content" />
         <result property="memberName" column="member_name" />
         <result property="qnaCommentContent" column="qna_comment_content" />
+        <result property="qnaId" column="qna_id" />
+        <result property="reportedMemberId" column="reported_member_id" />
+        <result property="reportedMemberName" column="reported_member_name" />
     </resultMap>
 
+    <!-- qna_comment_report_status는 enum('접수','처리중','처리완료')인데 기존에 'WAIT'로 넣고 있어서
+         제약조건 위반으로 등록 자체가 실패하던 버그를 같이 수정함 -->
     <insert id="insertCommentReport" parameterType="com.youflex.dto.QnaCommentReportDTO">
         INSERT INTO qna_comment_report (qna_comment_id, member_id, qna_comment_report_reason, qna_comment_report_status, qna_comment_report_created_at, qna_comment_report_content)
-        VALUES (#{qnaCommentId}, #{memberId}, #{qnaCommentReportReason}, 'WAIT', NOW(), #{qnaCommentReportContent})
+        VALUES (#{qnaCommentId}, #{memberId}, #{qnaCommentReportReason}, '접수', NOW(), #{qnaCommentReportContent})
     </insert>
 
     <select id="selectCommentReportList" resultMap="qnaCommentReportResultMap">
         SELECT cr.qna_comment_report_id, cr.qna_comment_id, cr.member_id, cr.qna_comment_report_reason,
                cr.qna_comment_report_status, cr.qna_comment_report_created_at, cr.qna_comment_report_content,
-               m.member_name, c.qna_comment_content
+               m.member_name, c.qna_comment_content, c.qna_id,
+               c.member_id AS reported_member_id,
+               author.member_name AS reported_member_name
         FROM qna_comment_report cr
         JOIN member m ON cr.member_id = m.member_id
         JOIN qna_comment c ON cr.qna_comment_id = c.qna_comment_id
+        JOIN member author ON c.member_id = author.member_id
         ORDER BY cr.qna_comment_report_created_at DESC
     </select>
 

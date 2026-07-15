@@ -216,14 +216,20 @@ async function loadMemberList(page) {
   renderMemberPagination(Math.max(1, Math.ceil(totalCount / pageSize)), 1);
 })();
 
-// ---- 경고 처리 모달 ----
+// ---- 경고 처리 모달 (회원 관리 탭 / 신고 처리 탭 공용) ----
+// 신고 처리 탭의 "경고처리" 버튼으로 열렸을 때만 채워지는 컨텍스트.
+// 경고 등록이 성공하면 이 값이 있는 경우에만 해당 신고를 함께 처리완료로 전환한다.
+let activeReportWarningContext = null;
+
 function openWarningModal(btn) {
+  activeReportWarningContext = null;
   const row = btn.closest("tr");
   document.getElementById("warning_target_member_id").value = row.dataset.memberId;
   document.getElementById("warning_reason").value = "";
   document.getElementById("warningModalBackdrop").classList.add("open");
 }
 function closeWarningModal() {
+  activeReportWarningContext = null;
   document.getElementById("warningModalBackdrop").classList.remove("open");
 }
 async function submitWarning() {
@@ -233,14 +239,21 @@ async function submitWarning() {
     alert("경고 사유를 입력해주세요.");
     return;
   }
+  const reportContext = activeReportWarningContext; // closeWarningModal이 지우기 전에 미리 캡처
   try {
     await adminFetch(`${MEMBER_API_BASE}/${memberId}/warning`, {
       method: "POST",
       body: JSON.stringify({ reason }),
     });
     closeWarningModal();
-    alert("경고가 부여되었습니다. (누적 3회 시 자동 강제탈퇴 처리됩니다)");
-    await loadMemberList(memberListState.page);
+    if (reportContext) {
+      await adminFetch(`${REPORT_API_BASE}/${reportContext.reportType}/${reportContext.reportId}/resolve`, { method: "POST" });
+      markReportRowResolved(reportContext.row);
+      alert("경고가 부여되고 신고가 처리완료 처리되었습니다.");
+    } else {
+      alert("경고가 부여되었습니다. (누적 3회 시 자동 강제탈퇴 처리됩니다)");
+      await loadMemberList(memberListState.page);
+    }
   } catch (e) {
     alert(e.message);
   }
@@ -321,6 +334,43 @@ async function rejectWithdraw(btn) {
   } catch (e) {
     alert(e.message);
   }
+}
+
+// ==========================================================================
+// 관리자 - 신고 처리 탭
+// ==========================================================================
+const REPORT_API_BASE = "/api/admin/reports";
+
+// 신고 1건을 처리완료 상태로 표시하고 반려/경고처리 버튼을 비활성화
+function markReportRowResolved(row) {
+  // 열 순서: 대상/내용요약/작성자/신고자/사유/접수일/상태/액션 -> 상태는 6번 인덱스
+  const statusCell = row.children[6];
+  statusCell.innerHTML = '<span class="status-pill status-active">처리완료 (유지)</span>';
+  row.querySelectorAll(".actions button").forEach((btn) => (btn.disabled = true));
+}
+
+async function rejectReport(btn) {
+  const row = btn.closest("tr");
+  if (!confirm("이 신고를 반려(콘텐츠 유지) 처리하시겠습니까?")) return;
+  try {
+    await adminFetch(`${REPORT_API_BASE}/${row.dataset.reportType}/${row.dataset.reportId}/resolve`, { method: "POST" });
+    markReportRowResolved(row);
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// 경고 처리 모달(회원 관리 탭과 공용)을 열되, 신고 컨텍스트를 함께 기록해둔다.
+function openReportWarningModal(btn) {
+  const row = btn.closest("tr");
+  activeReportWarningContext = {
+    reportType: row.dataset.reportType,
+    reportId: row.dataset.reportId,
+    row,
+  };
+  document.getElementById("warning_target_member_id").value = row.dataset.reportedMemberId;
+  document.getElementById("warning_reason").value = "";
+  document.getElementById("warningModalBackdrop").classList.add("open");
 }
 
 document.querySelectorAll(".member-subtabs button").forEach((btn) => {

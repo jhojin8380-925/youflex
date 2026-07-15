@@ -23,4 +23,8 @@ public class ReviewReportDTO {
     // join 조회용 (DB 컬럼 아님)
     private String memberName;
     private String reviewTitle;
+
+    // 관리자 신고 처리 - 신고 대상(게시글) 작성자 = 경고 부여 대상
+    private int reportedMemberId;
+    private String reportedMemberName;
 }
