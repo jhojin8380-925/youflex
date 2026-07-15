@@ -13,19 +13,26 @@
         <result property="qnaReportContent" column="qna_report_content" />
         <result property="memberName" column="member_name" />
         <result property="qnaTitle" column="qna_title" />
+        <result property="reportedMemberId" column="reported_member_id" />
+        <result property="reportedMemberName" column="reported_member_name" />
     </resultMap>
 
+    <!-- qna_report_status는 enum('접수','처리중','처리완료')인데 기존에 'WAIT'로 넣고 있어서
+         제약조건 위반으로 등록 자체가 실패하던 버그를 같이 수정함 -->
     <insert id="insertQnaReport" parameterType="com.youflex.dto.QnaReportDTO">
         INSERT INTO qna_report (qna_id, member_id, qna_report_reason, qna_report_status, qna_report_created_at, qna_report_content)
-        VALUES (#{qnaId}, #{memberId}, #{qnaReportReason}, 'WAIT', NOW(), #{qnaReportContent})
+        VALUES (#{qnaId}, #{memberId}, #{qnaReportReason}, '접수', NOW(), #{qnaReportContent})
     </insert>
 
     <select id="selectQnaReportList" resultMap="qnaReportResultMap">
         SELECT r.qna_report_id, r.qna_id, r.member_id, r.qna_report_reason, r.qna_report_status,
-               r.qna_report_created_at, r.qna_report_content, m.member_name, q.qna_title
+               r.qna_report_created_at, r.qna_report_content, m.member_name, q.qna_title,
+               q.member_id AS reported_member_id,
+               author.member_name AS reported_member_name
         FROM qna_report r
         JOIN member m ON r.member_id = m.member_id
         JOIN qna q ON r.qna_id = q.qna_id
+        JOIN member author ON q.member_id = author.member_id
         ORDER BY r.qna_report_created_at DESC
     </select>
 

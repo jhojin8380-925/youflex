@@ -19,7 +19,7 @@ public class MemberDTO {
 
     // 관리자 API(/api/admin/members 등)에서 MemberDTO를 그대로 JSON으로 내려보내므로,
     // 평문 저장된 비밀번호가 응답에 노출되지 않도록 직렬화에서 제외.
-    @JsonIgnore
+    @JsonIgnore // "이 필드는 JSON으로 변환할 때 제외해"라고 알려주는 어노테이션
     private String memberPwd;
     private String memberName;
     private String memberEmail;

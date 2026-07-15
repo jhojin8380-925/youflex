@@ -1,8 +1,19 @@
-package com.youflex.mapper;
+	package com.youflex.mapper;
+
+import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.youflex.dto.CommentReportDTO;
 
 @Mapper
 public interface CommentReportMapper {
 
+    // 관리자 - 댓글 신고 목록(신고자/작성자/댓글 내용 join)
+    List<CommentReportDTO> selectCommentReportList();
+
+    // 관리자 - 신고 처리 상태 변경(반려/경고처리 공용 - '처리완료'로 전환)
+    void updateCommentReportStatus(@Param("commentReportId") int commentReportId,
+                                    @Param("commentReportStatus") String commentReportStatus);
 }

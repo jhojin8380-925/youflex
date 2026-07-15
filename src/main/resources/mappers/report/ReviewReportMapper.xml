@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.ReviewReportMapper">
+
+    <resultMap id="reviewReportResultMap" type="com.youflex.dto.ReviewReportDTO">
+        <id property="reviewReportId" column="review_report_id" />
+        <result property="reviewId" column="review_id" />
+        <result property="memberId" column="member_id" />
+        <result property="reviewReportReason" column="review_report_reason" />
+        <result property="reviewReportStatus" column="review_report_status" />
+        <result property="reviewReportCreatedAt" column="review_report_created_at" />
+        <result property="reviewReportContent" column="review_report_content" />
+        <result property="memberName" column="reporter_name" />
+        <result property="reviewTitle" column="review_title" />
+        <result property="reportedMemberId" column="reported_member_id" />
+        <result property="reportedMemberName" column="reported_member_name" />
+    </resultMap>
+
+    <!-- 신고자(member) + 신고 대상 게시글(review) + 그 작성자(member)를 함께 조회.
+         작성자 정보가 있어야 관리자가 "경고처리" 시 누구에게 경고를 줄지 알 수 있음. -->
+    <select id="selectReviewReportList" resultMap="reviewReportResultMap">
+        SELECT rr.review_report_id, rr.review_id, rr.member_id, rr.review_report_reason, rr.review_report_status,
+               rr.review_report_created_at, rr.review_report_content,
+               reporter.member_name AS reporter_name,
+               rv.review_title,
+               rv.member_id AS reported_member_id,
+               author.member_name AS reported_member_name
+        FROM review_report rr
+        JOIN member reporter ON rr.member_id = reporter.member_id
+        JOIN review rv ON rr.review_id = rv.review_id
+        JOIN member author ON rv.member_id = author.member_id
+        ORDER BY rr.review_report_created_at DESC
+    </select>
+
+    <update id="updateReviewReportStatus">
+        UPDATE review_report
+        SET review_report_status = #{reviewReportStatus}
+        WHERE review_report_id = #{reviewReportId}
+    </update>
+
+</mapper>
