@@ -19,9 +19,26 @@ document.getElementById('tasteBtn').addEventListener('click', () => {
 document.getElementById('genreCancelBtn').addEventListener('click', () => {
   document.getElementById('genreModalBackdrop').classList.remove('open');
 });
-document.getElementById('genreSaveBtn').addEventListener('click', () => {
+// 칩 하나하나를 클릭했을 때 활성화/비활성화 상태를 토글하는 코드 추가 ⭕
+const genreChips = document.querySelectorAll('.genre-chip');
+genreChips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('selected'); // 클릭 시 selected 클래스를 넣었다 뺐다 함
+  });
+});
+/*document.getElementById('genreSaveBtn').addEventListener('click', () => {
   document.getElementById('genreModalBackdrop').classList.remove('open');
   alert('취향이 저장되었습니다. (데모)');
+});*/
+document.getElementById('genreSaveBtn').addEventListener('click', () => {
+  // 현재 선택된 장르 수집 (데모 혹은 실제 데이터 반영용)
+  const selectedGenres = [];
+  document.querySelectorAll('.genre-chip.selected').forEach(chip => {
+    selectedGenres.push(chip.getAttribute('data-genre'));
+  });
+  
+  document.getElementById('genreModalBackdrop').classList.remove('open');
+  alert(`선택된 취향: [${selectedGenres.join(', ')}]이 저장되었습니다.`);
 });
 
 // ===== 별점 클릭 처리(웅조) ===============
@@ -62,7 +79,7 @@ document.getElementById('genreSaveBtn').addEventListener('click', () => {
 		// });
     // ===== 별점 클릭 처리 (0.5점 단위 수정) ===============
 const starBoxes = document.querySelectorAll(".star-box");
-const ratingInput = document.querySelector("input[name='postRating']");
+const ratingInput = document.querySelector("input[name='reviewRating']");
 const allHalves = document.querySelectorAll(".star-box .half");
 
 // 현재 평점(score)에 맞춰서 모든 반 칸 별의 색상을 업데이트하는 함수
@@ -168,7 +185,7 @@ function createStarFireworks(element) {
 
 // ===== 사진 업로드 미리보기 수정(웅조)===== 
 		// [1] 파일 선택칸과 미리보기 이미지를 가져온다
-		const imgInput = document.getElementById('imgInput');    // <input type="file">
+/*		const imgInput = document.getElementById('imgInput');    // <input type="file">
 		const imgPreview = document.getElementById('imgPreview');  // 미리보기 <img>
 
 		// [2] 파일을 선택하면(change) 그 사진을 화면에 미리 보여준다
@@ -182,7 +199,26 @@ function createStarFireworks(element) {
 				imgPreview.style.display = 'block';       // 숨겨둔 미리보기를 보이게 함
 			};
 			reader.readAsDataURL(file);                   // 파일 읽기 시작
-		});
+		});*/
+		
+		// ===== 사진 업로드 미리보기 수정 ===== 
+		const imgInput = document.getElementById('imgInput');    
+		const imgPreview = document.getElementById('imgPreview');  
+
+		// 요소가 존재하는지 안전하게 체크한 뒤 이벤트를 연결합니다.
+		if (imgInput && imgPreview) {
+		  imgInput.addEventListener('change', function () {
+		    const file = imgInput.files[0];               
+		    if (!file) return;
+
+		    const reader = new FileReader();              
+		    reader.onload = function (e) {
+		      imgPreview.src = e.target.result;         
+		      imgPreview.style.display = 'block'; // 숨겨져 있던 이미지를 표시
+		    };
+		    reader.readAsDataURL(file);                   
+		  });
+		}
 
 function renderDraftList() {
   const drafts = getDrafts();
@@ -274,11 +310,11 @@ document.getElementById('draftBtn').addEventListener('click', () => {
 
 renderDraftList();
 
-document.getElementById('submitBtn').addEventListener('click', () => {
+/*document.getElementById('submitBtn').addEventListener('click', () => {
   if (!document.getElementById('review_title').value.trim()) {
     alert('제목을 입력해주세요.');
     return;
   }
   alert('게시글이 등록되었습니다. (데모)');
   location.href = '13_detail.html';
-});
+});*/

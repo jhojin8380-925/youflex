@@ -2,7 +2,8 @@ package com.youflex.dto;
 
 import java.time.LocalDateTime;
 
-import lombok.Builder;
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -25,6 +26,9 @@ public class ReviewDTO {
     private LocalDateTime reviewCreatedAt;
     private LocalDateTime reviewUpdatedAt;
 
+    // 파일 업로드 추가
+    private MultipartFile imgFile;
+    
     // join 조회용 (DB 컬럼 아님)
     private String memberName;
     private String genreCategoryName;

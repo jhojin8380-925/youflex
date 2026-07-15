@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.WarningMapper">
+
+    <insert id="insertWarning" parameterType="com.youflex.dto.WarningDTO" useGeneratedKeys="true" keyProperty="warningId">
+        INSERT INTO warning (member_id, warning_reason)
+        VALUES (#{memberId}, #{warningReason})
+    </insert>
+
+    <select id="countActiveWarnings" parameterType="int" resultType="int">
+        SELECT COUNT(*)
+        FROM warning
+        WHERE member_id = #{memberId}
+          AND warning_status = '유효'
+    </select>
+
+    <!-- 같은 테이블(warning)의 서브쿼리를 이용해 "가장 최근 유효 경고 1건"만 골라 상태 전환.
+         MySQL은 UPDATE ... WHERE id IN (SELECT ... FROM 같은테이블) 을 바로 못 쓰므로
+         파생 테이블(derived table)로 한 번 감싸서 우회함. -->
+    <update id="revokeLatestWarning" parameterType="int">
+        UPDATE warning
+        SET warning_status = '포인트차감취소'
+        WHERE warning_id = (
+            SELECT warning_id FROM (
+                SELECT warning_id
+                FROM warning
+                WHERE member_id = #{memberId}
+                  AND warning_status = '유효'
+                ORDER BY warning_created_at DESC
+                LIMIT 1
+            ) AS latest
+        )
+    </update>
+
+</mapper>

@@ -21,4 +21,84 @@
         VALUES (#{memberLoginid}, #{memberPwd}, #{memberName}, #{memberEmail}, #{memberPhone}, #{memberGrade})
     </insert>
 
+    <!-- ===================== 관리자 - 회원 관리 ===================== -->
+
+    <select id="findById" parameterType="int" resultType="com.youflex.dto.MemberDTO">
+        SELECT *
+        FROM member
+        WHERE member_id = #{memberId}
+    </select>
+
+    <select id="findMembers" resultType="com.youflex.dto.MemberDTO">
+        SELECT m.*,
+               (SELECT COUNT(*) FROM warning w
+                 WHERE w.member_id = m.member_id AND w.warning_status = '유효') AS warningCount
+        FROM member m
+        WHERE m.member_delete_status = '정상'
+        <if test="keyword != null and keyword != ''">
+            AND (m.member_loginid LIKE CONCAT('%', #{keyword}, '%')
+                 OR m.member_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR m.member_email LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY m.member_created_at DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countMembers" resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE member_delete_status = '정상'
+        <if test="keyword != null and keyword != ''">
+            AND (member_loginid LIKE CONCAT('%', #{keyword}, '%')
+                 OR member_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR member_email LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <select id="findGradeUpgradeRequests" resultType="com.youflex.dto.MemberDTO">
+        SELECT *
+        FROM member
+        WHERE member_grade_status = '신청'
+        ORDER BY member_created_at DESC
+    </select>
+
+    <select id="findWithdrawnMembers" resultType="com.youflex.dto.MemberDTO">
+        SELECT *
+        FROM member
+        WHERE member_delete_status = '탈퇴'
+        ORDER BY member_deleted_at DESC
+    </select>
+
+    <update id="approveGradeUpgrade" parameterType="int">
+        UPDATE member
+        SET member_grade = '우수',
+            member_grade_status = '승인'
+        WHERE member_id = #{memberId}
+    </update>
+
+    <update id="rejectGradeUpgrade" parameterType="int">
+        UPDATE member
+        SET member_grade_status = '반려'
+        WHERE member_id = #{memberId}
+    </update>
+
+    <update id="forceWithdraw" parameterType="int">
+        UPDATE member
+        SET member_delete_status = '탈퇴',
+            member_deleted_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <update id="restoreMember" parameterType="int">
+        UPDATE member
+        SET member_delete_status = '정상',
+            member_deleted_at = NULL
+        WHERE member_id = #{memberId}
+    </update>
+
+    <delete id="deleteMemberPermanently" parameterType="int">
+        DELETE FROM member
+        WHERE member_id = #{memberId}
+    </delete>
+
 </mapper>

@@ -49,4 +49,56 @@ public class MemberService {
                 : genreCategoryIds;
         preferenceMappingMapper.insertPreferences(memberDTO.getMemberId(), limited);
     }
+
+    // ===================== 관리자 - 회원 관리 =====================
+
+    private static final int MEMBER_PAGE_SIZE = 5;
+
+    // 회원 목록(정상 회원) 검색 + 페이징 조회. page는 1부터 시작.
+    public List<MemberDTO> getMemberList(String keyword, int page) {
+        int safePage = Math.max(page, 1);
+        int offset = (safePage - 1) * MEMBER_PAGE_SIZE;
+        return memberMapper.findMembers(keyword, offset, MEMBER_PAGE_SIZE);
+    }
+
+    public int getMemberListTotalCount(String keyword) {
+        return memberMapper.countMembers(keyword);
+    }
+
+    public int getMemberPageSize() {
+        return MEMBER_PAGE_SIZE;
+    }
+
+    // 등업 신청 대기 목록
+    public List<MemberDTO> getGradeUpgradeRequests() {
+        return memberMapper.findGradeUpgradeRequests();
+    }
+
+    // 탈퇴(자진/강제) 처리되어 최종 삭제를 기다리는 회원 목록
+    public List<MemberDTO> getWithdrawnMembers() {
+        return memberMapper.findWithdrawnMembers();
+    }
+
+    public void approveGradeUpgrade(int memberId) {
+        memberMapper.approveGradeUpgrade(memberId);
+    }
+
+    public void rejectGradeUpgrade(int memberId) {
+        memberMapper.rejectGradeUpgrade(memberId);
+    }
+
+    // 관리자 강제탈퇴(회원 목록 탭) - 자진탈퇴와 동일하게 소프트 삭제 처리 후 탈퇴 대기 목록으로 이동
+    public void forceWithdraw(int memberId) {
+        memberMapper.forceWithdraw(memberId);
+    }
+
+    // 탈퇴 반려 - 소프트 삭제를 취소하고 회원을 정상 상태로 복구
+    public void rejectWithdraw(int memberId) {
+        memberMapper.restoreMember(memberId);
+    }
+
+    // 탈퇴 승인 - 계정과 작성글/댓글을 완전히 삭제(FK ON DELETE CASCADE, 되돌릴 수 없음)
+    public void approveWithdraw(int memberId) {
+        memberMapper.deleteMemberPermanently(memberId);
+    }
 }

@@ -1,6 +1,9 @@
 package com.youflex.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.youflex.dto.MemberDTO;
 
@@ -13,4 +16,36 @@ public interface MemberMapper {
 
     // 회원가입 저장 (비밀번호는 서비스단에서 이미 해시된 값)
     int insertMember(MemberDTO memberDTO);
+
+    // 관리자 - 회원번호로 단건 조회(액션 처리 전 존재 확인용)
+    MemberDTO findById(int memberId);
+
+    // 관리자 - 회원 목록(정상 회원만) 검색 + 페이징. keyword는 아이디/이름/이메일 부분일치.
+    List<MemberDTO> findMembers(@Param("keyword") String keyword,
+                                 @Param("offset") int offset,
+                                 @Param("size") int size);
+
+    // 회원 목록 검색결과 총 개수(페이지네이션 계산용)
+    int countMembers(@Param("keyword") String keyword);
+
+    // 관리자 - 등업(우수회원) 신청 대기 목록
+    List<MemberDTO> findGradeUpgradeRequests();
+
+    // 관리자 - 탈퇴(자진/강제) 처리되어 최종 삭제를 기다리는 회원 목록
+    List<MemberDTO> findWithdrawnMembers();
+
+    // 등업 승인 - 일반 -> 우수로 전환
+    void approveGradeUpgrade(int memberId);
+
+    // 등업 반려
+    void rejectGradeUpgrade(int memberId);
+
+    // 강제탈퇴 / 자진탈퇴 공용 - 소프트 삭제(member_delete_status = '탈퇴')
+    void forceWithdraw(int memberId);
+
+    // 탈퇴 반려 - 소프트 삭제 취소(다시 '정상'으로 복구)
+    void restoreMember(int memberId);
+
+    // 탈퇴 승인 - 계정/작성글/댓글 완전 삭제(FK ON DELETE CASCADE로 연쇄 삭제, 되돌릴 수 없음)
+    void deleteMemberPermanently(int memberId);
 }

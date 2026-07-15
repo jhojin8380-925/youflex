@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.youflex.mapper.ReviewMapper">
+	<insert id="write">
+		<!-- 작성 내용 : 멤버ID, 장르(취향선택), 플랫폼, 관련작품, 제목, 본문, 대표이미지, 별점 -->
+		INSERT INTO REVIEW(MEMBER_ID, GENRE_CATEGORY_ID, REVIEW_PLATFORM, REVIEW_RELATED, REVIEW_TITLE, REVIEW_CONTENT, REVIEW_IMG, REVIEW_RATING)
+		VALUES(#{memberId}, #{genreCategoryId}, #{reviewPlatform}, #{reviewRelated}, #{reviewTitle}, #{reviewContent}, #{reviewImg}, #{reviewRating})
+	</insert>
 
 </mapper>
