@@ -144,7 +144,7 @@ public class QnaController {
 
     /**
      * 댓글 삭제
-     * - 로그인한 회원만 가능. 세션의 memberId를 기준으로 본인 댓글 여부는 QnaCommentServiceImpl에서 검증
+     * - 로그인한 회원만 가능. 세션의 memberId를 기준으로 본인 댓글 여부는 QnaCommentService에서 검증
      * @param qnaCommentId 삭제할 댓글 ID
      * @param session 로그인 세션
      * @return 삭제 성공 시 204 No Content, 미로그인 시 401 Unauthorized
