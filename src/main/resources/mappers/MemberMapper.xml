@@ -24,11 +24,24 @@
     <!-- ===================== 관리자 - 회원 관리 ===================== -->
 	
 	
+    <!-- 마이페이지 등 단건 조회 시 프로필 카드에 표시할 누적 경고 횟수도 같이 join -->
     <select id="findById" parameterType="int" resultType="com.youflex.dto.MemberDTO">
-        SELECT *
-        FROM member
-        WHERE member_id = #{memberId}
+        SELECT m.*,
+               (SELECT COUNT(*) FROM warning w
+                 WHERE w.member_id = m.member_id AND w.warning_status = '유효') AS warningCount
+        FROM member m
+        WHERE m.member_id = #{memberId}
     </select>
+
+    <!-- 마이페이지 - 회원정보 수정(이름/이메일/전화번호/비밀번호). memberGrade 등 민감 필드는 여기서 다루지 않음 -->
+    <update id="updateProfile" parameterType="com.youflex.dto.MemberDTO">
+        UPDATE member
+        SET member_name = #{memberName},
+            member_email = #{memberEmail},
+            member_phone = #{memberPhone},
+            member_pwd = #{memberPwd}
+        WHERE member_id = #{memberId}
+    </update>
 
     <select id="findMembers" resultType="com.youflex.dto.MemberDTO">
         SELECT m.*,
@@ -56,6 +69,7 @@
         </if>
     </select>
 
+    <!--  -->
     <select id="findGradeUpgradeRequests" resultType="com.youflex.dto.MemberDTO">
         SELECT *
         FROM member
@@ -63,6 +77,7 @@
         ORDER BY member_created_at DESC
     </select>
 
+    <!-- 회원 탈퇴 선청 -->
     <select id="findWithdrawnMembers" resultType="com.youflex.dto.MemberDTO">
         SELECT *
         FROM member
@@ -70,6 +85,7 @@
         ORDER BY member_deleted_at DESC
     </select>
 
+    <!-- 등업 처리 -->
     <update id="approveGradeUpgrade" parameterType="int">
         UPDATE member
         SET member_grade = '우수',
@@ -77,12 +93,14 @@
         WHERE member_id = #{memberId}
     </update>
 
+    <!-- 등업신청 반려  -->
     <update id="rejectGradeUpgrade" parameterType="int">
         UPDATE member
         SET member_grade_status = '반려'
         WHERE member_id = #{memberId}
     </update>
 
+    <!-- 회원 탈퇴 승인 -->
     <update id="forceWithdraw" parameterType="int">
         UPDATE member
         SET member_delete_status = '탈퇴',
@@ -90,6 +108,7 @@
         WHERE member_id = #{memberId}
     </update>
 
+    <!-- 회원 상태 정상으로 변경 -->
     <update id="restoreMember" parameterType="int">
         UPDATE member
         SET member_delete_status = '정상',
@@ -97,6 +116,7 @@
         WHERE member_id = #{memberId}
     </update>
 
+    <!-- 회원 데이터 삭제 -->
     <delete id="deleteMemberPermanently" parameterType="int">
         DELETE FROM member
         WHERE member_id = #{memberId}

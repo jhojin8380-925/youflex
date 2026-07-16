@@ -17,8 +17,11 @@ public interface MemberMapper {
     // 회원가입 저장 (비밀번호는 서비스단에서 이미 해시된 값)
     int insertMember(MemberDTO memberDTO);
 
-    // 관리자 - 회원번호로 단건 조회(액션 처리 전 존재 확인용)
+    // 관리자 - 회원번호로 단건 조회(액션 처리 전 존재 확인용) / 마이페이지 내 정보 조회에도 사용
     MemberDTO findById(int memberId);
+
+    // 마이페이지 - 회원정보 수정(이름/이메일/전화번호/비밀번호)
+    void updateProfile(MemberDTO memberDTO);
 
     // 관리자 - 회원 목록(정상 회원만) 검색 + 페이징. keyword는 아이디/이름/이메일 부분일치.
     List<MemberDTO> findMembers(@Param("keyword") String keyword,

@@ -67,7 +67,8 @@ document.getElementById('saveProfileBtn').addEventListener('click', () => {
     alert('새 비밀번호가 일치하지 않아 저장할 수 없습니다.');
     return;
   }
-  alert('회원 정보가 안전하게 변경되었습니다.');
+  // 클라이언트 검증 통과 시 실제로 /mypage에 POST 제출(서버에서 현재 비밀번호 재검증)
+  document.getElementById('profileForm').submit();
 });
 
 // 회원탈퇴 2차 확인

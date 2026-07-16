@@ -6,6 +6,7 @@
 ## 프로젝트 개요
 
 - Spring Boot + MyBatis + Thymeleaf 기반 웹 서비스
+- 사용하는 기술 스택 : MyBatis, Thymeleaf, lombok, WebSocket, mysql, spring
 - 패키지 구조 (`com.youflex`)
   - `controller` : REST API 컨트롤러 (`@RestController`), 화면 렌더링 컨트롤러 (`*ViewController`)
   - `service` : 인터페이스 + `*ServiceImpl` 구현체로 분리

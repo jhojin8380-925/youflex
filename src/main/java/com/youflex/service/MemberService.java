@@ -50,6 +50,27 @@ public class MemberService {
         preferenceMappingMapper.insertPreferences(memberDTO.getMemberId(), limited);
     }
 
+    // ===================== 마이페이지 - 내 정보 =====================
+
+    // 내 정보 탭 조회(누적 경고 횟수 포함)
+    public MemberDTO getMemberDetail(int memberId) {
+        return memberMapper.findById(memberId);
+    }
+
+    // 회원정보 수정 전 현재 비밀번호 확인
+    public boolean isCurrentPasswordValid(int memberId, String currentPwd) {
+        MemberDTO member = memberMapper.findById(memberId);
+        return currentPwd.equals(member.getMemberPwd());
+    }
+
+    // 회원정보 수정 - 새 비밀번호를 입력하지 않았으면 기존 비밀번호를 그대로 유지
+    public void updateProfile(int memberId, String newPwd, MemberDTO updates) {
+        MemberDTO member = memberMapper.findById(memberId);
+        updates.setMemberId(memberId);
+        updates.setMemberPwd(newPwd != null && !newPwd.isBlank() ? newPwd : member.getMemberPwd());
+        memberMapper.updateProfile(updates);
+    }
+
     // ===================== 관리자 - 회원 관리 =====================
 
     private static final int MEMBER_PAGE_SIZE = 5;
