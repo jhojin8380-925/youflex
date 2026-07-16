@@ -68,14 +68,14 @@
 	<main class="container">
 		
 		<!-- enctype="multipart/form-data" 사진 파일을 전송하기 위해 작성 -->
-		<form class="card" th:action="@{/review/write}" method="post" enctype="multipart/form-data"></form>
+		<!--<form class="card" th:action="@{/review/write}" method="post" enctype="multipart/form-data"></form>-->
 		
 		<div class="write-page-grid">
 			<div class="write-wrap">
 				<!-- '장르'버튼 넣을 div박스 추가(웅조) -->
 				<div class="review-genre-box">
 					<h1>리뷰 작성</h1>
-					<button type="button" class="taste-btn box" id="tasteBtn"><span>❤️ 취향 선택</span></button>
+					<button type="button" class="taste-btn box" id="tasteBtn"><span>❤️ 관련 장르</span></button>
 				</div>
 
 				<!-- 
@@ -84,17 +84,7 @@
       ==================================
     -->
 				<form id="reviewForm" th:action="@{/review/write}" method="post" enctype="multipart/form-data">
-					<div class="row-2">
-						<div class="form-row">
-							<label>카테고리 (장르)</label>
-							<select id="genre_category_id" name="genreCategoryId">
-								<option value="1">영화</option>
-								<option value="2">드라마</option>
-								<option value="3">예능</option>
-								<option value="4">애니메이션</option>
-								<option value="5">다큐멘터리</option>
-							</select>
-						</div>
+					<!--<div class="row-2">-->
 						<div class="form-row">
 							<label>플랫폼</label>
 							<select id="review_platform" name="reviewPlatform">
@@ -106,7 +96,7 @@
 								<option>기타</option>
 							</select>
 						</div>
-					</div>
+					<!--</div>-->
 
 					<!-- 제목 작성 영역 -->
 					<div class="form-row">
@@ -343,7 +333,7 @@
 	<div class="genre-modal-backdrop" id="genreModalBackdrop">
 		<div class="genre-modal-card">
 			<h2 class="genre-title">취향 선택</h2>
-			<p class="genre-sub">관심 있는 장르를 선택해주세요 (복수 선택 가능)</p>
+			<p class="genre-sub">관심 있는 장르를 선택해주세요 (최대 3개)</p>
 			<div class="genre-grid" id="genreGrid">
 				<button type="button" class="genre-chip selected" data-genre="액션"><span>액션</span>
 					<span class="chip-check">✓</span></button>

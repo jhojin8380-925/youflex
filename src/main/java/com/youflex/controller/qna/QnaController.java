@@ -12,7 +12,6 @@ import com.youflex.dto.MemberDTO;
 import com.youflex.service.qna.QnaService;
 import com.youflex.service.qna.QnaCommentService;
 import com.youflex.service.QnaReportService;
-import com.youflex.exception.QnaAccessDeniedException;
 import jakarta.servlet.http.HttpSession;
 
 /**
@@ -53,7 +52,7 @@ public class QnaController {
         boolean isAdmin = loginMember != null && "관리자".equals(loginMember.getMemberGrade());
         try {
             return ResponseEntity.ok(qnaService.getQnaDetail(qnaId, requesterMemberId, isAdmin));
-        } catch (QnaAccessDeniedException e) {
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }

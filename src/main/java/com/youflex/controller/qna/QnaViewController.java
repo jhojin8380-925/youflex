@@ -12,7 +12,6 @@
 	import com.youflex.service.qna.QnaService;
 	import com.youflex.service.qna.QnaCommentService;
 	import com.youflex.service.admin.AdminAnswerService;
-	import com.youflex.exception.QnaAccessDeniedException;
 	import jakarta.servlet.http.HttpSession;
 	
 	/**
@@ -47,7 +46,7 @@
 	        QnaDTO qna;
 	        try {
 	            qna = qnaService.getQnaDetail(qnaId, requesterMemberId, isAdmin);
-	        } catch (QnaAccessDeniedException e) {
+	        } catch (IllegalStateException e) {
 	            return "redirect:/notice";
 	        }
 
@@ -87,7 +86,7 @@
 	        QnaDTO qna;
 	        try {
 	            qna = qnaService.getQnaDetail(qnaId, requesterMemberId, isAdmin);
-	        } catch (QnaAccessDeniedException e) {
+	        } catch (IllegalStateException e) {
 	            return "redirect:/notice";
 	        }
 	        model.addAttribute("qna", qna);
