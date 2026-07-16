@@ -26,7 +26,7 @@ public class MemberDTO {
     private String memberPhone;
 
     // 실제 DB에는 member_role이 따로 없고 이 memberGrade가 권한 역할까지 겸함
-    // (ENUM '일반'/'우수'/'관리자', 기본값 '일반'). 관리자 판별은 == '관리자'로 비교.
+    // (ENUM '시청자'/'평론가'/'관리자', 기본값 '시청자'). 관리자 판별은 == '관리자'로 비교.
     private String memberGrade;
     private int memberPoint;
     private String memberDeleteStatus;

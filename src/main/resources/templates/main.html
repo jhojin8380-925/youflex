@@ -581,7 +581,7 @@
         <button class="active" data-tab-target="list">목록</button>
         <button data-tab-target="chat">채팅</button>
 		<button data-tab-target="create"
-		        th:if="${session.loginMember?.memberGrade?.toString() == '우수' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+		        th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
 		      개설
 		 </button>
       </div>
@@ -604,7 +604,7 @@
 	    <button
 	      class="btn btn-sm btn-danger"
 	      onclick="giveChatWarning()"
-	      th:if="${session.loginMember != null and (session.loginMember.memberGrade?.toString() == '우수' or session.loginMember.memberGrade?.toString() == '관리자')}"
+	      th:if="${session.loginMember != null and (session.loginMember.memberGrade?.toString() == '평론가' or session.loginMember.memberGrade?.toString() == '관리자')}"
 	    >
 	      ⚠ 경고 부여
 	    </button>
@@ -631,7 +631,7 @@
         </div>
       </div>
       <div class="panel-body" data-tab-panel="create" style="display: none"
-	        th:if="${session.loginMember?.memberGrade?.toString() == '우수' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+	        th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
         <label class="text-muted" style="font-size: 13px">방 이름</label>
         <input
           type="text"

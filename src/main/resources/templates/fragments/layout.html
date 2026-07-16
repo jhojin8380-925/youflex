@@ -171,12 +171,12 @@
 <aside class="slide-panel" id="chatroomPanel" th:fragment="chat">
   <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
   
-  <!-- 탭 영역: '개설' 탭은 우수(평론가) 등급 또는 관리자에게만 노출 -->
+  <!-- 탭 영역: '개설' 탭은 평론가 등급 또는 관리자에게만 노출 -->
   <div class="panel-tabs" data-tab-panels>
     <button class="active" data-tab-target="list">목록</button>
     <button data-tab-target="chat">채팅</button>
     <button data-tab-target="create"
-            th:if="${session.loginMember?.memberGrade?.toString() == '우수' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+            th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
       개설
     </button>
   </div>
@@ -198,9 +198,9 @@
   <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
     <div class="chatroom-title">
       <span>💬 오늘 개봉작 실시간 토크</span>
-      <!-- 경고 부여 버튼: '우수'(평론가) 또는 '관리자' 등급만 노출 -->
+      <!-- 경고 부여 버튼: '평론가' 또는 '관리자' 등급만 노출 -->
       <button class="btn btn-sm btn-danger" onclick="giveChatWarning()"
-              th:if="${session.loginMember != null and (session.loginMember.memberGrade == '우수' or session.loginMember.memberGrade == '관리자')}">⚠ 경고 부여</button>
+              th:if="${session.loginMember != null and (session.loginMember.memberGrade == '평론가' or session.loginMember.memberGrade == '관리자')}">⚠ 경고 부여</button>
     </div>
     <div class="chatroom-messages" id="chatroomMessages">
       <div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
@@ -212,9 +212,9 @@
       <button class="btn btn-primary" id="chatroomSendBtn">전송</button>
     </div>
   </div>
-  <!-- 3. 개설 패널: '우수' 또는 '관리자' 등급만 렌더링 -->
+  <!-- 3. 개설 패널: '평론가' 또는 '관리자' 등급만 렌더링 -->
   <div class="panel-body" data-tab-panel="create" style="display:none;"
-       th:if="${session.loginMember?.memberGrade?.toString() == '우수' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+       th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
     <label class="text-muted" style="font-size:13px">방 이름</label>
     <input type="text" id="chatroom_title" name="chatroom_title" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box;margin-bottom:12px" />
     <label class="text-muted" style="font-size:13px">최대 인원</label>

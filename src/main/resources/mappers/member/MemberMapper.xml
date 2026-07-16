@@ -14,7 +14,7 @@
     </select>
 
     <!-- 회원가입 시 필요한 컬럼만 저장. point 등 나머지는 DB 기본값에 맡김.
-         member_grade는 서비스단(MemberService.join)에서 '일반'으로 강제 설정한 값이 들어옴
+         member_grade는 서비스단(MemberService.join)에서 '시청자'로 강제 설정한 값이 들어옴
          (사용자가 폼에 등급을 끼워넣어 관리자로 자가 승격하는 것을 막기 위함). -->
     <insert id="insertMember" parameterType="com.youflex.dto.MemberDTO" useGeneratedKeys="true" keyProperty="memberId">
         INSERT INTO member (member_loginid, member_pwd, member_name, member_email, member_phone, member_grade)
@@ -95,7 +95,7 @@
     <!-- 등업 처리 -->
     <update id="approveGradeUpgrade" parameterType="int">
         UPDATE member
-        SET member_grade = '우수',
+        SET member_grade = '평론가',
             member_grade_status = '승인'
         WHERE member_id = #{memberId}
     </update>

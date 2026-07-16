@@ -295,7 +295,7 @@ async function forceWithdrawMember(btn) {
 // ---- 등업 신청 대기 탭 ----
 async function approveGrade(btn) {
   const row = btn.closest("tr");
-  if (!confirm(`${row.dataset.memberName} 회원을 우수회원으로 등업하시겠습니까?`)) return;
+  if (!confirm(`${row.dataset.memberName} 회원을 평론가로 등업하시겠습니까?`)) return;
   try {
     await adminFetch(`${MEMBER_API_BASE}/${row.dataset.memberId}/grade/approve`, { method: "POST" });
     row.remove();

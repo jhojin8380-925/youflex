@@ -23,10 +23,10 @@ USE youflex;
 -- member_loginid는 varchar(20)이라 짧게 지음
 INSERT INTO member (member_loginid, member_pwd, member_name, member_email, member_grade)
 VALUES
-  ('test_wr1', 'test1234', '테스트작성자1', 'test_report_writer1@test.com', '일반'),
-  ('test_wr2', 'test1234', '테스트작성자2', 'test_report_writer2@test.com', '일반'),
-  ('test_rp1', 'test1234', '테스트신고자1', 'test_report_reporter1@test.com', '일반'),
-  ('test_rp2', 'test1234', '테스트신고자2', 'test_report_reporter2@test.com', '일반');
+  ('test_wr1', 'test1234', '테스트작성자1', 'test_report_writer1@test.com', '시청자'),
+  ('test_wr2', 'test1234', '테스트작성자2', 'test_report_writer2@test.com', '시청자'),
+  ('test_rp1', 'test1234', '테스트신고자1', 'test_report_reporter1@test.com', '시청자'),
+  ('test_rp2', 'test1234', '테스트신고자2', 'test_report_reporter2@test.com', '시청자');
 
 -- 2. 테스트용 게시글(리뷰) 1건 - genre_category는 기존에 등록된 것 중 아무거나 사용
 INSERT INTO review (member_id, genre_category_id, review_platform, review_title, review_content, review_updated_at)

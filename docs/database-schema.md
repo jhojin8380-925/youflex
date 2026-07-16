@@ -6,14 +6,15 @@
 ## 주의해야 할 것들 (실수하기 쉬운 포인트)
 
 - **역할/등급은 `member_grade` 하나로 처리함.** `member_role` 같은 컬럼은 없음.
-  `member_grade`는 ENUM('일반','우수','관리자')이고 기본값 '일반'.
+  `member_grade`는 ENUM('시청자','평론가','관리자')이고 기본값 '시청자'
+  (기획서 등급 명칭: 일반회원=시청자, 고급회원=평론가).
   관리자 체크는 `memberGrade == '관리자'`로 해야 함 (이전에 `memberRole`을
   따로 만든 건 실수였고 제거함).
-- `member_grade_status`는 등급(우수 등급) **신청/승인 상태**용 ENUM('미신청','신청','승인','반려')
+- `member_grade_status`는 등급(평론가 등급) **신청/승인 상태**용 ENUM('미신청','신청','승인','반려')
   이지 회원 자체의 활성 상태가 아님. 회원 활성/탈퇴는 `member_delete_status` ENUM('정상','탈퇴').
 - `member_loginid`, `member_pwd`는 **nullable** — 소셜 로그인 회원은 둘 다 null.
   로그인 폼 유효성 검사할 때 일반 회원가입 기준으로만 required 걸어둔 상태.
-- 대부분의 enum 값이 **한글 문자열**임(`'일반'`, `'정상'`, `'접수'` 등). Java에서
+- 대부분의 enum 값이 **한글 문자열**임(`'시청자'`, `'정상'`, `'접수'` 등). Java에서
   비교할 때 영문 상수 쓰지 말고 이 한글 값 그대로 비교해야 함.
 - `member_loginid`, `member_email` 둘 다 UNIQUE 제약 있음. 지금 코드는 로그인id
   중복만 서버에서 재검증하고 있고, 이메일 중복은 DB 제약에만 의존 중(터지면 500).
@@ -48,7 +49,7 @@ create table member (
     member_name          varchar(20) not null,
     member_email         varchar(100) not null,
     member_phone         varchar(20) null,
-    member_grade         enum('일반','우수','관리자') not null default '일반',
+    member_grade         enum('시청자','평론가','관리자') not null default '시청자',
     member_point         int not null default 0,
     member_delete_status enum('정상','탈퇴') not null default '정상',
     member_created_at    datetime not null default now(),

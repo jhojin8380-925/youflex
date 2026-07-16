@@ -35,9 +35,9 @@ public class MemberService {
 
     public void join(MemberDTO memberDTO, List<Integer> genreCategoryIds) {
         // 해시 없이 입력한 비밀번호를 그대로 저장(요청에 따라 해시 제거함 - 보안상 실서비스에는 부적합)
-        // 폼으로 넘어온 값과 무관하게 항상 일반회원으로 고정(관리자 자가 승격 방지).
-        // DB에는 member_role이 따로 없고 member_grade(ENUM '일반'/'우수'/'관리자')가 그 역할을 함.
-        memberDTO.setMemberGrade("일반");
+        // 폼으로 넘어온 값과 무관하게 항상 일반회원(시청자)으로 고정(관리자 자가 승격 방지).
+        // DB에는 member_role이 따로 없고 member_grade(ENUM '시청자'/'평론가'/'관리자')가 그 역할을 함.
+        memberDTO.setMemberGrade("시청자");
         memberMapper.insertMember(memberDTO); // useGeneratedKeys로 memberDTO.memberId가 채워짐
 
         if (genreCategoryIds == null || genreCategoryIds.isEmpty()) {
