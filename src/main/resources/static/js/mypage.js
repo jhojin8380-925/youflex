@@ -78,7 +78,3 @@ document.getElementById('withdrawBtn').addEventListener('click', (e) => {
   alert('회원탈퇴가 정상적으로 처리되었습니다. 그동안 이용해 주셔서 감사합니다.');
   location.href = '02_login.html';
 });
-// 맨 위로 버튼 클릭 시 부드럽게 스크롤 -나영-
-document.getElementById('footerTopBtn').addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});

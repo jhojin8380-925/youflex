@@ -1,8 +1,9 @@
 const idInput = document.getElementById('member_loginid');
 const idStatus = document.getElementById('idStatus');
 document.getElementById('idCheckBtn').addEventListener('click', () => {
-  const loginId = idInput.value.trim();
-  if (!loginId) {
+  const loginId = idInput.value.trim();  // idInput 값을 loginId 에 담음
+  if (!loginId) { // loginId가 존재하지 않으면 발동
+    // 중복확인 전용 아이디 값을 입력 했는지
     idStatus.textContent = '아이디를 입력해주세요.';
     idStatus.className = 'id-status no';
     return;
@@ -12,10 +13,12 @@ document.getElementById('idCheckBtn').addEventListener('click', () => {
     .then((res) => {
       // res.ok를 확인하지 않으면 서버 에러(500 등)까지 "이미 사용 중"으로 잘못 표시됨
       // (data.available이 undefined라 falsy로 취급되던 버그)
-      if (!res.ok) throw new Error('check-id request failed');
+      if (!res.ok) throw new Error('check-id request failed'); 
       return res.json();
     })
+    // data : 콜백의 매개변수 이름, res.json()이 파싱한 { available: true/false } 객체
     .then((data) => {
+      // available 값에 따라 성공/중복 메시지 표시
       if (data.available) {
         idStatus.textContent = '사용 가능한 아이디입니다.';
         idStatus.className = 'id-status ok';
@@ -35,17 +38,20 @@ const pwConfirmInput = document.getElementById('pwConfirmInput');
 const pwMatch = document.getElementById('pwMatch');
 const MIN_PW_LENGTH = 4;
 
+// 비밀번호 규칙 체크리스트 항목 하나의 표시(✓/○, ok 클래스)를 갱신
 function setRule(id, ok) {
   const li = document.getElementById(id);
   li.classList.toggle('ok', ok);
   li.querySelector('.mark').textContent = ok ? '✓' : '○';
 }
 
+// 비밀번호 입력 중 실시간으로 길이 규칙 체크 + 비밀번호 확인란과 일치 여부 갱신
 pwInput.addEventListener('input', () => {
   setRule('rule-len', pwInput.value.length >= MIN_PW_LENGTH);
   checkMatch();
 });
 
+// 비밀번호와 비밀번호 확인 입력값이 일치하는지 실시간으로 안내
 function checkMatch() {
   if (!pwConfirmInput.value) { pwMatch.textContent = ''; return; }
   if (pwInput.value === pwConfirmInput.value) {
@@ -58,6 +64,7 @@ function checkMatch() {
 }
 pwConfirmInput.addEventListener('input', checkMatch);
 
+// 취향(장르) 선택 모달을 화면에 표시
 function openGenreModal() {
   document.getElementById('genreModalBackdrop').classList.add('open');
 }

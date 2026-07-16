@@ -29,11 +29,11 @@
            -->
         <div class="id-status no" th:if="${joinError}" th:text="${joinError}" style="margin-bottom:12px"></div>
 
+        <!-- 회원가입 작성 폼 시작 -->
         <form
           id="signupForm"
           th:action="@{/join}"
-          method="post"
-        >
+          method="post">
           <div class="form-row">
             <label>아이디</label>
             <div class="id-check-row">
@@ -42,8 +42,8 @@
                 id="member_loginid"
                 name="memberLoginid"
                 placeholder="영문/숫자 4~16자"
-                required
-              />
+                required/>
+                
               <button type="button" class="btn btn-sm" id="idCheckBtn">
                 중복확인
               </button>
