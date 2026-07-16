@@ -31,7 +31,7 @@
 			th:if="${session.loginMember.memberGrade == '관리자'}"
 		  	class="btn btn-ghost" 
 			style="color:var(--danger)">⚙ 관리자 페이지</a>
-	      <a href="./14_mypage.html" class="btn btn-ghost">마이페이지</a>
+	      <a th:href="@{/mypage}" class="btn btn-ghost">마이페이지</a>
 	      <a th:href="@{/logout}" class="btn btn-ghost">로그아웃</a>
 	      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
 	      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
@@ -197,7 +197,9 @@
   <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
     <div class="chatroom-title">
       <span>💬 오늘 개봉작 실시간 토크</span>
-      <button class="btn btn-sm btn-danger" onclick="giveChatWarning()">⚠ 경고 부여</button>
+      <!-- 경고 부여 버튼: '우수'(평론가) 또는 '관리자' 등급만 노출 -->
+      <button class="btn btn-sm btn-danger" onclick="giveChatWarning()"
+              th:if="${session.loginMember != null and (session.loginMember.memberGrade == '우수' or session.loginMember.memberGrade == '관리자')}">⚠ 경고 부여</button>
     </div>
     <div class="chatroom-messages" id="chatroomMessages">
       <div class="chat-msg system">‘영화광123’님이 입장했습니다</div>

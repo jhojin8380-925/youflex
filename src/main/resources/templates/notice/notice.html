@@ -5,8 +5,9 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>YouFlex - 공지사항 / Q&A</title>
-	<link rel="stylesheet" th:href="@{/assets/css/common.css}" />
-	<link rel="stylesheet" th:href="@{/assets/css/05_notice.css}" />
+	<!-- 마이그레이션 중 목업 경로(/assets/css)가 남아있던 버그 수정: static/css로 이전 완료된 실제 경로로 교체 -->
+	<link rel="stylesheet" th:href="@{/css/common.css}" />
+	<link rel="stylesheet" th:href="@{/css/notice.css}" />
 </head>
 
 <!-- data-nav-current: 상단 네비게이션에서 현재 활성화된 메뉴(notice)를 표시하기 위한 속성 -->
@@ -140,14 +141,13 @@
 	</aside>
 
 	<!-- 공통 푸터 -->
-	<footer class="site-footer main-footer">
-		<!-- 그대로 -->
-	</footer>
+	<footer class="site-footer main-footer"></footer>
 
 	<!-- 공통 스크립트: 알림/챗봇/채팅방 등 공통 UI 동작 처리 -->
-	<script th:src="@{/assets/js/app.js}"></script>
+	<!-- 마이그레이션 중 목업 경로(/assets/js)가 남아있던 버그 수정: static/js로 이전 완료된 실제 경로로 교체 -->
+	<script th:src="@{/js/app.js}"></script>
 	<!-- 공지사항/Q&A 페이지 전용 스크립트: 탭 전환 등 처리 -->
-	<script th:src="@{/assets/js/05_notice.js}"></script>
+	<script th:src="@{/js/notice.js}"></script>
 </body>
 
 </html>

@@ -22,7 +22,8 @@
     </insert>
 
     <!-- ===================== 관리자 - 회원 관리 ===================== -->
-
+	
+	
     <select id="findById" parameterType="int" resultType="com.youflex.dto.MemberDTO">
         SELECT *
         FROM member
