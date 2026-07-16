@@ -103,4 +103,39 @@ public class MemberController {
     public Map<String, Boolean> checkLoginId(@RequestParam("loginId") String loginId) {
         return Map.of("available", !memberService.isLoginIdTaken(loginId));
     }
+
+    // 마이페이지 - 내 정보 탭(프로필 카드 + 회원정보 수정 폼)에 실제 회원 데이터를 내려줌
+    @GetMapping("/mypage")
+    public String myPage(HttpSession session, Model model) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (!(loginMemberObj instanceof MemberDTO loginMember)) {
+            return "redirect:/login";
+        }
+        model.addAttribute("myInfo", memberService.getMemberDetail(loginMember.getMemberId()));
+        model.addAttribute("genres", genreCategoryService.getAllGenres());
+        return "member/mypage";
+    }
+
+    // 마이페이지 - 회원정보 수정 저장. 현재 비밀번호가 맞을 때만 반영(아이디는 폼에 없으므로 수정 불가).
+    @PostMapping("/mypage")
+    public String updateMyPage(MemberDTO memberDTO,
+                                @RequestParam("currentPassword") String currentPassword,
+                                HttpSession session,
+                                Model model) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (!(loginMemberObj instanceof MemberDTO loginMember)) {
+            return "redirect:/login";
+        }
+        int memberId = loginMember.getMemberId();
+        if (!memberService.isCurrentPasswordValid(memberId, currentPassword)) {
+            model.addAttribute("profileError", "현재 비밀번호가 일치하지 않습니다.");
+            model.addAttribute("myInfo", memberService.getMemberDetail(memberId));
+            model.addAttribute("genres", genreCategoryService.getAllGenres());
+            return "member/mypage";
+        }
+        memberService.updateProfile(memberId, memberDTO.getMemberPwd(), memberDTO);
+        // 헤더 등에서 쓰는 session.loginMember도 최신 정보로 갱신
+        session.setAttribute("loginMember", memberService.getMemberDetail(memberId));
+        return "redirect:/mypage";
+    }
 }
