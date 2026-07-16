@@ -16,7 +16,7 @@
 	-->
 	<header th:replace="~{fragments/layout :: header}"></header>
 
-</header>
+
 <!-- 마이페이지 프로필 영역 -->
 <main class="container" style="max-width:900px">
   <div class="card profile-summary mt-24">
@@ -28,7 +28,7 @@
     <div class="profile-info">
       <h2><span th:text="${myInfo.memberName}">김하늘</span> <span class="badge badge-critic" th:text="${myInfo.memberGrade}">평론가</span> <button type="button"
         class="btn btn-sm" id="rankUpBtn">등업신청</button>
-         <button type="button" class="taste-btn" id="tasteBtn" style="margin-left:auto">❤️ 취향 선택</button></h2>
+         <button type="button" class="taste-btn" id="tasteBtn" style="margin-left:auto">❤️ 장르 선택</button></h2>
       <div class="text-muted" style="font-size:13px;margin-bottom:6px">가입일 <span th:text="${#temporals.format(myInfo.memberCreatedAt, 'yyyy-MM-dd')}">2025-03-12</span></div>
       <div class="flex gap-8" style="flex-wrap:wrap">
         <div class="point-chip">💰 보유 포인트 <strong th:text="${myInfo.memberPoint} + ' P'">3,420 P</strong></div>
@@ -49,6 +49,7 @@
   <div data-tab-panel="profile" class="mt-24">
     <form id="profileForm" th:action="@{/mypage}" method="post">
     <div th:if="${profileError}" th:text="${profileError}" style="color:var(--danger);font-size:13px;margin-bottom:12px">현재 비밀번호가 일치하지 않습니다.</div>
+    <div th:if="${profileSuccess}" th:text="${profileSuccess}" style="color:var(--success);font-size:13px;margin-bottom:12px">회원정보가 저장되었습니다.</div>
     <div class="form-row">
       <label>이름</label>
       <input type="text" id="member_name" name="memberName" th:value="${myInfo.memberName}" />
@@ -236,6 +237,7 @@
         <div class="genre-grid" id="genreGrid">
           <button type="button" class="genre-chip"
                   th:each="genre : ${genres}"
+                  th:classappend="${myGenreCategoryIds.contains(genre.genreCategoryId)} ? 'selected'"
                   th:attr="data-genre-id=${genre.genreCategoryId}">
             <span th:text="${genre.genreCategoryName}"></span> <span class="chip-check">✓</span>
           </button>
@@ -248,7 +250,7 @@
           완료
         </button>
         <button type="button" class="genre-skip" id="genreSkipBtn">
-          나중에 설정하기
+          취소
         </button>
       </div>
     </div>

@@ -29,9 +29,3 @@
 .id-status.ok { color:var(--success); }
 .id-status.no { color:var(--danger); }
 
-/* ---------- 가입 완료 후 뜨는 "취향(관심 장르) 선택" 모달의 "나중에 설정하기" 링크 ---------- */
-.genre-skip {
-  display:block; width:100%; text-align:center; background:none; border:none;
-  color:var(--text-2); font-size:13px; margin-top:12px; padding:8px;
-}
-.genre-skip:hover { color:var(--text-0); }

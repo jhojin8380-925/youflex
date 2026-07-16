@@ -3,6 +3,8 @@ package com.youflex.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.youflex.dto.MemberDTO;
 import com.youflex.service.GenreCategoryService;
@@ -113,6 +116,8 @@ public class MemberController {
         }
         model.addAttribute("myInfo", memberService.getMemberDetail(loginMember.getMemberId()));
         model.addAttribute("genres", genreCategoryService.getAllGenres());
+        // 취향 선택 모달을 열었을 때 기존에 골라둔 장르가 체크된 상태로 보이도록 같이 내려줌
+        model.addAttribute("myGenreCategoryIds", memberService.getMemberGenreCategoryIds(loginMember.getMemberId()));
         return "member/mypage";
     }
 
@@ -121,7 +126,8 @@ public class MemberController {
     public String updateMyPage(MemberDTO memberDTO,
                                 @RequestParam("currentPassword") String currentPassword,
                                 HttpSession session,
-                                Model model) {
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
         Object loginMemberObj = session.getAttribute("loginMember");
         if (!(loginMemberObj instanceof MemberDTO loginMember)) {
             return "redirect:/login";
@@ -131,11 +137,28 @@ public class MemberController {
             model.addAttribute("profileError", "현재 비밀번호가 일치하지 않습니다.");
             model.addAttribute("myInfo", memberService.getMemberDetail(memberId));
             model.addAttribute("genres", genreCategoryService.getAllGenres());
+            model.addAttribute("myGenreCategoryIds", memberService.getMemberGenreCategoryIds(memberId));
             return "member/mypage";
         }
         memberService.updateProfile(memberId, memberDTO.getMemberPwd(), memberDTO);
         // 헤더 등에서 쓰는 session.loginMember도 최신 정보로 갱신
         session.setAttribute("loginMember", memberService.getMemberDetail(memberId));
+        // redirect 후 /mypage 화면에서 1회성으로 저장 완료 메시지를 띄우기 위한 flash attribute
+        redirectAttributes.addFlashAttribute("profileSuccess", "회원정보가 저장되었습니다.");
         return "redirect:/mypage";
+    }
+
+    // 마이페이지 - 취향(관심 장르) 선택 모달의 "완료" 버튼이 fetch로 호출하는 AJAX 엔드포인트.
+    // 선택한 장르 목록으로 통째로 교체 저장(최대 3개는 MemberService에서 재검증).
+    @PostMapping("/mypage/genres")
+    @ResponseBody
+    public ResponseEntity<Void> updateMyGenres(@RequestParam(value = "genreCategoryIds", required = false) List<Integer> genreCategoryIds,
+                                                HttpSession session) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (!(loginMemberObj instanceof MemberDTO loginMember)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        memberService.updateGenrePreferences(loginMember.getMemberId(), genreCategoryIds);
+        return ResponseEntity.ok().build();
     }
 }

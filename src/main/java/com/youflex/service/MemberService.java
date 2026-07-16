@@ -71,6 +71,23 @@ public class MemberService {
         memberMapper.updateProfile(updates);
     }
 
+    // 취향 선택 모달의 초기 체크 표시용 - 현재 선택되어 있는 장르 id 목록 조회
+    public List<Integer> getMemberGenreCategoryIds(int memberId) {
+        return preferenceMappingMapper.selectGenreCategoryIdsByMemberId(memberId);
+    }
+
+    // 취향 장르 변경 - 기존 선택을 전부 지우고 이번에 고른 것만 다시 저장(교체 방식)
+    public void updateGenrePreferences(int memberId, List<Integer> genreCategoryIds) {
+        preferenceMappingMapper.deletePreferencesByMemberId(memberId);
+        if (genreCategoryIds == null || genreCategoryIds.isEmpty()) {
+            return;
+        }
+        List<Integer> limited = genreCategoryIds.size() > MAX_GENRE_PREFERENCES
+                ? genreCategoryIds.subList(0, MAX_GENRE_PREFERENCES)
+                : genreCategoryIds;
+        preferenceMappingMapper.insertPreferences(memberId, limited);
+    }
+
     // ===================== 관리자 - 회원 관리 =====================
 
     private static final int MEMBER_PAGE_SIZE = 5;

@@ -13,4 +13,15 @@
         </foreach>
     </insert>
 
+    <select id="selectGenreCategoryIdsByMemberId" resultType="int">
+        SELECT genre_category_id
+        FROM preference_mapping
+        WHERE member_id = #{memberId}
+    </select>
+
+    <delete id="deletePreferencesByMemberId">
+        DELETE FROM preference_mapping
+        WHERE member_id = #{memberId}
+    </delete>
+
 </mapper>
