@@ -39,8 +39,8 @@
 	  </div>
 	</header>
 
-	
-	<!-- 
+   
+   <!-- 
   ==================================
   공통 네비게이션 바 -- 호진
   ==================================
@@ -69,7 +69,7 @@
         <div class="main-footer-brand">
           <span class="logo"
             ><img th:src="@{/img/logo.png}" alt="YouFlex"/>
-		  </span>
+        </span>
           <p>
             당신의 콘텐츠 취향을 연결하는<br />OTT 리뷰 &amp; 커뮤니티 플랫폼
           </p>
@@ -166,8 +166,9 @@
   채팅방 영역
   ================================
   -->
+<!--<div class="overlay-backdrop" th:fragment="overlay" id="chatroomBackdrop">-->
 <div class="overlay-backdrop" id="chatroomBackdrop"></div>
-<aside class="slide-panel" id="chatroomPanel">
+<aside class="slide-panel" id="chatroomPanel" th:fragment="chat">
   <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
   
   <!-- 탭 영역: '개설' 탭은 우수(평론가) 등급 또는 관리자에게만 노출 -->
@@ -175,7 +176,7 @@
     <button class="active" data-tab-target="list">목록</button>
     <button data-tab-target="chat">채팅</button>
     <button data-tab-target="create"
-            th:if="${session.loginMember != null and (session.loginMember.memberGrade == '우수' or session.loginMember.memberGrade == '관리자')}">
+            th:if="${session.loginMember?.memberGrade?.toString() == '우수' or session.loginMember?.memberGrade?.toString() == '관리자'}">
       개설
     </button>
   </div>
@@ -212,8 +213,8 @@
     </div>
   </div>
   <!-- 3. 개설 패널: '우수' 또는 '관리자' 등급만 렌더링 -->
-  <div class="panel-body" data-tab-panel="create"
-       th:if="${session.loginMember != null and (session.loginMember.memberGrade == '우수' or session.loginMember.memberGrade == '관리자')}">
+  <div class="panel-body" data-tab-panel="create" style="display:none;"
+       th:if="${session.loginMember?.memberGrade?.toString() == '우수' or session.loginMember?.memberGrade?.toString() == '관리자'}">
     <label class="text-muted" style="font-size:13px">방 이름</label>
     <input type="text" id="chatroom_title" name="chatroom_title" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box;margin-bottom:12px" />
     <label class="text-muted" style="font-size:13px">최대 인원</label>
@@ -221,5 +222,5 @@
     <button class="btn btn-primary mt-24" id="chatroomCreateBtn" style="width:100%">채팅방 개설</button>
   </div>
 </aside>
-</body>	
+</body>   
 </html>
