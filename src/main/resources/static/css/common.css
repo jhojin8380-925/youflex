@@ -630,7 +630,6 @@ body.notification-open #chatbotPanel.slide-panel { right: 408px; }
 .page-btn:hover { border-color: var(--accent); color: var(--accent); }
 .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .page-btn.prev, .page-btn.next { font-weight: 400; color: var(--text-2); }
-<<<<<<< HEAD
 
 /* 
   ==================
@@ -643,5 +642,3 @@ body.notification-open #chatbotPanel.slide-panel { right: 408px; }
   color:var(--text-2); font-size:13px; margin-top:12px; padding:8px;
 }
 .genre-skip:hover { color:var(--text-0); }
-=======
->>>>>>> main

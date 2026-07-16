@@ -71,7 +71,6 @@ public class MemberService {
         memberMapper.updateProfile(updates);
     }
 
-<<<<<<< HEAD
     // 취향 선택 모달의 초기 체크 표시용 - 현재 선택되어 있는 장르 id 목록 조회
     public List<Integer> getMemberGenreCategoryIds(int memberId) {
         return preferenceMappingMapper.selectGenreCategoryIdsByMemberId(memberId);
@@ -89,8 +88,6 @@ public class MemberService {
         preferenceMappingMapper.insertPreferences(memberId, limited);
     }
 
-=======
->>>>>>> main
     // ===================== 관리자 - 회원 관리 =====================
 
     private static final int MEMBER_PAGE_SIZE = 5;
