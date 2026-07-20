@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PreferenceMappingDTO {
-    private int preferenceMappingId;
+public class MemberMappingDTO {
+    private int memberMappingId;
     private int memberId;
     private int genreCategoryId;
 

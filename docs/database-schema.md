@@ -18,9 +18,14 @@
   비교할 때 영문 상수 쓰지 말고 이 한글 값 그대로 비교해야 함.
 - `member_loginid`, `member_email` 둘 다 UNIQUE 제약 있음. 지금 코드는 로그인id
   중복만 서버에서 재검증하고 있고, 이메일 중복은 DB 제약에만 의존 중(터지면 500).
-- `preference_mapping`은 `(member_id, genre_category_id)` UNIQUE + **트리거로 회원당
-  최대 3개 제한**이 DB 레벨에도 걸려있음(`trg_preference_mapping_limit`). 서버/클라
-  양쪽에서 3개로 막고 있지만 DB도 이중으로 막아줌.
+- 회원 취향(관심 장르) 다대다 매핑 테이블 이름은 `preference_mapping`이 아니라
+  `member_mapping`임(예전엔 `preference_mapping`이었는데 리네임됨 - 코드에서 옛날
+  이름으로 SQL 짜면 테이블이 없어서 바로 에러남). `(member_id, genre_category_id)`
+  UNIQUE 제약(`uq_member_mapping`)은 있지만, 최대 3개 제한 트리거는 현재 DDL에는
+  없음 — 3개 제한은 서버 쪽(`MemberService`)에서만 걸고 있음.
+- `review`는 `genre_category_id` 컬럼이 없음(다중 장르 선택을 위해 빠짐). 장르는
+  `review_mapping`(`review_id`, `genre_category_id` 복합 PK) 다대다 테이블로 따로 관리함
+  — 게시글 저장 시 `review` INSERT 후 `review_mapping`에 선택한 장르만큼 별도 INSERT.
 - `quiz_attempt`는 `quiz_attempt_date`를 트리거가 `quiz_attempt_attempted_at`에서
   자동으로 채워줌 — insert 시 직접 넣을 필요 없음.
 - FK는 대부분 `ON DELETE CASCADE` — 회원 탈퇴(row 삭제) 시 관련 데이터가 통째로
@@ -82,14 +87,14 @@ create table genre_category (
 
 -- 4
 -- 카테고리 다대다 매핑 --
-create table preference_mapping (
-    preference_mapping_id int auto_increment,
+create table member_mapping (
+    member_mapping_id int auto_increment,
     member_id             int not null,
     genre_category_id     int not null,
-    constraint pk_preference_mapping primary key (preference_mapping_id),
-    constraint fk_preference_member foreign key (member_id) references member(member_id) on delete cascade,
-    constraint fk_preference_category foreign key (genre_category_id) references genre_category(genre_category_id),
-    constraint uq_preference_mapping unique (member_id, genre_category_id) -- [수정] 취향 중복등록 방지
+    constraint pk_member_mapping primary key (member_mapping_id),
+    constraint fk_mapping_member foreign key (member_id) references member(member_id) on delete cascade,
+    constraint fk_member_genre foreign key (genre_category_id) references genre_category(genre_category_id),
+    constraint uq_member_mapping unique (member_id, genre_category_id) -- [수정] 취향 중복등록 방지
 );
 
 -- ---------------------------------------------------------
@@ -120,12 +125,12 @@ create table review (
 );
 
 -- 5.2 다중 장르 매핑 테이블 생성
-CREATE TABLE review_genre_mapping (
+CREATE TABLE review_mapping (
     review_id INT NOT NULL,
     genre_category_id INT NOT NULL,
     PRIMARY KEY (review_id, genre_category_id),
     CONSTRAINT fk_mapping_review FOREIGN KEY (review_id) REFERENCES REVIEW (review_id) ON DELETE CASCADE,
-    CONSTRAINT fk_mapping_genre FOREIGN KEY (genre_category_id) REFERENCES genre_category (genre_category_id)
+    CONSTRAINT fk_review_genre FOREIGN KEY (genre_category_id) REFERENCES genre_category (genre_category_id)
 );
 
 -- 6
