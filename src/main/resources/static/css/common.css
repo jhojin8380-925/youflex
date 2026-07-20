@@ -448,6 +448,12 @@ body.notification-open #chatbotPanel.slide-panel { right: 408px; }
 .badge-admin { background: var(--accent); color: #fff; }            /* 관리자 - 빨간색 */
 .badge-best { background: var(--gold); color: #1a1400; }            /* 베스트 댓글 표시 - 골드색 */
 
+/* ---------- 상태 표시 알약 뱃지 (답변대기/답변완료, 처리완료 등 공용) ---------- */
+.status-pill { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; }
+.status-active { background:rgba(53,196,107,0.15); color:var(--success); }
+.status-blacklist { background:rgba(230,57,70,0.15); color:var(--danger); }
+.status-pending { background:rgba(245,197,24,0.15); color:var(--gold); }
+
 .stars { color: var(--gold); letter-spacing: 1px; font-size: 14px; } /* ★★★★☆ 별점 텍스트 색상 */
 
 /* ==========================================================================

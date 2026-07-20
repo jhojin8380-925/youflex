@@ -34,12 +34,6 @@
 /* 회원목록/신고처리/Q&A/배너 표 오른쪽 끝, 버튼들이 모여있는 칸 */
 .table td.actions { display:flex; gap:6px; justify-content:flex-end; }
 
-/* ---------- 상태 표시 알약 뱃지 (대기중/처리완료/블랙리스트 등) ---------- */
-.status-pill { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; }
-.status-active { background:rgba(53,196,107,0.15); color:var(--success); }
-.status-blacklist { background:rgba(230,57,70,0.15); color:var(--danger); }
-.status-pending { background:rgba(245,197,24,0.15); color:var(--gold); }
-
 /* ---------- Q&A 답변 모달 안 <dl> 형태의 "질문 / 작성자" 정보 표시 ---------- */
 .report-modal dl { margin:0; font-size:13px; }
 .report-modal dt { color:var(--text-2); margin-top:12px; }

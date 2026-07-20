@@ -110,7 +110,10 @@
 			    <td class="meta" th:text="${qna.memberName}">닉네임</td>
 			    <td class="meta" th:text="${#temporals.format(qna.qnaCreatedAt, 'yyyy-MM-dd')}">2026-06-28</td>
 			    <td class="meta" th:text="'👁 ' + ${qna.qnaHit}">👁 0</td>
-			    <td class="meta" th:text="${qna.qnaStatus}">답변대기</td>
+			    <td class="meta">
+			      <span class="status-pill status-pending" th:if="${qna.qnaStatus == '답변대기'}">답변대기</span>
+			      <span class="status-pill status-active" th:if="${qna.qnaStatus == '답변완료'}">답변완료</span>
+			    </td>
 			  </tr>
 			</tbody>
 		</table>

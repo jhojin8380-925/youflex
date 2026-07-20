@@ -1,3 +1,13 @@
+// URL의 ?tab= 값으로 특정 관리자 탭을 자동으로 열어줌 (예: Q&A 답변 후 /admin?tab=qna로 복귀)
+// initTabs(".admin-nav")가 클릭 리스너를 붙인 뒤에 실행돼야 하므로, app.js보다 뒤에 등록되는
+// 이 DOMContentLoaded 리스너에서 처리 (리스너는 등록 순서대로 실행됨)
+document.addEventListener("DOMContentLoaded", () => {
+  const targetTab = new URLSearchParams(location.search).get("tab");
+  if (!targetTab) return;
+  const tabButton = document.querySelector(`.admin-nav [data-tab-target="${targetTab}"]`);
+  if (tabButton) tabButton.click();
+});
+
 let editingBannerRow = null;
 let currentBannerImage = "";
 

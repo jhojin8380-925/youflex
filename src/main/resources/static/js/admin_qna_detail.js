@@ -13,7 +13,7 @@ document.getElementById('adminAnswerSaveBtn').addEventListener('click', () => {
     body: JSON.stringify({ content: content })
   }).then(res => {
     if (res.ok) {
-      location.href = '/admin';
+      location.href = '/admin?tab=qna';
     } else if (res.status === 403) {
       alert('관리자만 답변할 수 있습니다.');
     } else {

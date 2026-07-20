@@ -40,7 +40,7 @@
         <textarea id="admin_answer_content" rows="8" th:text="${answer != null ? answer.adminAnswerContent : ''}" placeholder="답변 내용을 입력하세요"></textarea>
       </div>
       <div class="update-toolbar">
-        <a th:href="@{/admin}" class="btn">목록으로</a>
+        <a th:href="@{/admin(tab=qna)}" class="btn">목록으로</a>
         <button type="button" class="btn btn-primary" id="adminAnswerSaveBtn"
                 th:text="${answer != null} ? '수정' : '등록'">등록</button>
       </div>
