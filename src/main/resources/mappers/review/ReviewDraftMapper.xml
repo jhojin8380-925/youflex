@@ -2,4 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youflex.mapper.ReviewDraftMapper">
 
+	<!-- 1. 기존 임시저장 내역 삭제(회원당 1개 유지) -->
+	<delete id="deleteDraftByMemberId" parameterType="int">
+		delete from review_draft where member_id = #{memberId}
+	</delete>
+
+	<!-- 2. 제목, 내용, 저장 시각 INSERT -->
+	<insert id="insertDraft" parameterType="com.youflex.dto.ReviewDraftDTO">
+		INSERT INTO review_draft(
+			member_id,
+			review_draft_title,
+			review_draft_content,
+			review_draft_saved_at
+		) VALUES(
+			#{memberId},
+			#{reviewDraftTitle},
+			#{reviewDraftContent},
+			NOW()
+		)
+	</insert>
 </mapper>

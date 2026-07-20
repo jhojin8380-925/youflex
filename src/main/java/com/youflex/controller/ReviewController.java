@@ -55,7 +55,7 @@ public class ReviewController {
 //	2) 리뷰 글 작성
 	@PostMapping("/review/write")
 	public String write(ReviewDTO reviewDTO, HttpSession session,
-			@RequestParam(value="genreCategoryIds", required=false) List<Integer> genreCategoryIds, Model model) throws IOException{
+			@RequestParam(value="genreCategoryIds", required=false) List<Integer> genreCategoryIds, Model model) throws IOException{	//genreCategoryIds : write.js에서 name과 변수명이 같아야함
 //		로그인 여부 확인
 		if(session.getAttribute("loginMember") == null) {
 			return "redirect:/login";
