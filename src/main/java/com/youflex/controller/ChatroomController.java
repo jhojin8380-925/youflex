@@ -49,7 +49,19 @@ public class ChatroomController {
     public List<ChatroomDTO> getAllChatrooms() {
         return chatroomService.getAllChatrooms();
     }
+    @PostMapping("/{chatroomId}/enter")
+    public ResponseEntity<Void> enterChatroom(@PathVariable("chatroomId") int chatroomId, HttpSession session) {
+        // MemberController와 동일하게 "loginMember" 객체로 세션을 가져옴
+        MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+        
+        if (loginMember == null) {
+            return ResponseEntity.status(401).build();
+        }
 
+        int memberId = loginMember.getMemberId();
+        chatroomService.enterChatroom(chatroomId, memberId);
+        return ResponseEntity.ok().build();
+    }
     // [변경] 수정 (PUT -> POST)
     // 경로 충돌 방지를 위해 매핑 주소에 "/update" 추가
     @PostMapping("/update")
@@ -63,4 +75,5 @@ public class ChatroomController {
     public int deleteChatroom(@PathVariable int chatroomId) {
         return chatroomService.deleteChatroom(chatroomId);
     }
+
 }

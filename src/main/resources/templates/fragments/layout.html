@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>YouFlex</title>
+
 </head>
 <body>
 	
@@ -117,7 +118,7 @@
       </div>
     </div>
     <div class="notification-item">
-      <span class="notification-icon">💬</span>
+      <span class="notification-icon">📌</span>
       <div>
         <div class="notification-text">작성하신 질문 "디즈니+ 로그인 오류에 어떻게 대처하나요?"에 관리자 답변이 등록되었습니다.</div>
         <div class="notification-time">2시간 전</div>
@@ -168,6 +169,9 @@
   -->
 <div class="overlay-backdrop" id="chatroomBackdrop"></div>
 <aside class="slide-panel" id="chatroomPanel" th:fragment="chat">
+  <!-- 자바스크립트에서 로그인한 회원 이름을 동적으로 읽어갈 수 있도록 숨겨진 input 추가 -->
+  <input type="hidden" id="currentMemberName" th:value="${session.loginMember != null ? session.loginMember.memberName : '회원'}" />
+
   <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
   
   <div class="panel-tabs" data-tab-panels>
@@ -187,9 +191,6 @@
           <div class="room-count" th:text="|1 / ${room.chatroomMaxMember}명|"></div>
         </div>
 		<!--채팅방 입장 버튼-->
-		<!-- 수정: onclick="enterChatroom()" 대신 data 속성으로 방 id/제목을 심어두고,
-		           JS에서 이벤트 위임 방식으로 처리하도록 변경.
-		           th:attr를 사용하면 Thymeleaf가 특수문자(따옴표 등)를 자동으로 이스케이프 처리해줌. -->
 		<button class="btn btn-primary btn-sm"
 				th:attr="data-room-id=${room.chatroomId}, data-room-title=${room.chatroomTitle}">입장</button>
       </div>
@@ -198,13 +199,35 @@
   
   <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
     <div class="chatroom-title">
-      <!-- ★ 수정: id 추가 -> JS(enterChatroom)에서 입장한 방 제목으로 텍스트를 교체하는 대상 -->
       <span id="chatroomTitleText">💬 </span>
-      <button class="btn btn-sm btn-danger" onclick="giveChatWarning()"
-              th:if="${session.loginMember != null and (session.loginMember.memberGrade == '평론가' or session.loginMember.memberGrade == '관리자')}">⚠ 경고 부여</button>
+
+      <div class="chatroom-title-actions">
+        <button class="btn btn-sm btn-danger" onclick="giveChatWarning()"
+                th:if="${session.loginMember != null and (session.loginMember.memberGrade == '평론가' or session.loginMember.memberGrade == '관리자')}">⚠ 경고 부여</button>
+
+        <!-- 케밥 메뉴 버튼 -->
+        <button class="chatroom-menu-btn" id="chatroomMenuBtn" title="더보기">⋮</button>
+
+        <!-- 드롭다운 메뉴 -->
+        <div class="chatroom-dropdown" id="chatroomDropdown">
+          <div class="chatroom-dropdown-item toggle-item">
+            <span><span class="icon">🔔</span> 알림</span>
+            <label class="switch">
+              <input type="checkbox" id="chatroomNotifyToggle" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="chatroom-dropdown-divider"></div>
+
+          <button class="chatroom-dropdown-item danger" id="chatroomLeaveBtn">
+            <span class="icon">🚪</span> 채팅방 나가기
+          </button>
+        </div>
+      </div>
     </div>
     <div class="chatroom-messages" id="chatroomMessages">
-      <div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
+      <!-- 기존에 고정되어 있던 하드코딩 입장 메시지 제거 완료 -->
       <div class="chat-msg"><div class="avatar"></div><div class="bubble">다들 이번 편 결말 어떻게 보셨어요?</div></div>
       <div class="chat-msg me"><div class="avatar"></div><div class="bubble">저는 반전이 좋았어요 ㅋㅋ</div></div>
     </div>
@@ -223,5 +246,7 @@
     <button class="btn btn-primary mt-24" id="chatroomCreateBtn" style="width:100%">채팅방 개설</button>
   </div>
 </aside>
+
+
 </body>   
 </html>
