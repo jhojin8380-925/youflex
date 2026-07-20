@@ -15,8 +15,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.youflex.dto.MemberDTO;
+import com.youflex.dto.PageInfo;
+import com.youflex.dto.ReviewDTO;
 import com.youflex.service.GenreCategoryService;
 import com.youflex.service.MemberService;
+import com.youflex.service.ReviewService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,6 +35,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final GenreCategoryService genreCategoryService;
+    private final ReviewService reviewService;
 
     // 로그인 폼 진입 시 rememberedId 쿠키가 있으면 아이디 입력창에 미리 채워줌
     @GetMapping("/login")
@@ -151,7 +155,7 @@ public class MemberController {
         // 헤더 등에서 쓰는 session.loginMember도 최신 정보로 갱신
         session.setAttribute("loginMember", memberService.getMemberDetail(memberId));
         // redirect 후 /mypage 화면에서 1회성으로 저장 완료 메시지를 띄우기 위한 flash attribute
-        redirectAttributes.addFlashAttribute("profileSuccess", "회원정보가 저장되었습니다.");
+        redirectAttributes.addFlashAttribute("profileSuccess", "회원정보가 변경되었습니다.");
         return "redirect:/mypage";
     }
 
@@ -195,5 +199,26 @@ public class MemberController {
         memberService.requestWithdraw(loginMember.getMemberId());
         session.invalidate();
         return ResponseEntity.ok().build();
+    }
+
+    // 마이페이지 - "내 글" 탭이 fetch로 호출하는 AJAX 엔드포인트. 로그인한 회원이 쓴 글만 5개씩 페이징해서 내려줌.
+    @GetMapping("/mypage/reviews")
+    @ResponseBody
+    public ResponseEntity<?> myReviews(@RequestParam(value = "page", defaultValue = "1") int page,
+                                        HttpSession session) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (!(loginMemberObj instanceof MemberDTO loginMember)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        int memberId = loginMember.getMemberId();
+        List<ReviewDTO> reviews = reviewService.getMyReviews(memberId, page);
+        int totalCount = reviewService.getMyReviewsTotalCount(memberId);
+        PageInfo pageInfo = PageInfo.of(page, reviewService.getMyReviewsPageSize(), totalCount);
+        return ResponseEntity.ok(Map.of(
+                "reviews", reviews,
+                "totalCount", pageInfo.getTotalCount(),
+                "totalPages", pageInfo.getTotalPages(),
+                "page", pageInfo.getPage()
+        ));
     }
 }

@@ -145,3 +145,102 @@ document.getElementById('withdrawBtn').addEventListener('click', (e) => {
       alert('탈퇴 신청 중 오류가 발생했습니다.');
     });
 });
+
+// ===================== 내 글 탭 =====================
+// 정적 목업 대신 /mypage/reviews를 fetch해서 5개씩 페이징으로 채움
+const myPostsList = document.getElementById('myPostsList');
+const myPostsPagination = document.getElementById('myPostsPagination');
+
+// 게시글 한 건을 post-row 구조(썸네일 + 제목/장르·별점 + 날짜/조회수)로 그려줌
+function renderMyPostRow(review) {
+  const row = document.createElement('div');
+  row.className = 'post-row';
+
+  const thumb = document.createElement('div');
+  thumb.className = 'post-row-thumb';
+  if (review.reviewImg) {
+    const img = document.createElement('img');
+    img.src = '/upload/' + review.reviewImg;
+    img.className = 'post-img';
+    thumb.appendChild(img);
+  }
+  row.appendChild(thumb);
+
+  const body = document.createElement('div');
+  const title = document.createElement('div');
+  title.className = 'post-row-title';
+  title.textContent = review.reviewTitle;
+  const sub = document.createElement('div');
+  sub.className = 'post-row-sub';
+  // 장르(review_mapping 다대다라 서버에서 콤마로 이미 묶어서 내려줌)와 별점을 있는 것만 이어붙임
+  const subParts = [];
+  if (review.genreCategoryName) subParts.push(review.genreCategoryName);
+  if (review.reviewRating != null) subParts.push('★ ' + review.reviewRating);
+  sub.textContent = subParts.join(' · ');
+  body.appendChild(title);
+  body.appendChild(sub);
+  row.appendChild(body);
+
+  const right = document.createElement('div');
+  right.className = 'post-row-right';
+  right.textContent = (review.reviewCreatedAt || '').slice(0, 10);
+  right.appendChild(document.createElement('br'));
+  right.appendChild(document.createTextNode('조회 ' + (review.reviewHit ?? 0)));
+  row.appendChild(right);
+
+  return row;
+}
+
+// 페이지 버튼(이전/숫자/다음)을 다시 그림. 버튼 클릭 시 해당 페이지를 다시 불러옴.
+// 페이지가 1개뿐이어도(게시글 5개 이하) 항상 보여줌.
+function renderMyPostsPagination(totalPages, currentPage) {
+  myPostsPagination.innerHTML = '';
+
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn prev';
+  prevBtn.setAttribute('aria-label', '이전 페이지');
+  prevBtn.textContent = '‹';
+  prevBtn.disabled = currentPage <= 1;
+  prevBtn.addEventListener('click', () => loadMyPosts(currentPage - 1));
+  myPostsPagination.appendChild(prevBtn);
+
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+    btn.textContent = i;
+    btn.addEventListener('click', () => loadMyPosts(i));
+    myPostsPagination.appendChild(btn);
+  }
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn next';
+  nextBtn.setAttribute('aria-label', '다음 페이지');
+  nextBtn.textContent = '›';
+  nextBtn.disabled = currentPage >= totalPages;
+  nextBtn.addEventListener('click', () => loadMyPosts(currentPage + 1));
+  myPostsPagination.appendChild(nextBtn);
+}
+
+function loadMyPosts(page) {
+  fetch(`/mypage/reviews?page=${page}`)
+    .then((res) => {
+      if (!res.ok) throw new Error('my posts request failed');
+      return res.json();
+    })
+    .then((data) => {
+      myPostsList.innerHTML = '';
+      if (!data.reviews.length) {
+        myPostsList.innerHTML = '<div class="text-muted" style="text-align:center;padding:24px 0">아직 작성한 글이 없습니다.</div>';
+      } else {
+        data.reviews.forEach((review) => myPostsList.appendChild(renderMyPostRow(review)));
+      }
+      renderMyPostsPagination(data.totalPages, data.page);
+    })
+    .catch(() => {
+      myPostsList.innerHTML = '<div class="text-muted" style="text-align:center;padding:24px 0">내 글을 불러오지 못했습니다.</div>';
+    });
+}
+
+if (myPostsList) {
+  loadMyPosts(1);
+}

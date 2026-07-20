@@ -31,6 +31,14 @@ public interface ReviewMapper {
 	
 	// 게시글 상세 조회
 	ReviewDTO findById(int reviewId);
+
+	// 마이페이지 - 내 글 탭: 내가 쓴 게시글만 최신순 페이징 조회
+	List<ReviewDTO> findByMemberId(@Param("memberId") int memberId,
+			@Param("offset") int offset,
+			@Param("size") int size);
+
+	// 마이페이지 - 내 글 탭 총 개수(페이지네이션 계산용)
+	int countByMemberId(@Param("memberId") int memberId);
 	
 	// 게시글 수정 - 취향선택, 장르, 플랫폼, 제목, 별점, 본문내용, 관련작품
 	void update(ReviewDTO reviewDTO);

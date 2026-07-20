@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.youflex.dto.MemberDTO;
+import com.youflex.dto.PageInfo;
 import com.youflex.service.MemberService;
 import com.youflex.service.admin.WarningService;
 
@@ -43,12 +44,12 @@ public class AdminMemberController {
         }
         List<MemberDTO> members = memberService.getMemberList(keyword, page);
         int totalCount = memberService.getMemberListTotalCount(keyword);
-        int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / memberService.getMemberPageSize()));
+        PageInfo pageInfo = PageInfo.of(page, memberService.getMemberPageSize(), totalCount);
         return ResponseEntity.ok(Map.of(
                 "members", members,
-                "totalCount", totalCount,
-                "totalPages", totalPages,
-                "page", Math.max(page, 1)
+                "totalCount", pageInfo.getTotalCount(),
+                "totalPages", pageInfo.getTotalPages(),
+                "page", pageInfo.getPage()
         ));
     }
 

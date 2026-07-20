@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.youflex.dto.PageInfo;
 import com.youflex.dto.ReviewDTO;
 import com.youflex.mapper.CommentMapper;
 import com.youflex.mapper.ReviewDraftMapper;
@@ -17,6 +18,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
+	private static final int MY_REVIEWS_PAGE_SIZE = 5;
+
 	private final ReviewMapper reviewMapper;
 	private final CommentMapper commentMapper;
 	// 좋아요, 북마크, 신고, 게시글 입시저장
@@ -56,7 +60,20 @@ public class ReviewService {
 	public void update(ReviewDTO reviewDTO) {
 		reviewMapper.update(reviewDTO);
 	}
-	
+
 //	5) 게시글 삭제
-	
+
+//	마이페이지 - 내 글 탭(5개씩 페이징). page는 1부터 시작.
+	public List<ReviewDTO> getMyReviews(int memberId, int page) {
+		int offset = PageInfo.of(page, MY_REVIEWS_PAGE_SIZE, 0).getOffset();
+		return reviewMapper.findByMemberId(memberId, offset, MY_REVIEWS_PAGE_SIZE);
+	}
+
+	public int getMyReviewsTotalCount(int memberId) {
+		return reviewMapper.countByMemberId(memberId);
+	}
+
+	public int getMyReviewsPageSize() {
+		return MY_REVIEWS_PAGE_SIZE;
+	}
 }
