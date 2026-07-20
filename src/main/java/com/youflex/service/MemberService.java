@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.youflex.dto.MemberDTO;
+import com.youflex.dto.PageInfo;
 import com.youflex.mapper.MemberMapper;
 import com.youflex.mapper.PreferenceMappingMapper;
 
@@ -105,8 +106,7 @@ public class MemberService {
 
     // 회원 목록(정상 회원) 검색 + 페이징 조회. page는 1부터 시작.
     public List<MemberDTO> getMemberList(String keyword, int page) {
-        int safePage = Math.max(page, 1);
-        int offset = (safePage - 1) * MEMBER_PAGE_SIZE;
+        int offset = PageInfo.of(page, MEMBER_PAGE_SIZE, 0).getOffset();
         return memberMapper.findMembers(keyword, offset, MEMBER_PAGE_SIZE);
     }
 
