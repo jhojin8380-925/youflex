@@ -45,6 +45,6 @@ public class AdminQnaViewController {
         QnaDTO qna = qnaService.getQnaDetail(qnaId, loginMember.getMemberId(), true);
         model.addAttribute("qna", qna);
         model.addAttribute("answer", adminAnswerService.getAnswer(qnaId)); // 답변 미등록 시 null 반환
-        return "admin/qna_detail";
+        return "admin/admin_qna_detail";
     }
 }
