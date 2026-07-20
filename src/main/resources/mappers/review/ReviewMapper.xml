@@ -23,13 +23,14 @@
 		)
 	</insert>
 
+	<!-- 실제 테이블명은 review_genre_mapping이 아니라 review_mapping (DDL 기준) -->
 	<insert id="insertReviewGenres">
-    INSERT INTO review_genre_mapping (  review_id,
+    INSERT INTO review_mapping (  review_id,
         genre_category_id
     ) VALUES
     <foreach collection="genreCategoryIds" item="genreId" separator=",">
         (
-            #{reviewId}, 
+            #{reviewId},
             #{genreId}
         )
     </foreach>

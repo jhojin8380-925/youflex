@@ -3,10 +3,11 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
+<!-- DB 테이블명은 member_mapping이지만 자바 인터페이스/DTO명은 PreferenceMappingMapper로 남아있음(취향 매핑이라는 의미상 이름). 헷갈리지 않도록 남겨둠. -->
 <mapper namespace="com.youflex.mapper.PreferenceMappingMapper">
 
     <insert id="insertPreferences">
-        INSERT INTO preference_mapping (member_id, genre_category_id)
+        INSERT INTO member_mapping (member_id, genre_category_id)
         VALUES
         <foreach collection="genreCategoryIds" item="genreCategoryId" separator=",">
             (#{memberId}, #{genreCategoryId})
@@ -15,12 +16,12 @@
 
     <select id="selectGenreCategoryIdsByMemberId" resultType="int">
         SELECT genre_category_id
-        FROM preference_mapping
+        FROM member_mapping
         WHERE member_id = #{memberId}
     </select>
 
     <delete id="deletePreferencesByMemberId">
-        DELETE FROM preference_mapping
+        DELETE FROM member_mapping
         WHERE member_id = #{memberId}
     </delete>
 
