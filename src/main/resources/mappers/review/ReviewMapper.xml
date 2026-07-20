@@ -35,4 +35,23 @@
         )
     </foreach>
 </insert>
+
+	<!-- 마이페이지 - 내 글 탭: 장르는 review_mapping 다대다라서 서브쿼리로 콤마 연결한 문자열 하나로 내려줌 -->
+	<select id="findByMemberId" resultType="com.youflex.dto.ReviewDTO">
+		SELECT r.*,
+			(SELECT GROUP_CONCAT(gc.genre_category_name SEPARATOR ', ')
+			   FROM review_mapping rm
+			   JOIN genre_category gc ON gc.genre_category_id = rm.genre_category_id
+			  WHERE rm.review_id = r.review_id) AS genreCategoryName
+		FROM review r
+		WHERE r.member_id = #{memberId}
+		ORDER BY r.review_created_at DESC
+		LIMIT #{offset}, #{size}
+	</select>
+
+	<select id="countByMemberId" resultType="int">
+		SELECT COUNT(*)
+		FROM review
+		WHERE member_id = #{memberId}
+	</select>
 </mapper>
