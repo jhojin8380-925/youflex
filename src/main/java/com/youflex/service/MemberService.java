@@ -93,6 +93,12 @@ public class MemberService {
         preferenceMappingMapper.insertPreferences(memberId, limited);
     }
 
+    // 마이페이지 - 탈퇴신청 버튼. 관리자 강제탈퇴(forceWithdraw)와 동일한 소프트 삭제라 그 매퍼를 그대로 재사용함.
+    // 최종 승인(완전삭제)/반려(복구)는 관리자가 탈퇴신청 관리 화면에서 나중에 처리.
+    public void requestWithdraw(int memberId) {
+        memberMapper.forceWithdraw(memberId);
+    }
+
     // ===================== 관리자 - 회원 관리 =====================
 
     private static final int MEMBER_PAGE_SIZE = 5;

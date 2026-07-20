@@ -62,6 +62,12 @@ public class MemberController {
             model.addAttribute("rememberedId", memberLoginid);
             return "member/login";
         }
+        // 아이디/비번은 맞았지만 탈퇴신청된 계정이면 로그인시키지 않고 별도 안내
+        if ("탈퇴".equals(loginMember.getMemberDeleteStatus())) {
+            model.addAttribute("loginError", "탈퇴 신청된 계정입니다.");
+            model.addAttribute("rememberedId", memberLoginid);
+            return "member/login";
+        }
 
         // fragments/layout.html 등 템플릿에서 session.loginMember로 로그인 상태를 판단하므로
         // 이 세션 속성명을 그대로 유지해야 함(Spring Security 로그인 기능은 사용하지 않음).
@@ -173,6 +179,21 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         memberService.updateGenrePreferences(loginMember.getMemberId(), genreCategoryIds);
+        return ResponseEntity.ok().build();
+    }
+
+    // 마이페이지 - "탈퇴신청" 버튼이 fetch로 호출하는 AJAX 엔드포인트. 관리자 강제탈퇴와 동일하게 즉시
+    // member_delete_status를 '탈퇴'로 바꿔서 저장(관리자 탈퇴신청 관리 화면에 바로 노출됨).
+    // 신청 직후엔 더 이상 로그인 상태를 유지할 이유가 없어서 세션도 같이 무효화함.
+    @PostMapping("/mypage/withdraw")
+    @ResponseBody
+    public ResponseEntity<Void> requestWithdraw(HttpSession session) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (!(loginMemberObj instanceof MemberDTO loginMember)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        memberService.requestWithdraw(loginMember.getMemberId());
+        session.invalidate();
         return ResponseEntity.ok().build();
     }
 }
