@@ -152,7 +152,7 @@ function initQnaChatbotQuiz() {
     if (!startBtn) return; // 챗봇 퀴즈 UI가 없는 페이지면 종료
 
     let questions = [];   // 이번 판에 출제된 문제 2개 (객관식 1 + OX 1)
-    let step = 0;          // 현재 몇 번째 문제인지 (0 또는 1)
+    let step = 0;          // 몇 번째 문제인지 (0 또는 1)
     let correctCount = 0;  // 맞춘 개수
 
     // 남은 횟수 UI 갱신 + 버튼 활성/비활성 처리
@@ -303,11 +303,6 @@ function initQuizStart() {
  * 즉, 페이지가 "최초 로드"될 때 Thymeleaf(th:each)가 그려주는 입장 버튼과는
  * 완전히 별개로, 이 함수가 목록 영역(#chatroomListContainer)의 내용을
  * innerHTML로 통째로 교체하면서 "입장" 버튼도 새로 만든다.
- *
- * 여기서 핵심은 마지막에 있는 addEventListener 부분
- * innerHTML로 버튼을 새로 만들면 onclick 속성이 없기 때문에,
- * (Thymeleaf가 그린 최초 버튼과 달리) 아무 동작도 하지 않는 "빈 버튼"이 된다.
- * 그래서 반드시 JS로 클릭 이벤트를 직접 붙여줘야 함
  */
 function renderChatroomList(rooms) {
     const listContainer = document.getElementById("chatroomListContainer");
@@ -340,13 +335,6 @@ function renderChatroomList(rooms) {
               data-room-title="${room.chatroomTitle}">입장</button>
     `;
 
-        // ------------------------------------------------------------
-        // ★ 입장 버튼 클릭 처리는 여기서 개별로 걸지 않음
-        //   대신 initChatroomChat()에서 목록 컨테이너(#chatroomListContainer)
-        //   하나에만 클릭 이벤트를 "위임(delegation)"으로 등록해두었으므로,
-        //   버튼이 새로 그려질 때마다 매번 이벤트를 재등록할 필요가 없다.
-        //   (Thymeleaf 최초 렌더링 버튼이든, 여기서 새로 만든 버튼이든 동일하게 동작)
-        // ------------------------------------------------------------
         listContainer.appendChild(item);
     });
 }
@@ -370,11 +358,6 @@ async function loadChatroomList() {
 /**
  * 웹소켓(STOMP) 연결 및 실시간 채팅방 목록 구독.
  * WebSocketConfig 설정 기준: 접속 엔드포인트 "/ws-connect", 구독 prefix "/sub"
- *
- * 누군가 방을 새로 개설하거나 삭제하면, 서버가 "/sub/chatroom-list" 로
- * 최신 방 목록 전체를 모든 접속자에게 브로드캐스트한다.
- * 이 콜백이 그 메시지를 받아 renderChatroomList()를 다시 호출 -> 목록이 실시간으로 갱신
- * (이때도 입장 버튼은 renderChatroomList 안에서 매번 새로 생성 + 이벤트 등록됨)
  */
 function initChatroomSocket() {
     if (typeof SockJS === "undefined" || typeof Stomp === "undefined") {
@@ -384,7 +367,7 @@ function initChatroomSocket() {
 
     const socket = new SockJS('/ws-connect');
     const stompClient = Stomp.over(socket);
-    stompClient.debug = null; // 콘솔 로그 끄기 (디버깅 시 이 줄 삭제)
+    stompClient.debug = null; // 콘솔 로그 끄기
 
     stompClient.connect({}, () => {
         stompClient.subscribe('/sub/chatroom-list', (message) => {
@@ -434,11 +417,10 @@ function initChatroomChat() {
         });
     }
 
-    // ---- ★ 웹소켓 연결 시작: 페이지 진입 시 미리 구독해둠 (패널을 열기 전부터 실시간 갱신 대기) ----
+    // 웹소켓 연결 시작: 페이지 진입 시 미리 구독해둠
     initChatroomSocket();
 
-    // ---- ★ 채팅방 패널(아이콘)을 열 때마다 최신 목록을 서버에서 받아와 채움 ----
-    // 이 리스너가 바로 "패널을 열 때 입장 버튼이 다시 그려지는" 트리거
+    // 채팅방 패널(아이콘)을 열 때마다 최신 목록을 서버에서 받아와 채움
     const chatroomTrigger = document.getElementById("chatroomTrigger");
     if (chatroomTrigger) {
         chatroomTrigger.addEventListener("click", loadChatroomList);
@@ -447,27 +429,14 @@ function initChatroomChat() {
     // ------------------------------------------------------------
     // ★★★ 입장 버튼 이벤트 위임(delegation) 등록 ★★★
     // ------------------------------------------------------------
-    // 목록 컨테이너(#chatroomListContainer) 자체는 페이지 로드 시 한 번만 생성되고
-    // 절대 통째로 사라지지 않으므로, 여기 딱 한 번만 클릭 리스너를 걸어두면 됨
-    //
-    // 동작 원리:
-    //   1) 컨테이너 내부 "어디를 클릭하든" 이 리스너가 먼저 이벤트를 받는다(버블링).
-    //   2) e.target(실제로 클릭된 요소)에서 가장 가까운
-    //      <button data-room-id="..."> 를 찾는다 (closest 사용).
-    //   3) 그런 버튼이 없으면(빈 영역 클릭 등) 그냥 무시.
-    //   4) 있으면 그 버튼의 dataset(data-room-id, data-room-title)을 읽어
-    //      enterChatroom()에 그대로 전달
-    //
-    // 장점: renderChatroomList()가 목록을 몇 번을 다시 그리든(fetch 갱신, 웹소켓 갱신)
-    //       매번 개별 버튼에 이벤트를 다시 붙일 필요가 없음. 컨테이너 하나면 충분
     const chatroomListContainer = document.getElementById("chatroomListContainer");
     if (chatroomListContainer) {
         chatroomListContainer.addEventListener("click", (e) => {
             const btn = e.target.closest("button[data-room-id]");
             if (!btn) return; // 입장 버튼이 아닌 다른 곳을 클릭한 경우 무시
 
-            const chatroomId = btn.dataset.roomId;       // data-room-id 값
-            const chatroomTitle = btn.dataset.roomTitle;  // data-room-title 값
+            const chatroomId = btn.dataset.roomId;       
+            const chatroomTitle = btn.dataset.roomTitle;  
 
             enterChatroom(chatroomId, chatroomTitle);
         });
@@ -492,6 +461,11 @@ function initChatroomChat() {
                 alert("최대 인원은 2명 이상으로 입력해주세요.");
                 return;
             }
+            // 최대 인원 30명 초과 검증 
+            if (maxUsers > 30) {
+                alert("최대 인원은 30명을 초과할 수 없습니다.");
+                return;
+            }
 
             // 서버로 보낼 요청 바디
             const requestData = {
@@ -512,11 +486,6 @@ function initChatroomChat() {
                     const chatroomId = await response.json();
                     console.log("생성된 채팅방 ID:", chatroomId);
 
-                    // ★ 참고: 프론트에서 직접 DOM을 조립하거나 fetch로 목록을 재조회할 필요 없음.
-                    //         서버가 방 개설 성공 시 웹소켓(/sub/chatroom-list)으로 최신 목록을
-                    //         모든 접속자에게 브로드캐스트하므로, 위에서 구독해둔 콜백이
-                    //         자동으로 renderChatroomList를 호출해 화면(입장 버튼 포함)을 갱신
-
                     // 입력 필드 초기화
                     roomNameInput.value = "";
                     maxUserInput.value = "10";
@@ -528,7 +497,7 @@ function initChatroomChat() {
                     }
 
                 } else {
-                    // 서버가 던진 실제 에러 메시지(예: "이미 개설한 채팅방이 있습니다...")를 그대로 표시
+                    // 서버가 던진 실제 에러 메시지(예: 충돌 시 409 등)를 그대로 표시
                     const errorMsg = await response.text();
                     alert(errorMsg || "채팅방 개설에 실패했습니다.");
                 }
@@ -541,61 +510,122 @@ function initChatroomChat() {
 }
 
 /**
- * ★★★ 채팅방 "입장" 버튼을 눌렀을 때 실제로 실행되는 함수 ★★★
- *
- * 호출 경로: initChatroomChat() 안에 등록된 이벤트 위임 리스너가
- *           클릭된 버튼의 data-room-id / data-room-title 값을 읽어서
- *           이 함수를 enterChatroom(chatroomId, chatroomTitle) 형태로 호출
- *
- * @param {number|string} [chatroomId]    - 입장한 채팅방의 고유 id
- * @param {string}        [chatroomTitle] - 입장한 채팅방의 이름 (제목 표시에 사용)
+ * ★★★ 채팅방 "입장" 버튼을 눌렀을 때 실제로 실행되는 통합 함수 ★★★
+ * - 1. 백엔드 서버로 POST 요청을 보내 DB(chat_member)에 입장 정보 저장
+ * - 2. 채팅 탭으로 화면 전환 및 상단 타이틀 변경
+ * - 3. 화면 채팅창에 'OO님이 입장했습니다' 시스템 메시지 추가
  */
-function enterChatroom(chatroomId, chatroomTitle) {
-    // 1단계: 채팅방 패널 안의 [채팅] 탭 버튼을 찾음
-    //        (이 버튼이 DOM에 없으면 = 채팅방 패널 자체가 이 페이지에 없다는 뜻)
-    const chatTab = document.querySelector('[data-tab-target="chat"]');
-
-    if (chatTab) {
-        // 2단계: [채팅] 탭 버튼을 "코드로" 클릭
-        //        실제 사용자가 탭을 클릭한 것과 동일하게 동작하여,
-        //        initTabs()에 이미 등록되어 있는 클릭 이벤트 리스너가 그대로 실행
-        //        그 결과: [목록] 탭은 숨겨지고 [채팅] 탭 내용이 화면에 나타남
-        chatTab.click();
-    } else {
-        // 채팅 탭 버튼을 못 찾은 경우 -> 콘솔에 에러를 남겨서 원인 파악을 돕는다.
-        console.error("채팅 탭 버튼을 찾을 수 없습니다.");
+async function enterChatroom(chatroomId, chatroomTitle) {
+    if (!chatroomId) {
+        console.error("채팅방 ID가 없습니다.");
         return;
     }
 
-    // ------------------------------------------------------------
-    // ★ 3단계: 입장한 방의 제목을 채팅창 상단(#chatroomTitleText)에 반영
-    // ------------------------------------------------------------
-    // common.html의 <span id="chatroomTitleText">가 기본적으로
-    // "💬 오늘 개봉작 실시간 토크"라는 고정 텍스트를 갖고 있는데,
-    // 여기서 실제로 입장한 방 이름으로 덮어써준다.
+    // 1. 서버로 입장 요청 전송 (실제 DB chat_member 테이블에 INSERT)
+    try {
+        const response = await fetch(`/api/chatroom/${chatroomId}/enter`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert(errorText || "채팅방 입장 처리에 실패했습니다.");
+            return;
+        }
+    } catch (error) {
+        console.error("서버 통신 에러:", error);
+        alert("서버 연결에 실패했습니다. 네트워크 상태를 확인하세요.");
+        return;
+    }
+
+    // 2. 채팅방 패널 안의 [채팅] 탭 버튼을 찾아 자동으로 클릭(화면 전환)
+    const chatTab = document.querySelector('[data-tab-target="chat"]');
+    if (chatTab) {
+        chatTab.click();
+    }
+
+    // 3. 입장한 방의 제목을 채팅창 상단에 반영
     const titleEl = document.getElementById("chatroomTitleText");
     if (titleEl && chatroomTitle) {
         titleEl.textContent = `💬 ${chatroomTitle}`;
     }
 
-    // 4단계(확장 지점): chatroomId가 있다면 그 방에 대한 실제 입장 처리를 이어간다.
-    //        예) 서버에 "해당 방 메시지 내역 조회" API 호출,
-    //            STOMP로 "/sub/chatroom/{chatroomId}" 구독 등.
-    //        지금은 데모 단계라 콘솔 로그만 남겨둔 상태.
-    if (chatroomId) {
-        console.log("입장한 채팅방 ID:", chatroomId, "/ 제목:", chatroomTitle);
-        // TODO: 실제 방별 메시지 연동 시 여기서 STOMP 구독 예시
-        // stompClient.subscribe(`/sub/chatroom/${chatroomId}`, (message) => {
-        //     const chatMsg = JSON.parse(message.body);
-        //     // chatroomMessages 영역에 메시지 렌더링...
-        // });
+    // 4. 로그인한 회원 이름을 가져와서 채팅창에 입장 시스템 메시지 표시
+    const memberNameInput = document.getElementById("currentMemberName");
+    const loginMemberName = memberNameInput && memberNameInput.value.trim() !== "" ? memberNameInput.value : "회원";
+
+    const messages = document.getElementById("chatroomMessages");
+    if (messages) {
+        const joinMsg = document.createElement("div");
+        joinMsg.className = "chat-msg system";
+        joinMsg.textContent = `‘${loginMemberName}’님이 입장했습니다`;
+        messages.appendChild(joinMsg);
+        messages.scrollTop = messages.scrollHeight;
     }
+
+    console.log("성공적으로 입장한 채팅방 ID:", chatroomId, "/ 제목:", chatroomTitle);
+}
+// 케밥 메뉴 열기/닫기
+const chatroomMenuBtn = document.getElementById('chatroomMenuBtn');
+const chatroomDropdown = document.getElementById('chatroomDropdown');
+if (chatroomMenuBtn && chatroomDropdown) {
+  chatroomMenuBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    chatroomDropdown.classList.toggle('open');
+  });
+  // 메뉴 바깥 클릭 시 닫기
+  document.addEventListener('click', function (e) {
+    if (!chatroomDropdown.contains(e.target) && e.target !== chatroomMenuBtn) {
+      chatroomDropdown.classList.remove('open');
+    }
+  });
+  // 메뉴 안 토글 스위치 클릭 시엔 메뉴가 안 닫히도록
+  chatroomDropdown.querySelector('.toggle-item').addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
 }
 
+// 알림 켜기/끄기
+const chatroomNotifyToggle = document.getElementById('chatroomNotifyToggle');
+if (chatroomNotifyToggle) {
+  chatroomNotifyToggle.addEventListener('change', function () {
+    const isOn = this.checked;
+    fetch('/chatroom/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notifyOn: isOn })
+    }).catch(err => console.error('알림 설정 저장 실패:', err));
+  });
+}
+
+// 채팅방 나가기 버튼
+const chatroomLeaveBtn = document.getElementById('chatroomLeaveBtn');
+if (chatroomLeaveBtn) {
+  chatroomLeaveBtn.addEventListener('click', function () {
+    if (chatroomDropdown) chatroomDropdown.classList.remove('open');
+    if (!confirm('채팅방에서 나가시겠습니까?')) return;
+
+    // 입장 시 저장해둔 현재 방 ID 사용 (예: chatroomPanel.dataset.currentRoomId)
+    const roomId = document.getElementById('chatroomPanel').dataset.currentRoomId;
+
+    fetch(`/chatroom/${roomId}/leave`, { method: 'POST' })
+      .then(res => {
+        if (res.ok) {
+          alert('채팅방에서 나갔습니다.');
+          document.querySelector('[data-tab-target="list"]').click(); // 목록 탭으로 이동
+        } else {
+          alert('나가기에 실패했습니다.');
+        }
+      })
+      .catch(err => console.error('나가기 요청 실패:', err));
+  });
+}
 // ---- 취향/장르 선택 칩 (클릭 시 선택 표시 토글) ----
 function initGenreChips() {
     document.querySelectorAll(".genre-chip").forEach((chip) => {
-        // #genreGrid 안의 칩은 별도 로직(다른 곳)에서 처리되므로 여기서는 건너뜀
         if (chip.closest("#genreGrid")) return;
         chip.addEventListener("click", () => chip.classList.toggle("selected"));
     });
@@ -607,11 +637,10 @@ function initDropdowns() {
         const menu = document.getElementById(trigger.dataset.dropdownTrigger);
         if (!menu) return;
         trigger.addEventListener("click", (e) => {
-            e.stopPropagation(); // 아래 document 클릭 리스너로 이벤트가 번져서 바로 닫히는 것을 방지
+            e.stopPropagation();
             menu.classList.toggle("open");
         });
     });
-    // 드롭다운 바깥 아무 곳이나 클릭하면 열려있는 모든 드롭다운을 닫음
     document.addEventListener("click", () => {
         document.querySelectorAll(".dropdown-menu.open").forEach((m) => m.classList.remove("open"));
     });
@@ -624,11 +653,10 @@ function initHeroSlider() {
     const dots = document.querySelectorAll(".hero-dots span");
     if (!slider || !slides.length) return;
 
-    const AUTO_PLAY_MS = 3000; // 3초마다 자동 전환
+    const AUTO_PLAY_MS = 3000;
     let index = 0;
     let timerId = null;
 
-    // index번째 슬라이드를 활성화 (범위를 벗어나면 순환되도록 나머지 연산 사용)
     function showSlide(i) {
         index = (i + slides.length) % slides.length;
         slides.forEach((s, n) => s.classList.toggle("active", n === index));
@@ -647,7 +675,6 @@ function initHeroSlider() {
         timerId = null;
     }
 
-    // 점 인디케이터 클릭 시 해당 슬라이드로 즉시 이동 후 자동재생 재시작
     dots.forEach((dot, i) => {
         dot.addEventListener("click", () => { showSlide(i); startAutoPlay(); });
     });
@@ -657,7 +684,6 @@ function initHeroSlider() {
     if (prevBtn) prevBtn.addEventListener("click", () => { prev(); startAutoPlay(); });
     if (nextBtn) nextBtn.addEventListener("click", () => { next(); startAutoPlay(); });
 
-    // 마우스를 배너 위에 올리면 자동재생 일시정지, 벗어나면 재개
     slider.addEventListener("mouseenter", stopAutoPlay);
     slider.addEventListener("mouseleave", startAutoPlay);
 
@@ -670,11 +696,10 @@ function initCategoryNav() {
     const nav = document.querySelector(".category-nav");
     if (!nav) return;
 
-    // 목록 페이지(04_list.html)인 경우: URL의 ?cat= 쿼리 파라미터로 현재 카테고리 판단
     const isListPage = location.pathname.split("/").pop() === "04_list.html";
     const current = isListPage
         ? new URLSearchParams(location.search).get("cat") || "all"
-        : document.body.dataset.navCurrent || ""; // 그 외 페이지는 body의 data-nav-current 속성값 사용
+        : document.body.dataset.navCurrent || "";
 
     nav.querySelectorAll("a[data-nav]").forEach((a) => {
         a.classList.toggle("active", a.dataset.nav === current);
@@ -685,7 +710,6 @@ function initCategoryNav() {
 // DOM 로드 완료 후, 위에서 정의한 모든 초기화 함수를 순서대로 실행
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-    /*applyRoleVisibility();*/
     initDropdowns();
     initHeroSlider();
     initCategoryNav();
@@ -704,15 +728,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initQuiz();
     initQuizStart();
-    initChatroomChat();   // ← 채팅방 관련 기능(입장 버튼 포함) 전부 이 안에서 초기화됨
+    initChatroomChat();   
     initGenreChips();
     initQnaChatbotQuiz();
-
-    /*const roleSwitcher = document.getElementById("demoRoleSwitcher");
-    if (roleSwitcher) {
-      roleSwitcher.value = DEMO_ROLE;
-      roleSwitcher.addEventListener("change", (e) => setDemoRole(e.target.value));
-    }*/
 });
 
 // ==========================================================================
@@ -721,8 +739,8 @@ document.addEventListener("DOMContentLoaded", () => {
 const headings = document.querySelectorAll('.section-heading');
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-        if (entry.isIntersecting) { // 요소가 뷰포트 안에 30% 이상 들어왔을 때
-            void entry.target.offsetWidth; // 강제 리플로우 (애니메이션을 처음부터 다시 재생시키기 위한 트릭)
+        if (entry.isIntersecting) {
+            void entry.target.offsetWidth; 
             entry.target.style.animation = 'heading-shine 4s ease-in-out infinite, heading-fade-in 0.6s ease-out';
         }
     });

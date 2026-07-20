@@ -650,3 +650,131 @@ body.notification-open #chatbotPanel.slide-panel { right: 408px; }
   color:var(--text-2); font-size:13px; margin-top:12px; padding:8px;
 }
 .genre-skip:hover { color:var(--text-0); }
+/* ============================
+   채팅방 상단 (케밥 메뉴 - 카톡 스타일)
+   ============================ */
+.chatroom-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border, #333);
+  position: relative;
+}
+
+.chatroom-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  position: relative;
+}
+
+/* 케밥(⋮) 메뉴 버튼 */
+.chatroom-menu-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.chatroom-menu-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* 드롭다운 메뉴 */
+.chatroom-dropdown {
+  display: none;
+  position: absolute;
+  top: 36px;
+  right: 0;
+  min-width: 190px;
+  background: #2b2b30;
+  border: 1px solid #3c3c42;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  padding: 6px;
+  z-index: 50;
+}
+.chatroom-dropdown.open {
+  display: block;
+}
+.chatroom-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #eaeaea;
+  font-size: 14px;
+  text-align: left;
+  padding: 10px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.chatroom-dropdown-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+.chatroom-dropdown-item .icon {
+  width: 18px;
+  text-align: center;
+}
+.chatroom-dropdown-divider {
+  height: 1px;
+  background: #3c3c42;
+  margin: 6px 4px;
+}
+/* 나가기 항목만 빨간색 강조 */
+.chatroom-dropdown-item.danger {
+  color: #ff6b6b;
+}
+.chatroom-dropdown-item.danger:hover {
+  background: rgba(255,107,107,0.12);
+}
+
+/* 드롭다운 안 알림 토글 (오른쪽 정렬 스위치) */
+.chatroom-dropdown-item.toggle-item {
+  justify-content: space-between;
+  cursor: default;
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider.round {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #555;
+  transition: .3s;
+  border-radius: 20px;
+}
+.slider.round::before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #fff;
+  transition: .3s;
+  border-radius: 50%;
+}
+.switch input:checked + .slider.round {
+  background-color: var(--primary, #6c5ce7);
+}
+.switch input:checked + .slider.round::before {
+  transform: translateX(16px);
+}
