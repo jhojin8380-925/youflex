@@ -363,8 +363,8 @@ const REPORT_API_BASE = "/api/admin/reports";
 
 // 신고 1건을 처리완료 상태로 표시하고 반려/경고처리 버튼을 비활성화
 function markReportRowResolved(row) {
-  // 열 순서: 대상/내용요약/작성자/신고자/사유/접수일/상태/액션 -> 상태는 6번 인덱스
-  const statusCell = row.children[6];
+  // 열 순서: No/대상/내용요약/작성자/신고자/사유/접수일/상태/액션 -> 상태는 7번 인덱스
+  const statusCell = row.children[7];
   statusCell.innerHTML = '<span class="status-pill status-active">처리완료 (유지)</span>';
   row.querySelectorAll(".actions button").forEach((btn) => (btn.disabled = true));
 }
@@ -392,6 +392,52 @@ function openReportWarningModal(btn) {
   document.getElementById("warning_reason").value = "";
   document.getElementById("warningModalBackdrop").classList.add("open");
 }
+
+// 신고 목록을 10개 단위로 나눠 보여주는 클라이언트 페이지네이션.
+// 서버가 신고 목록 전체를 이미 SSR로 다 내려주므로(별도 페이징 API 없음), tbody의
+// <tr>들을 그룹으로 나눠 display만 토글하는 방식으로 처리한다 (notice.js와 동일한 패턴).
+function initTablePagination(tbodyId, paginationId, pageSize) {
+  const tbody = document.getElementById(tbodyId);
+  const paginationEl = document.getElementById(paginationId);
+  if (!tbody || !paginationEl) return;
+
+  const rows = Array.from(tbody.children).filter((tr) => !tr.querySelector("td[colspan]"));
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+
+  let currentPage = 1;
+
+  function createPageBtn(label, extraClass, onClick) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = extraClass ? `page-btn ${extraClass}` : "page-btn";
+    btn.textContent = label;
+    btn.addEventListener("click", onClick);
+    return btn;
+  }
+
+  function render() {
+    rows.forEach((tr, i) => {
+      const page = Math.floor(i / pageSize) + 1;
+      tr.style.display = page === currentPage ? "" : "none";
+    });
+
+    paginationEl.innerHTML = "";
+    paginationEl.appendChild(createPageBtn("‹", "prev", () => currentPage > 1 && goTo(currentPage - 1)));
+    for (let i = 1; i <= totalPages; i++) {
+      paginationEl.appendChild(createPageBtn(i, i === currentPage ? "active" : "", () => goTo(i)));
+    }
+    paginationEl.appendChild(createPageBtn("›", "next", () => currentPage < totalPages && goTo(currentPage + 1)));
+  }
+
+  function goTo(page) {
+    currentPage = page;
+    render();
+  }
+
+  render();
+}
+
+initTablePagination("reportListBody", "reportPagination", 10);
 
 document.querySelectorAll(".member-subtabs button").forEach((btn) => {
   btn.addEventListener("click", () => {

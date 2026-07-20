@@ -522,8 +522,10 @@ body.notification-open #chatbotPanel.slide-panel { right: 408px; }
   display:none; align-items:center; justify-content:center; padding:20px;
 } /* 모달 뒤 화면을 어둡게 눌러주는 반투명 배경 */
 .report-modal-backdrop.open { display:flex; }
-.report-modal { background:var(--bg-1); border:1px solid var(--border); border-radius:8px; padding:24px; max-width:92vw; } /* 모달 카드 본체 (가운데 정렬은 backdrop이 flex로 처리) */
+.report-modal { background:var(--bg-1); border:1px solid var(--border); border-radius:8px; padding:24px; max-width:92vw; width:480px; } /* 모달 카드 본체 (가운데 정렬은 backdrop이 flex로 처리) */
 .report-modal h2, .report-modal h3 { margin:0 0 16px; font-size:16px; }
+/* 공지사항 등록 폼(admin.css)처럼 textarea를 rows 기준 높이로만 쓰도록. 공용 .form-row textarea의 min-height:280px를 안 쓰면 모달 안에서 텍스트칸이 과하게 커 보임 */
+.report-modal .form-row textarea { min-height:auto; }
 
 /* ==========================================================================
    15. 공지사항 / Q&A 상세 화면 공용 레이아웃

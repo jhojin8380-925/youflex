@@ -188,13 +188,14 @@
     -->
   <div data-tab-panel="reports" class="mt-24" style="display:none">
     <table class="table">
-      <thead><tr><th>대상</th><th>내용 요약</th><th>작성자</th><th>신고자</th><th>사유</th><th>접수일</th><th>상태</th><th></th></tr></thead>
+      <thead><tr><th>No</th><th>대상</th><th>내용 요약</th><th>작성자</th><th>신고자</th><th>사유</th><th>접수일</th><th>상태</th><th></th></tr></thead>
       <tbody id="reportListBody">
-        <tr th:each="r : ${reportList}"
+        <tr th:each="r, stat : ${reportList}"
             th:data-report-type="${r.reportType}"
             th:data-report-id="${r.reportId}"
             th:data-reported-member-id="${r.reportedMemberId}"
             th:data-reported-member-name="${r.reportedMemberName}">
+          <td th:text="${stat.count}">1</td>
           <td><span class="badge badge-user" th:text="${r.reportTypeLabel}">게시글</span></td>
           <td th:text="${r.contentSummary}">광고성 스팸 게시물입니다</td>
           <td th:text="${r.reportedMemberName}">무비홀릭</td>
@@ -212,10 +213,11 @@
           </td>
         </tr>
         <tr th:if="${#lists.isEmpty(reportList)}">
-          <td colspan="8" class="text-muted" style="text-align:center">접수된 신고가 없습니다.</td>
+          <td colspan="9" class="text-muted" style="text-align:center">접수된 신고가 없습니다.</td>
         </tr>
       </tbody>
     </table>
+    <div class="pagination" id="reportPagination"></div>
   </div>
 
   <!-- 

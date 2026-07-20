@@ -25,9 +25,7 @@ public class QnaService {
     }
 
     /**
-     * 질문 상세 조회
-     * - 비밀글(qnaIsSecret == "비밀")인 경우 작성자 본인 또는 관리자만 조회 가능
-     * - 조회 시 조회수를 1 증가시킴 (DB 반영 + 반환 객체에도 반영). 접근 거부 시에는 증가시키지 않음
+     * 질문 상세 조회 (항상 조회수 증가)
      * @param qnaId 조회할 질문 ID
      * @param requesterMemberId 조회를 요청한 회원 ID (비로그인이면 null)
      * @param isAdmin 요청자가 관리자 등급인지 여부
@@ -36,6 +34,24 @@ public class QnaService {
      * @throws IllegalStateException 비밀글인데 작성자 본인도 관리자도 아닐 경우
      */
     public QnaDTO getQnaDetail(int qnaId, Integer requesterMemberId, boolean isAdmin) {
+        return getQnaDetail(qnaId, requesterMemberId, isAdmin, true);
+    }
+
+    /**
+     * 질문 상세 조회
+     * - 비밀글(qnaIsSecret == "비밀")인 경우 작성자 본인 또는 관리자만 조회 가능
+     * - increaseHit이 true일 때만 조회수를 1 증가시킴 (DB 반영 + 반환 객체에도 반영). 접근 거부 시에는 증가시키지 않음
+     * - 같은 세션의 F5 새로고침/댓글 작성 후 재조회, 수정 폼 진입 등 중복 호출 시에는 호출부(Controller)에서
+     *   increaseHit을 false로 넘겨 조회수가 무한정 올라가지 않도록 함
+     * @param qnaId 조회할 질문 ID
+     * @param requesterMemberId 조회를 요청한 회원 ID (비로그인이면 null)
+     * @param isAdmin 요청자가 관리자 등급인지 여부
+     * @param increaseHit 조회수 증가 여부
+     * @return 질문 상세 정보
+     * @throws IllegalArgumentException 해당 ID의 질문이 존재하지 않을 경우
+     * @throws IllegalStateException 비밀글인데 작성자 본인도 관리자도 아닐 경우
+     */
+    public QnaDTO getQnaDetail(int qnaId, Integer requesterMemberId, boolean isAdmin, boolean increaseHit) {
         QnaDTO qna = qnaMapper.selectQnaById(qnaId);
         if (qna == null) {
             throw new IllegalArgumentException("존재하지 않는 질문입니다. qnaId=" + qnaId);
@@ -44,8 +60,10 @@ public class QnaService {
         if ("비밀".equals(qna.getQnaIsSecret()) && !isOwner && !isAdmin) {
             throw new IllegalStateException("비공개 질문입니다. qnaId=" + qnaId);
         }
-        qnaMapper.increaseQnaHit(qnaId); // DB 상의 조회수 증가
-        qna.setQnaHit(qna.getQnaHit() + 1); // 반환할 객체에도 증가된 조회수 반영
+        if (increaseHit) {
+            qnaMapper.increaseQnaHit(qnaId); // DB 상의 조회수 증가
+            qna.setQnaHit(qna.getQnaHit() + 1); // 반환할 객체에도 증가된 조회수 반영
+        }
         return qna;
     }
 

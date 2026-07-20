@@ -1,7 +1,9 @@
 // ---- 댓글 "신고" 클릭 시 댓글 바로 아래로 펼쳐지는 인라인 신고폼 (답글달기와 같은 방식) ----
 function toggleReportForm(el) {
   const item = el.closest('.qna-comment-item');
-  const form = item && item.querySelector('.qna-report-form');
+  // 댓글 수정 폼도 스타일 재사용 때문에 .qna-report-form 클래스를 같이 갖고 있어서
+  // (DOM상 더 앞에 있어) 제외하지 않으면 querySelector가 수정 폼을 먼저 집어버림
+  const form = item && item.querySelector('.qna-report-form:not(.qna-comment-update-form)');
   if (!form) return;
   form.style.display = form.style.display === 'none' ? 'flex' : 'none';
 }
@@ -13,12 +15,35 @@ function closeReportForm(btn) {
   form.style.display = 'none';
 }
 function submitReportForm(btn) {
-  alert('신고가 접수되었습니다. 운영자 확인 후 처리됩니다.');
-  closeReportForm(btn);
+  const form = btn.closest('.qna-report-form');
+  const item = btn.closest('.qna-comment-item');
+  const qnaCommentId = item.dataset.commentId;
+  const reason = form.querySelector('select').value;
+  const content = form.querySelector('textarea').value.trim();
+  if (!content) {
+    alert('신고 사유를 구체적으로 입력해주세요.');
+    return;
+  }
+  fetch(`/api/qna/comments/${qnaCommentId}/report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ qnaCommentReportReason: reason, qnaCommentReportContent: content })
+  }).then(res => {
+    if (res.ok) {
+      alert('신고가 접수되었습니다. 운영자 확인 후 처리됩니다.');
+      closeReportForm(btn);
+    } else if (res.status === 401) {
+      alert('로그인이 필요합니다.');
+    } else {
+      alert('신고 접수에 실패했습니다.');
+    }
+  });
 }
 
 // ---- 신고하기 모달 (질문 게시글 전용, 댓글은 인라인 신고폼 사용) ----
-function openReportModal() {
+let reportTargetQnaId = null;
+function openReportModal(qnaId) {
+  reportTargetQnaId = qnaId;
   document.getElementById('reportTargetChip').textContent = '신고 대상: 질문';
   document.getElementById('reportReasonSelect').selectedIndex = 0;
   document.getElementById('reportDetailInput').value = '';
@@ -28,8 +53,26 @@ function closeReportModal() {
   document.getElementById('reportModalBackdrop').classList.remove('open');
 }
 function submitReportModal() {
-  alert('신고가 접수되었습니다. 운영자 확인 후 처리됩니다.');
-  closeReportModal();
+  const reason = document.getElementById('reportReasonSelect').value;
+  const content = document.getElementById('reportDetailInput').value.trim();
+  if (!content) {
+    alert('신고 사유를 구체적으로 입력해주세요.');
+    return;
+  }
+  fetch(`/api/qna/${reportTargetQnaId}/report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ qnaReportReason: reason, qnaReportContent: content })
+  }).then(res => {
+    if (res.ok) {
+      alert('신고가 접수되었습니다. 운영자 확인 후 처리됩니다.');
+      closeReportModal();
+    } else if (res.status === 401) {
+      alert('로그인이 필요합니다.');
+    } else {
+      alert('신고 접수에 실패했습니다.');
+    }
+  });
 }
 
 // ---- 질문 삭제: confirm은 호출부(th:onclick)에서 이미 처리되어 여기선 바로 요청 ----

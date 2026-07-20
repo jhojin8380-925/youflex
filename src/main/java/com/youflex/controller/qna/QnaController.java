@@ -8,15 +8,17 @@ import lombok.RequiredArgsConstructor;
 import com.youflex.dto.qna.QnaDTO;
 import com.youflex.dto.qna.QnaCommentDTO;
 import com.youflex.dto.QnaReportDTO;
+import com.youflex.dto.QnaCommentReportDTO;
 import com.youflex.dto.MemberDTO;
 import com.youflex.service.qna.QnaService;
 import com.youflex.service.qna.QnaCommentService;
 import com.youflex.service.QnaReportService;
+import com.youflex.service.QnaCommentReportService;
 import jakarta.servlet.http.HttpSession;
 
 /**
  * Q&A(질문/답변) 관련 API 컨트롤러
- * - 질문 CRUD, 댓글 CRUD, 질문 신고 기능을 포함
+ * - 질문 CRUD, 댓글 CRUD, 질문/댓글 신고 기능을 포함
  */
 @RestController
 @RequestMapping("/api/qna")
@@ -26,6 +28,7 @@ public class QnaController {
     private final QnaService qnaService;
     private final QnaCommentService qnaCommentService;
     private final QnaReportService qnaReportService;
+    private final QnaCommentReportService qnaCommentReportService;
 
     // ---- 질문 ----
 
@@ -218,8 +221,34 @@ public class QnaController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         reportDTO.setQnaId(qnaId);
-        // TODO: reportDTO에 신고자 memberId 필드가 있다면 loginMember.getMemberId()로 세팅 필요 (DTO 구조 확인 필요)
+        // 클라이언트가 보낸 memberId는 무시하고 세션의 로그인 정보로 강제 세팅 (위변조 방지)
+        reportDTO.setMemberId(loginMember.getMemberId());
         qnaReportService.reportQna(reportDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    // ---- 댓글 신고 ----
+
+    /**
+     * 댓글 신고 등록
+     * - 로그인한 회원만 가능
+     * @param qnaCommentId 신고 대상 댓글 ID
+     * @param reportDTO 신고 사유 등을 담은 요청 바디
+     * @param session 로그인 세션
+     * @return 등록 성공 시 201 Created, 미로그인 시 401 Unauthorized
+     */
+    @PostMapping("/comments/{qnaCommentId}/report")
+    public ResponseEntity<Void> reportComment(@PathVariable("qnaCommentId") int qnaCommentId,
+                                               @RequestBody QnaCommentReportDTO reportDTO,
+                                               HttpSession session) {
+        MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+        if (loginMember == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        reportDTO.setQnaCommentId(qnaCommentId);
+        // 클라이언트가 보낸 memberId는 무시하고 세션의 로그인 정보로 강제 세팅 (위변조 방지)
+        reportDTO.setMemberId(loginMember.getMemberId());
+        qnaCommentReportService.reportComment(reportDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

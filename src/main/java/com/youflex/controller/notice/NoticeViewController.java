@@ -1,6 +1,8 @@
 package com.youflex.controller.notice;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -48,13 +50,17 @@ public class NoticeViewController {
     // 공지사항 상세 화면
     /**
      * 공지사항 상세 페이지 렌더링
+     * - 같은 세션에서 이미 조회한 공지사항이면 조회수를 다시 올리지 않음 (F5 새로고침, 댓글/답변
+     *   작성 후 location.reload() 등으로 같은 페이지를 재요청해도 최초 1회만 카운트됨)
      * @param noticeId 조회할 공지사항 ID (경로 변수)
      * @param model 뷰에 전달할 데이터를 담는 모델 객체
+     * @param session 로그인 세션 (조회 이력 저장용)
      * @return 공지사항 상세 뷰 이름 (notice/notice_detail)
      */
     @GetMapping("/{noticeId}")
-    public String noticeDetail(@PathVariable("noticeId") int noticeId, Model model) {
-        NoticeDTO notice = noticeService.getNoticeDetail(noticeId);
+    public String noticeDetail(@PathVariable("noticeId") int noticeId, Model model, HttpSession session) {
+        boolean increaseHit = isFirstViewInSession(session, noticeId);
+        NoticeDTO notice = noticeService.getNoticeDetail(noticeId, increaseHit);
         model.addAttribute("notice", notice); // 상세 데이터를 뷰로 전달
         return "notice/notice_detail";
     }
@@ -75,8 +81,20 @@ public class NoticeViewController {
             return "redirect:/notice/" + noticeId;
         }
 
-        NoticeDTO notice = noticeService.getNoticeDetail(noticeId);
+        // 수정 폼 진입은 실제 조회가 아니므로 조회수를 올리지 않음
+        NoticeDTO notice = noticeService.getNoticeDetail(noticeId, false);
         model.addAttribute("notice", notice);
         return "notice/notice_update";
+    }
+
+    // 세션에 이 공지사항을 조회한 이력이 있는지 확인하고, 없으면 이력에 추가하면서 true(최초 조회) 반환
+    @SuppressWarnings("unchecked")
+    private boolean isFirstViewInSession(HttpSession session, int noticeId) {
+        Set<Integer> viewedNoticeIds = (Set<Integer>) session.getAttribute("viewedNoticeIds");
+        if (viewedNoticeIds == null) {
+            viewedNoticeIds = new HashSet<>();
+            session.setAttribute("viewedNoticeIds", viewedNoticeIds);
+        }
+        return viewedNoticeIds.add(noticeId);
     }
 }
