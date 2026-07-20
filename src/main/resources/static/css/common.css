@@ -404,6 +404,8 @@ body.notification-open #chatbotPanel.slide-panel { right: 408px; }
 .room-list-item {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 20px;
+  
 }
 .room-list-item .room-name { font-size: 14px; font-weight: 600; }
 .room-list-item .room-count { font-size: 12px; color: var(--text-2); }

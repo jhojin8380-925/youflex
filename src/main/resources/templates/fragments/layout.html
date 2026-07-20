@@ -166,12 +166,10 @@
   채팅방 영역
   ================================
   -->
-<!--<div class="overlay-backdrop" th:fragment="overlay" id="chatroomBackdrop">-->
 <div class="overlay-backdrop" id="chatroomBackdrop"></div>
 <aside class="slide-panel" id="chatroomPanel" th:fragment="chat">
   <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
   
-  <!-- 탭 영역: '개설' 탭은 평론가 등급 또는 관리자에게만 노출 -->
   <div class="panel-tabs" data-tab-panels>
     <button class="active" data-tab-target="list">목록</button>
     <button data-tab-target="chat">채팅</button>
@@ -181,28 +179,27 @@
     </button>
   </div>
   
-  <!-- 1. 목록 패널 -->
   <div class="panel-body" data-tab-panel="list">
     <div id="chatroomListContainer">
-      <!-- 컨트롤러에서 넘겨준 chatrooms 리스트를 순회 -->
       <div class="room-list-item" th:each="room : ${chatrooms}">
         <div>
-          <!-- DTO의 필드명(예: chatroomTitle)을 th:text로 매핑 -->
           <div class="room-name" th:text="${room.chatroomTitle}"></div>
-          
-          <!-- 파이프(|) 기호를 사용해 문자와 변수를 조합 -->
           <div class="room-count" th:text="|1 / ${room.chatroomMaxMember}명|"></div>
         </div>
-        <button class="btn btn-primary btn-sm"></button>
+		<!--채팅방 입장 버튼-->
+		<!-- 수정: onclick="enterChatroom()" 대신 data 속성으로 방 id/제목을 심어두고,
+		           JS에서 이벤트 위임 방식으로 처리하도록 변경.
+		           th:attr를 사용하면 Thymeleaf가 특수문자(따옴표 등)를 자동으로 이스케이프 처리해줌. -->
+		<button class="btn btn-primary btn-sm"
+				th:attr="data-room-id=${room.chatroomId}, data-room-title=${room.chatroomTitle}">입장</button>
       </div>
     </div>
   </div>
   
-  <!-- 2. 채팅 메시지 패널 -->
   <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
     <div class="chatroom-title">
-      <span>💬 오늘 개봉작 실시간 토크</span>
-      <!-- 경고 부여 버튼: '평론가' 또는 '관리자' 등급만 노출 -->
+      <!-- ★ 수정: id 추가 -> JS(enterChatroom)에서 입장한 방 제목으로 텍스트를 교체하는 대상 -->
+      <span id="chatroomTitleText">💬 </span>
       <button class="btn btn-sm btn-danger" onclick="giveChatWarning()"
               th:if="${session.loginMember != null and (session.loginMember.memberGrade == '평론가' or session.loginMember.memberGrade == '관리자')}">⚠ 경고 부여</button>
     </div>
@@ -216,13 +213,13 @@
       <button class="btn btn-primary" id="chatroomSendBtn">전송</button>
     </div>
   </div>
-  <!-- 3. 개설 패널: '평론가' 또는 '관리자' 등급만 렌더링 -->
   <div class="panel-body" data-tab-panel="create" style="display:none;"
        th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
     <label class="text-muted" style="font-size:13px">방 이름</label>
     <input type="text" id="chatroom_title" name="chatroom_title" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box;margin-bottom:12px" />
     <label class="text-muted" style="font-size:13px">최대 인원</label>
     <input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box" />
+    <div class="text-muted" style="font-size:12px; margin-top:8px; color:#888;">* 최소 인원은 2명부터 최대 30명까지 입니다.</div>
     <button class="btn btn-primary mt-24" id="chatroomCreateBtn" style="width:100%">채팅방 개설</button>
   </div>
 </aside>

@@ -1,11 +1,16 @@
 package com.youflex.controller.admin;
 
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import com.youflex.dto.MemberDTO;
 import com.youflex.dto.admin.AdminAnswerDTO;
 import com.youflex.service.admin.AdminAnswerService;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * 관리자 답변(Q&A 답변) 관련 API 컨트롤러
@@ -42,8 +47,10 @@ public class AdminAnswerController {
      * @return 성공 시 200 OK, 내용이 비어있으면 400 Bad Request
      */
     @PostMapping
-    public ResponseEntity<Void> saveAnswer(@PathVariable("qnaId") int qnaId, @RequestBody AnswerRequest request) {
-        // TODO: 관리자 권한 체크 필요 (현재는 인증/인가 로직 없음 - 보안 취약점 주의)
+    public ResponseEntity<?> saveAnswer(@PathVariable("qnaId") int qnaId, @RequestBody AnswerRequest request, HttpSession session) {
+        if (!isAdmin(session)) {
+            return forbidden();
+        }
         if (request.getContent() == null || request.getContent().isBlank()) {
             // 답변 내용이 비어있으면 잘못된 요청으로 처리
             return ResponseEntity.badRequest().build();
@@ -60,10 +67,23 @@ public class AdminAnswerController {
      * @return 성공 시 204 No Content
      */
     @DeleteMapping("/{adminAnswerId}")
-    public ResponseEntity<Void> deleteAnswer(@PathVariable("qnaId") int qnaId, @PathVariable("adminAnswerId") int adminAnswerId) {
-        // TODO: 관리자 권한 체크 필요
+    public ResponseEntity<?> deleteAnswer(@PathVariable("qnaId") int qnaId, @PathVariable("adminAnswerId") int adminAnswerId, HttpSession session) {
+        if (!isAdmin(session)) {
+            return forbidden();
+        }
         adminAnswerService.deleteAnswer(adminAnswerId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 세션의 로그인 회원이 관리자 등급인지 확인 (memberGrade == '관리자')
+    private boolean isAdmin(HttpSession session) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        return loginMemberObj instanceof MemberDTO loginMember
+                && "관리자".equals(loginMember.getMemberGrade());
+    }
+
+    private ResponseEntity<Map<String, String>> forbidden() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "관리자만 접근할 수 있습니다."));
     }
 
     /**

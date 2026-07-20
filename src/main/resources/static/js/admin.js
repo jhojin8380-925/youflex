@@ -1,23 +1,3 @@
-function openQnaModal(btn) {
-  const row = btn.closest("tr");
-  document.getElementById("qaQuestion").textContent = row.dataset.question;
-  document.getElementById("qaAuthor").textContent = row.dataset.author;
-  document.getElementById("admin_answer_content").value = row.dataset.answer || "";
-  document.getElementById("qnaModalBackdrop").classList.add("open");
-}
-function closeQnaModal() {
-  document.getElementById("qnaModalBackdrop").classList.remove("open");
-}
-function submitQnaAnswer() {
-  const val = document.getElementById("admin_answer_content").value.trim();
-  if (!val) {
-    alert("답변 내용을 입력해주세요.");
-    return;
-  }
-  alert("답변이 등록되었습니다. (데모)");
-  closeQnaModal();
-}
-
 let editingBannerRow = null;
 let currentBannerImage = "";
 
@@ -274,6 +254,7 @@ async function submitWarningRevoke() {
     await adminFetch(`${MEMBER_API_BASE}/${memberId}/warning/revoke`, { method: "POST" });
     closeWarningRevokeModal();
     alert("경고가 차감되었습니다.");
+    await loadMemberList(memberListState.page);
   } catch (e) {
     alert(e.message);
   }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.youflex.dto.MemberDTO;
 import com.youflex.service.admin.AdminReportService;
 import com.youflex.service.MemberService;
+import com.youflex.service.qna.QnaService;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class AdminViewController {
 
     private final MemberService memberService;
     private final AdminReportService adminReportService;
+    private final QnaService qnaService;
 
     @GetMapping
     public String adminPage(HttpSession session, Model model) {
@@ -41,6 +43,9 @@ public class AdminViewController {
 
         // 신고 처리 탭 - 검색/페이징이 없어 전체 목록을 SSR로 한 번에 내려줌
         model.addAttribute("reportList", adminReportService.getAllReports());
+
+        // Q&A 답변 탭 - 검색/페이징이 없어 전체 목록을 SSR로 한 번에 내려줌
+        model.addAttribute("qnaList", qnaService.getQnaList());
 
         return "admin/admin";
     }

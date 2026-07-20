@@ -227,26 +227,26 @@
     <table class="table">
       <thead><tr><th>번호</th><th>제목</th><th>작성자</th><th>등록일</th><th>상태</th><th></th></tr></thead>
       <tbody>
-        <tr data-question="Q. 티빙 특가 결제는 언제까지 열려있나요?" data-author="영화광123" data-answer="">
-          <td>1</td>
-          <td>Q. 티빙 특가 결제는 언제까지 열려있나요?</td>
-          <td>영화광123</td><td>2026-06-25</td>
-          <td><span class="status-pill status-pending">답변대기</span></td>
-          <td class="actions"><button class="btn btn-sm btn-primary" onclick="openQnaModal(this)">답변하기</button></td>
+        <tr th:each="q : ${qnaList}">
+          <td th:text="${q.qnaId}">1</td>
+          <td>
+            <span class="badge" th:if="${q.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:4px">🔒</span>
+            <span th:text="${q.qnaTitle}">Q. 제목</span>
+          </td>
+          <td th:text="${q.memberName}">영화광123</td>
+          <td th:text="${#temporals.format(q.qnaCreatedAt, 'yyyy-MM-dd')}">2026-06-25</td>
+          <td>
+            <span class="status-pill status-pending" th:if="${q.qnaStatus == '답변대기'}">답변대기</span>
+            <span class="status-pill status-active" th:if="${q.qnaStatus == '답변완료'}">답변완료</span>
+          </td>
+          <td class="actions">
+            <a th:href="@{/admin/qna/{id}(id=${q.qnaId})}" class="btn btn-sm"
+               th:classappend="${q.qnaStatus == '답변대기'} ? ' btn-primary' : ''"
+               th:text="${q.qnaStatus == '답변대기'} ? '답변하기' : '답변수정'">답변하기</a>
+          </td>
         </tr>
-        <tr data-question="Q. 디즈니+ 로그인 오류에 어떻게 대처하나요?" data-author="드라마러버" data-answer="안녕하세요, YouFlex 고객센터입니다.&#10;문의주신 디즈니+ 로그인 오류는 브라우저 캐시 문제로 발생하는 경우가 많습니다. 브라우저의 쿠키와 캐시를 삭제하신 후 다시 로그인을 시도해보시기 바랍니다.&#10;문제가 계속되면 디즈니+ 고객센터로 문의해주시면 더 자세한 안내를 도와드리겠습니다. 감사합니다.">
-          <td>2</td>
-          <td>Q. 디즈니+ 로그인 오류에 어떻게 대처하나요?</td>
-          <td>드라마러버</td><td>2026-06-25</td>
-          <td><span class="status-pill status-active">답변완료</span></td>
-          <td class="actions"><button class="btn btn-sm" onclick="openQnaModal(this)">답변수정</button></td>
-        </tr>
-        <tr data-question="Q. 리뷰어 등업 신청은 어디서 하나요?" data-author="무비홀릭" data-answer="안녕하세요, YouFlex 고객센터입니다.&#10;등업 신청은 마이페이지 내 '등업 신청' 메뉴에서 진행하실 수 있으며, 게시글 작성 2회 이상·경고 0회·본인 게시글 좋아요 합산 200회 이상 조건을 충족하셔야 합니다. 감사합니다.">
-          <td>3</td>
-          <td>Q. 리뷰어 등업 신청은 어디서 하나요?</td>
-          <td>무비홀릭</td><td>2026-06-24</td>
-          <td><span class="status-pill status-active">답변완료</span></td>
-          <td class="actions"><button class="btn btn-sm" onclick="openQnaModal(this)">답변수정</button></td>
+        <tr th:if="${#lists.isEmpty(qnaList)}">
+          <td colspan="6" class="text-muted" style="text-align:center">등록된 문의가 없습니다.</td>
         </tr>
       </tbody>
     </table>
@@ -303,34 +303,9 @@
   </div>
 </main>
 
-<!-- 
+<!--
   =========================================
-  Q&A 답변 작성/수정 모달 
-  =========================================
-  -->
-<div class="report-modal-backdrop" id="qnaModalBackdrop">
-  <div class="report-modal" style="width:480px">
-    <h3>💬 Q&A 답변 작성</h3>
-    <dl>
-      <dt>질문</dt><dd id="qaQuestion"></dd>
-      <dt>작성자</dt><dd id="qaAuthor"></dd>
-    </dl>
-    <form id="qnaAnswerForm">
-    <div class="form-row" style="margin-top:16px">
-      <label>답변 내용</label>
-      <textarea id="admin_answer_content" name="admin_answer_content" rows="5"></textarea>
-    </div>
-    <div class="btn-row">
-      <button type="button" class="btn btn-sm" onclick="closeQnaModal()">취소</button>
-      <button type="button" class="btn btn-sm btn-primary" onclick="submitQnaAnswer()">답변 등록</button>
-    </div>
-    </form>
-  </div>
-</div>
-
-<!-- 
-  =========================================
-  경고 처리 모달 
+  경고 처리 모달
   =========================================
 -->
 <div class="report-modal-backdrop" id="warningModalBackdrop">

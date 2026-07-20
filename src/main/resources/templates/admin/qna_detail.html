@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouFlex - 관리자 Q&amp;A 답변</title>
+<link rel="stylesheet" th:href="@{/css/common.css}" />
+<link rel="stylesheet" th:href="@{/css/admin.css}" />
+</head>
+<body>
+
+<!--
+==================================
+공통 헤더바
+==================================
+-->
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+  <div class="notice-detail-wrap">
+
+    <div class="notice-detail-title-row">
+      <span class="badge" th:if="${qna.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:8px">🔒 비밀글</span>
+    </div>
+    <h1 class="notice-detail-title" th:text="${qna.qnaTitle}">제목</h1>
+
+    <!-- 질문 메타 정보: 작성자 / 등록일 (읽기 전용) -->
+    <div class="notice-detail-meta">
+      <span>작성자: <span th:text="${qna.memberName}">닉네임</span><br /></span>
+      <span>등록일: <span th:text="${#temporals.format(qna.qnaCreatedAt, 'yyyy-MM-dd HH:mm')}"></span></span>
+    </div>
+
+    <!-- 질문 본문 (읽기 전용) -->
+    <div class="notice-detail-body" th:text="${qna.qnaContent}">내용</div>
+
+    <!-- 답변 작성/수정 폼: answer 존재 여부로 등록/수정 문구와 초기값 분기 -->
+    <form id="adminAnswerForm" class="mt-24" th:attr="data-qna-id=${qna.qnaId}">
+      <div class="form-row">
+        <label th:text="${answer != null} ? '답변 수정' : '답변 등록'">답변</label>
+        <textarea id="admin_answer_content" rows="8" th:text="${answer != null ? answer.adminAnswerContent : ''}" placeholder="답변 내용을 입력하세요"></textarea>
+      </div>
+      <div class="update-toolbar">
+        <a th:href="@{/admin}" class="btn">목록으로</a>
+        <button type="button" class="btn btn-primary" id="adminAnswerSaveBtn"
+                th:text="${answer != null} ? '수정' : '등록'">등록</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<!-- 공통 푸터 -->
+<footer class="site-footer main-footer" th:replace="~{fragments/layout :: footer}"></footer>
+
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/admin_qna_detail.js}"></script>
+</body>
+</html>
