@@ -57,15 +57,25 @@ public class ChatroomService {
         return chatroomMapper.selectChatroomById(chatroomId);
     }
 
-    public List<ChatroomDTO> getAllChatrooms() {
-        return chatroomMapper.selectAllChatrooms();
+    /**
+     * 전체 채팅방 목록 조회
+     * @param memberId 로그인한 회원 ID (비로그인 시 null) - 각 방의 joined 여부 판단용
+     */
+    public List<ChatroomDTO> getAllChatrooms(Integer memberId) {
+        return chatroomMapper.selectAllChatrooms(memberId);
     }
 
     public int updateChatroom(ChatroomDTO chatroom) {
         return chatroomMapper.updateChatroom(chatroom);
     }
 
+    /**
+     * 채팅방 삭제
+     * - 삭제 전 참여자(chat_member) 먼저 정리 (FK 제약 대비)
+     */
+    @Transactional
     public int deleteChatroom(int chatroomId) {
+        chatMemberMapper.deleteAllChatMembersByChatroomId(chatroomId);
         int result = chatroomMapper.deleteChatroom(chatroomId);
         // 삭제 시에도 실시간 반영
         broadcastChatroomList();
@@ -74,9 +84,10 @@ public class ChatroomService {
 
     /**
      * 현재 채팅방 목록을 /sub/chatroom-list 구독자 전체에게 전송
+     * - 브로드캐스트는 특정 회원 기준이 아니므로 memberId는 null로 조회
      */
     private void broadcastChatroomList() {
-        List<ChatroomDTO> rooms = chatroomMapper.selectAllChatrooms();
+        List<ChatroomDTO> rooms = chatroomMapper.selectAllChatrooms(null);
         messagingTemplate.convertAndSend("/sub/chatroom-list", rooms);
     }
 
@@ -93,11 +104,30 @@ public class ChatroomService {
                     .chatMemberRole("참여자")
                     .chatMemberStatus("참여중")
                     .build();
-                    
             chatMemberMapper.insertChatMember(participant);
         } catch (org.springframework.dao.DuplicateKeyException e) {
             // 이미 입장한 상태라면 에러를 발생시키지 않고 정상 처리(재입장)로 간주
             System.out.println("이미 해당 채팅방에 입장한 회원입니다. (memberId: " + memberId + ", chatroomId: " + chatroomId + ")");
         }
+    }
+
+    /**
+     * 채팅방 나가기 처리
+     * - 방장이 나가면: 채팅방 자체를 삭제 (참여자 전원도 함께 강제 퇴장)
+     * - 일반 참여자가 나가면: 본인 row만 chat_member에서 삭제
+     * - 어느 경우든 최신 목록(인원 수 또는 방 소멸)을 구독자 전체에게 실시간 반영
+     */
+    @Transactional
+    public void leaveChatroom(int chatroomId, int memberId) {
+        String role = chatMemberMapper.selectChatMemberRole(chatroomId, memberId);
+
+        if ("방장".equals(role)) {
+            chatMemberMapper.deleteAllChatMembersByChatroomId(chatroomId);
+            chatroomMapper.deleteChatroom(chatroomId);
+        } else {
+            chatMemberMapper.deleteChatMember(chatroomId, memberId);
+        }
+
+        broadcastChatroomList();
     }
 }

@@ -2,7 +2,13 @@
 // OTT 리뷰 웹사이트 - 화면 초안 공통 인터랙션 (와이어프레임 목업용)
 // ==========================================================================
 
-
+// ==========================================================================
+// 현재 입장해 있는 채팅방 ID (전역 상태)
+// - enterChatroom()에서 입장에 성공하면 여기 저장
+// - 나가기 버튼(chatroomLeaveBtn)에서 이 값을 사용해 어느 방을 나갈지 판단
+// - 나가기 성공/패널 닫기 시 null로 초기화
+// ==========================================================================
+let currentChatroomId = null;
 
 // ==========================================================================
 // 오버레이 패널 공통 함수 (챗봇 / 채팅방 / 알림 패널이 모두 이 함수를 재사용함)
@@ -221,16 +227,6 @@ function initQnaChatbotQuiz() {
         .catch(() => {});
 }
 
-// ---- 방장(평론가) 퇴장 시 채팅방 삭제 경고 (확인창 -> 확인 누르면 삭제 알림) ----
-function confirmRoomLeave() {
-    const ok = confirm(
-        "방장이 퇴장하면 채팅방이 삭제되고 대화 내용이 모두 사라집니다.\n정말 퇴장하시겠습니까?"
-    );
-    if (ok) {
-        alert("채팅방이 삭제되었습니다. (데모)");
-    }
-}
-
 // ---- 채팅방: 방장(평론가/관리자)이 채팅 내에서 특정 사용자에게 경고를 부여 ----
 function giveChatWarning() {
     const name = prompt("경고를 부여할 사용자의 닉네임을 입력하세요.");
@@ -283,14 +279,20 @@ function renderChatroomList(rooms) {
         // 방 이름 / 인원수 / 입장 버튼을 문자열 템플릿으로 한번에 삽입
         // ★ data-room-id 뿐 아니라 data-room-title도 함께 심어둠
         //   -> 나중에 입장 버튼을 눌렀을 때 방 제목을 채팅창 상단에 그대로 반영하기 위함.
+        // ★ joined: 로그인 회원이 이미 참여 중인 방이면 '참여중'으로 표시
+        const isJoined = room.joined === true;
+        const btnLabel = isJoined ? "참여중" : "입장";
+        const btnClass = isJoined ? "btn btn-sm btn-joined" : "btn btn-primary btn-sm";
+
         item.innerHTML = `
       <div>
         <div class="room-name">${room.chatroomTitle}</div>
         <div class="room-count">${room.currentMemberCount ?? 0} / ${room.chatroomMaxMember}명</div>
       </div>
-      <button class="btn btn-primary btn-sm"
+      <button class="${btnClass}"
               data-room-id="${room.chatroomId}"
-              data-room-title="${room.chatroomTitle}">입장</button>
+              data-room-title="${room.chatroomTitle}"
+              data-joined="${isJoined}">${btnLabel}</button>
     `;
 
         listContainer.appendChild(item);
@@ -393,10 +395,20 @@ function initChatroomChat() {
             const btn = e.target.closest("button[data-room-id]");
             if (!btn) return; // 입장 버튼이 아닌 다른 곳을 클릭한 경우 무시
 
-            const chatroomId = btn.dataset.roomId;       
-            const chatroomTitle = btn.dataset.roomTitle;  
+            const chatroomId = btn.dataset.roomId;
+            const chatroomTitle = btn.dataset.roomTitle;
+            const alreadyJoined = btn.dataset.joined === "true";
 
-            enterChatroom(chatroomId, chatroomTitle);
+            if (alreadyJoined) {
+                // 이미 참여 중인 방이면 서버에 재입장 요청을 보내지 않고 바로 채팅 탭으로 이동
+                currentChatroomId = chatroomId;
+                const chatTab = document.querySelector('[data-tab-target="chat"]');
+                if (chatTab) chatTab.click();
+                const titleEl = document.getElementById("chatroomTitleText");
+                if (titleEl) titleEl.textContent = `💬 ${chatroomTitle}`;
+            } else {
+                enterChatroom(chatroomId, chatroomTitle);
+            }
         });
     }
 
@@ -472,6 +484,7 @@ function initChatroomChat() {
  * - 1. 백엔드 서버로 POST 요청을 보내 DB(chat_member)에 입장 정보 저장
  * - 2. 채팅 탭으로 화면 전환 및 상단 타이틀 변경
  * - 3. 화면 채팅창에 'OO님이 입장했습니다' 시스템 메시지 추가
+ * - 4. 나가기 버튼이 사용할 수 있도록 현재 방 ID를 currentChatroomId에 저장
  */
 async function enterChatroom(chatroomId, chatroomTitle) {
     if (!chatroomId) {
@@ -499,6 +512,12 @@ async function enterChatroom(chatroomId, chatroomTitle) {
         return;
     }
 
+    // ★ 입장에 성공했으므로 현재 방 ID를 기억해둔다 (나가기 버튼에서 사용)
+    currentChatroomId = chatroomId;
+
+    // ★ 목록 화면의 "입장" 버튼이 "참여중"으로 바뀌도록, 목록도 최신 상태로 다시 받아온다
+    loadChatroomList();
+
     // 2. 채팅방 패널 안의 [채팅] 탭 버튼을 찾아 자동으로 클릭(화면 전환)
     const chatTab = document.querySelector('[data-tab-target="chat"]');
     if (chatTab) {
@@ -523,64 +542,98 @@ async function enterChatroom(chatroomId, chatroomTitle) {
         messages.appendChild(joinMsg);
         messages.scrollTop = messages.scrollHeight;
     }
-
-    console.log("성공적으로 입장한 채팅방 ID:", chatroomId, "/ 제목:", chatroomTitle);
 }
-// 케밥 메뉴 열기/닫기
-const chatroomMenuBtn = document.getElementById('chatroomMenuBtn');
-const chatroomDropdown = document.getElementById('chatroomDropdown');
-if (chatroomMenuBtn && chatroomDropdown) {
-  chatroomMenuBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    chatroomDropdown.classList.toggle('open');
-  });
-  // 메뉴 바깥 클릭 시 닫기
-  document.addEventListener('click', function (e) {
-    if (!chatroomDropdown.contains(e.target) && e.target !== chatroomMenuBtn) {
-      chatroomDropdown.classList.remove('open');
+
+/**
+ * ★★★ 채팅방 "나가기" 버튼을 눌렀을 때 실제로 실행되는 함수 ★★★
+ * - 1. currentChatroomId가 없으면(아직 어느 방에도 안 들어간 상태) 그냥 종료
+ * - 2. 서버에 나가기 요청(POST /api/chatroom/{id}/leave) 전송 (DB chat_member 삭제 등)
+ * - 3. [목록] 탭으로 화면 전환, 채팅 상단 타이틀/메시지창 초기화
+ * - 4. 목록을 새로고침해서 인원 수 반영
+ */
+async function leaveChatroom() {
+    if (!currentChatroomId) {
+        alert("입장한 채팅방이 없습니다.");
+        return;
     }
-  });
-  // 메뉴 안 토글 스위치 클릭 시엔 메뉴가 안 닫히도록
-  chatroomDropdown.querySelector('.toggle-item').addEventListener('click', function (e) {
-    e.stopPropagation();
-  });
-}
+    if (!confirm("채팅방에서 나가시겠습니까?")) return;
 
-// 알림 켜기/끄기
-const chatroomNotifyToggle = document.getElementById('chatroomNotifyToggle');
-if (chatroomNotifyToggle) {
-  chatroomNotifyToggle.addEventListener('change', function () {
-    const isOn = this.checked;
-    fetch('/chatroom/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notifyOn: isOn })
-    }).catch(err => console.error('알림 설정 저장 실패:', err));
-  });
-}
+    try {
+        const response = await fetch(`/api/chatroom/${currentChatroomId}/leave`, {
+            method: 'POST'
+        });
 
-// 채팅방 나가기 버튼
-const chatroomLeaveBtn = document.getElementById('chatroomLeaveBtn');
-if (chatroomLeaveBtn) {
-  chatroomLeaveBtn.addEventListener('click', function () {
-    if (chatroomDropdown) chatroomDropdown.classList.remove('open');
-    if (!confirm('채팅방에서 나가시겠습니까?')) return;
-
-    // 입장 시 저장해둔 현재 방 ID 사용 (예: chatroomPanel.dataset.currentRoomId)
-    const roomId = document.getElementById('chatroomPanel').dataset.currentRoomId;
-
-    fetch(`/chatroom/${roomId}/leave`, { method: 'POST' })
-      .then(res => {
-        if (res.ok) {
-          alert('채팅방에서 나갔습니다.');
-          document.querySelector('[data-tab-target="list"]').click(); // 목록 탭으로 이동
-        } else {
-          alert('나가기에 실패했습니다.');
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert(errorText || "나가기에 실패했습니다.");
+            return;
         }
-      })
-      .catch(err => console.error('나가기 요청 실패:', err));
-  });
+    } catch (error) {
+        console.error("나가기 요청 실패:", error);
+        alert("서버 연결에 실패했습니다. 네트워크 상태를 확인하세요.");
+        return;
+    }
+
+    // 상태 초기화
+    currentChatroomId = null;
+
+    // 채팅 메시지창, 타이틀 초기화
+    const messages = document.getElementById("chatroomMessages");
+    if (messages) messages.innerHTML = "";
+    const titleEl = document.getElementById("chatroomTitleText");
+    if (titleEl) titleEl.textContent = "💬 ";
+
+    // [목록] 탭으로 이동
+    const listTabButton = document.querySelector("[data-tab-target='list']");
+    if (listTabButton) listTabButton.click();
+
+    // 목록 최신화 (인원수 갱신)
+    loadChatroomList();
 }
+
+/**
+ * 채팅방 상단 케밥(⋮) 메뉴 및 알림 토글 / 나가기 버튼 초기화
+ */
+function initChatroomMenu() {
+    const chatroomMenuBtn = document.getElementById('chatroomMenuBtn');
+    const chatroomDropdown = document.getElementById('chatroomDropdown');
+    const chatroomNotifyToggle = document.getElementById('chatroomNotifyToggle');
+    const chatroomLeaveBtn = document.getElementById('chatroomLeaveBtn');
+
+    if (chatroomMenuBtn && chatroomDropdown) {
+        // 케밥 버튼 클릭 -> 드롭다운 열기/닫기 토글
+        chatroomMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chatroomDropdown.classList.toggle('open');
+        });
+        // 드롭다운 바깥을 클릭하면 닫기
+        document.addEventListener('click', (e) => {
+            if (!chatroomDropdown.contains(e.target) && e.target !== chatroomMenuBtn) {
+                chatroomDropdown.classList.remove('open');
+            }
+        });
+    }
+
+    // 알림 켜기/끄기
+    if (chatroomNotifyToggle) {
+        chatroomNotifyToggle.addEventListener('change', function () {
+            fetch('/chatroom/notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notifyOn: this.checked })
+            }).catch((err) => console.error('알림 설정 저장 실패:', err));
+        });
+    }
+
+    // 채팅방 나가기 버튼
+    if (chatroomLeaveBtn) {
+        chatroomLeaveBtn.addEventListener('click', () => {
+            if (chatroomDropdown) chatroomDropdown.classList.remove('open');
+            leaveChatroom();
+        });
+    }
+}
+
 // ---- 취향/장르 선택 칩 (클릭 시 선택 표시 토글) ----
 function initGenreChips() {
     document.querySelectorAll(".genre-chip").forEach((chip) => {
@@ -685,6 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initTabs(".notice-tabs");
 
     initChatroomChat();
+    initChatroomMenu();   // 케밥 메뉴 및 나가기 기능 초기화
     initGenreChips();
     initQnaChatbotQuiz();
 });
@@ -696,7 +750,7 @@ const headings = document.querySelectorAll('.section-heading');
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            void entry.target.offsetWidth; 
+            void entry.target.offsetWidth;
             entry.target.style.animation = 'heading-shine 4s ease-in-out infinite, heading-fade-in 0.6s ease-out';
         }
     });
@@ -705,6 +759,9 @@ const observer = new IntersectionObserver((entries) => {
 headings.forEach(h => observer.observe(h));
 
 // ---- 푸터: 맨 위로 가기 버튼 ----
-document.getElementById("footerTopBtn").addEventListener("click", function() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-});
+const footerTopBtn = document.getElementById("footerTopBtn");
+if (footerTopBtn) {
+    footerTopBtn.addEventListener("click", function() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+}

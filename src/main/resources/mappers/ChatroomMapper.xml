@@ -24,20 +24,33 @@
         FROM chatroom c
         WHERE c.chatroom_id = #{chatroomId}
     </select>
+	<!-- 전체 채팅방 목록 조회 (로그인 회원의 참여 여부 joined 포함) -->
+<select id="selectAllChatrooms" resultType="com.youflex.dto.ChatroomDTO">
+    SELECT
+        c.chatroom_id       AS chatroomId,
+        c.member_id         AS memberId,
+        c.chatroom_title    AS chatroomTitle,
+        c.chatroom_max_member AS chatroomMaxMember,
+        c.chatroom_created_at AS chatroomCreatedAt,
+        (SELECT COUNT(*) FROM chat_member cm
+         WHERE cm.chatroom_id = c.chatroom_id AND cm.chat_member_status = '참여중') AS currentMemberCount,
+        <choose>
+            <when test="memberId != null">
+                EXISTS (
+                    SELECT 1 FROM chat_member cm2
+                    WHERE cm2.chatroom_id = c.chatroom_id
+                      AND cm2.member_id = #{memberId}
+                      AND cm2.chat_member_status = '참여중'
+                ) AS joined
+            </when>
+            <otherwise>
+                false AS joined
+            </otherwise>
+        </choose>
+    FROM chatroom c
+    ORDER BY c.chatroom_created_at DESC
+</select>
 
-    <!-- 전체 채팅방 목록 조회 -->
-    <select id="selectAllChatrooms" resultType="com.youflex.dto.ChatroomDTO">
-        SELECT
-            c.chatroom_id       AS chatroomId,
-            c.member_id         AS memberId,
-            c.chatroom_title    AS chatroomTitle,
-            c.chatroom_max_member AS chatroomMaxMember,
-            c.chatroom_created_at AS chatroomCreatedAt,
-            (SELECT COUNT(*) FROM chat_member cm
-             WHERE cm.chatroom_id = c.chatroom_id AND cm.chat_member_status = '참여중') AS currentMemberCount
-        FROM chatroom c
-        ORDER BY c.chatroom_created_at DESC
-    </select>
 
     <!-- 채팅방 정보 수정: chatroomId 기준으로 제목/최대인원만 수정 (member_id는 방장이라 보통 변경 안 함) -->
     <update id="updateChatroom">

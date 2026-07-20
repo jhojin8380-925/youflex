@@ -780,3 +780,8 @@ body.notification-open #chatbotPanel.slide-panel { right: 408px; }
 .switch input:checked + .slider.round::before {
   transform: translateX(16px);
 }
+.btn-joined {
+  background: #3a3a40;
+  color: #aaa;
+  cursor: default;
+}
