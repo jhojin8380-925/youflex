@@ -1,5 +1,7 @@
 package com.youflex.service.admin;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -63,6 +65,7 @@ public class AdminReportService {
                     .reason(r.getReviewReportReason())
                     .status(r.getReviewReportStatus())
                     .createdAt(r.getReviewReportCreatedAt())
+                    .elapsedDays(ChronoUnit.DAYS.between(r.getReviewReportCreatedAt(), LocalDateTime.now()))
                     .detailUrl("/review/" + r.getReviewId())
                     .build());
         }
@@ -80,6 +83,7 @@ public class AdminReportService {
                     .reason(r.getCommentReportReason())
                     .status(r.getCommentReportStatus())
                     .createdAt(r.getCommentReportCreatedAt())
+                    .elapsedDays(ChronoUnit.DAYS.between(r.getCommentReportCreatedAt(), LocalDateTime.now()))
                     .detailUrl(null)
                     .build());
         }
@@ -97,7 +101,9 @@ public class AdminReportService {
                     .reason(r.getQnaReportReason())
                     .status(r.getQnaReportStatus())
                     .createdAt(r.getQnaReportCreatedAt())
-                    .detailUrl("/qna/" + r.getQnaId())
+                    .elapsedDays(ChronoUnit.DAYS.between(r.getQnaReportCreatedAt(), LocalDateTime.now()))
+                    // "삭제" 처리로 원본이 지워지면 qna_id가 SET NULL(-> int라 0)이 되므로, 이 경우 링크를 만들지 않음
+                    .detailUrl(r.getQnaId() > 0 ? "/qna/" + r.getQnaId() : null)
                     .build());
         }
 
@@ -114,7 +120,9 @@ public class AdminReportService {
                     .reason(r.getQnaCommentReportReason())
                     .status(r.getQnaCommentReportStatus())
                     .createdAt(r.getQnaCommentReportCreatedAt())
-                    .detailUrl("/qna/" + r.getQnaId())
+                    .elapsedDays(ChronoUnit.DAYS.between(r.getQnaCommentReportCreatedAt(), LocalDateTime.now()))
+                    // "삭제" 처리로 원본 댓글이 지워지면 qna_comment_id가 SET NULL되어 join으로 얻던 qna_id도 0이 됨
+                    .detailUrl(r.getQnaId() > 0 ? "/qna/" + r.getQnaId() : null)
                     .build());
         }
 
@@ -157,6 +165,18 @@ public class AdminReportService {
                 qnaCommentMapper.deleteComment(targetId);
                 qnaCommentReportMapper.updateCommentReportStatus(reportId, STATUS_DONE);
             }
+            default -> throw new IllegalArgumentException("알 수 없는 신고 유형: " + reportType);
+        }
+    }
+
+    // 처리완료 탭 - 이미 반려/삭제 처리가 끝난 신고 기록 자체를 목록에서 완전 삭제(원본 콘텐츠는 건드리지 않음)
+    @Transactional
+    public void purgeResolvedReport(String reportType, int reportId) {
+        switch (reportType) {
+            case "REVIEW" -> reviewReportMapper.deleteReviewReport(reportId);
+            case "COMMENT" -> commentReportMapper.deleteCommentReport(reportId);
+            case "QNA" -> qnaReportMapper.deleteQnaReport(reportId);
+            case "QNA_COMMENT" -> qnaCommentReportMapper.deleteQnaCommentReport(reportId);
             default -> throw new IllegalArgumentException("알 수 없는 신고 유형: " + reportType);
         }
     }

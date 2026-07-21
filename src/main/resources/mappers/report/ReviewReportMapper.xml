@@ -17,7 +17,9 @@
     </resultMap>
 
     <!-- 신고자(member) + 신고 대상 게시글(review) + 그 작성자(member)를 함께 조회.
-         작성자 정보가 있어야 관리자가 "경고처리" 시 누구에게 경고를 줄지 알 수 있음. -->
+         작성자 정보가 있어야 관리자가 "경고처리" 시 누구에게 경고를 줄지 알 수 있음.
+         review/author는 LEFT JOIN - "삭제" 처리로 원본 게시글이 지워지면 review_id가 SET NULL 되는데,
+         INNER JOIN이면 그 순간 처리완료 탭에서도 신고 기록이 통째로 안 보이게 되므로 LEFT JOIN으로 방지. -->
     <select id="selectReviewReportList" resultMap="reviewReportResultMap">
         SELECT rr.review_report_id, rr.review_id, rr.member_id, rr.review_report_reason, rr.review_report_status,
                rr.review_report_created_at, rr.review_report_content,
@@ -27,8 +29,8 @@
                author.member_name AS reported_member_name
         FROM review_report rr
         JOIN member reporter ON rr.member_id = reporter.member_id
-        JOIN review rv ON rr.review_id = rv.review_id
-        JOIN member author ON rv.member_id = author.member_id
+        LEFT JOIN review rv ON rr.review_id = rv.review_id
+        LEFT JOIN member author ON rv.member_id = author.member_id
         ORDER BY rr.review_report_created_at DESC
     </select>
 
@@ -42,6 +44,11 @@
     <insert id="insertReport" parameterType="com.youflex.dto.ReviewReportDTO">
         INSERT INTO review_report (review_id, member_id, review_report_reason, review_report_content)
         VALUES (#{reviewId}, #{memberId}, #{reviewReportReason}, #{reviewReportContent})
-    </insert>
+    </insert> <!-- 댓글과 동일하게 오류나면 수정 -->
+    <!-- 처리완료 탭 - 신고 기록 자체 완전 삭제(원본 게시글과는 무관) -->
+    <delete id="deleteReviewReport" parameterType="int">
+        DELETE FROM review_report
+        WHERE review_report_id = #{reviewReportId}
+    </delete>
 
 </mapper>

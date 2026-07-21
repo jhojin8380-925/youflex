@@ -10,4 +10,7 @@ public interface QnaReportMapper {
     void insertQnaReport(QnaReportDTO reportDTO);
     List<QnaReportDTO> selectQnaReportList();
     void updateQnaReportStatus(@Param("qnaReportId") int qnaReportId, @Param("qnaReportStatus") String qnaReportStatus);
+
+    // 관리자 - 처리완료 탭에서 신고 기록 자체를 완전 삭제(원본 QNA와는 무관)
+    void deleteQnaReport(int qnaReportId);
 }
