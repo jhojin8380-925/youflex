@@ -3,6 +3,7 @@ package com.youflex.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.youflex.dto.MemberDTO;
 import com.youflex.dto.PageInfo;
@@ -146,8 +147,12 @@ public class MemberService {
         memberMapper.restoreMember(memberId);
     }
 
-    // 탈퇴 승인 - 계정과 작성글/댓글을 완전히 삭제(FK ON DELETE CASCADE, 되돌릴 수 없음)
+    // 탈퇴 승인 - 완전삭제 전에 통계용 이력을 먼저 남기고(회원 row가 지워지면 이름을 알 수 없으므로),
+    // 계정과 작성글/댓글을 완전히 삭제(FK ON DELETE CASCADE, 되돌릴 수 없음)
+    @Transactional
     public void approveWithdraw(int memberId) {
+        MemberDTO member = memberMapper.findById(memberId);
+        memberMapper.insertWithdrawalLog(memberId, member.getMemberName());
         memberMapper.deleteMemberPermanently(memberId);
     }
 }

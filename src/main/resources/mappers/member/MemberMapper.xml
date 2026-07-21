@@ -129,6 +129,12 @@
         WHERE member_id = #{memberId}
     </delete>
 
+    <!-- 탈퇴 승인 이력 기록 - 관리자 대시보드 "누적 탈퇴자수" 집계용 -->
+    <insert id="insertWithdrawalLog">
+        INSERT INTO member_withdrawal_log (member_id, member_name)
+        VALUES (#{memberId}, #{memberName})
+    </insert>
+
     <!-- 포인트 적립/차감 - amount만큼 현재 값에 더함(차감은 음수로 호출) -->
     <update id="addPoint">
         UPDATE member

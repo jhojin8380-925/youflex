@@ -24,6 +24,8 @@
         VALUES (#{qnaId}, #{memberId}, #{qnaReportReason}, '접수', NOW(), #{qnaReportContent})
     </insert>
 
+    <!-- qna/author는 LEFT JOIN - "삭제" 처리로 원본 질문글이 지워지면 qna_id가 SET NULL 되는데,
+         INNER JOIN이면 그 순간 처리완료 탭에서도 신고 기록이 통째로 안 보이게 되므로 LEFT JOIN으로 방지. -->
     <select id="selectQnaReportList" resultMap="qnaReportResultMap">
         SELECT r.qna_report_id, r.qna_id, r.member_id, r.qna_report_reason, r.qna_report_status,
                r.qna_report_created_at, r.qna_report_content, m.member_name, q.qna_title,
@@ -31,13 +33,18 @@
                author.member_name AS reported_member_name
         FROM qna_report r
         JOIN member m ON r.member_id = m.member_id
-        JOIN qna q ON r.qna_id = q.qna_id
-        JOIN member author ON q.member_id = author.member_id
+        LEFT JOIN qna q ON r.qna_id = q.qna_id
+        LEFT JOIN member author ON q.member_id = author.member_id
         ORDER BY r.qna_report_created_at DESC
     </select>
 
     <update id="updateQnaReportStatus">
         UPDATE qna_report SET qna_report_status = #{qnaReportStatus} WHERE qna_report_id = #{qnaReportId}
     </update>
+
+    <!-- 처리완료 탭 - 신고 기록 자체 완전 삭제(원본 QNA와는 무관) -->
+    <delete id="deleteQnaReport" parameterType="int">
+        DELETE FROM qna_report WHERE qna_report_id = #{qnaReportId}
+    </delete>
 
 </mapper>

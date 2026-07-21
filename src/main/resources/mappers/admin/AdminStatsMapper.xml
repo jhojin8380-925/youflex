@@ -1,33 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youflex.mapper.admin.AdminStatsMapper">
 
-    <select id="countJoinedToday" resultType="int">
-        SELECT COUNT(*)
-        FROM member
-        WHERE DATE(member_created_at) = CURDATE()
-    </select>
+    <select id="countJoinedToday" resultType="int"> SELECT COUNT(*) FROM member WHERE
+        DATE(member_created_at) = CURDATE() </select>
 
     <!-- YEARWEEK(date, 1): 월요일을 한 주의 시작으로 계산 -->
-    <select id="countJoinedThisWeek" resultType="int">
-        SELECT COUNT(*)
-        FROM member
-        WHERE YEARWEEK(member_created_at, 1) = YEARWEEK(CURDATE(), 1)
-    </select>
+    <select id="countJoinedThisWeek" resultType="int"> SELECT COUNT(*) FROM member WHERE
+        YEARWEEK(member_created_at, 1) = YEARWEEK(CURDATE(), 1) </select>
 
-    <select id="countWithdrawnToday" resultType="int">
-        SELECT COUNT(*)
-        FROM member
-        WHERE member_delete_status = '탈퇴'
-          AND DATE(member_deleted_at) = CURDATE()
-    </select>
-
-    <select id="countWithdrawnThisWeek" resultType="int">
-        SELECT COUNT(*)
-        FROM member
-        WHERE member_delete_status = '탈퇴'
-          AND YEARWEEK(member_deleted_at, 1) = YEARWEEK(CURDATE(), 1)
-    </select>
+    <select id="countTotalWithdrawn" resultType="int"> SELECT COUNT(*) FROM member_withdrawal_log </select>
 
 </mapper>

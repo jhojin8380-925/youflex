@@ -27,10 +27,13 @@
 <main class="container">
   <div class="notice-detail-wrap">
 
-    <!-- 질문 제목 + 작성자 전용 액션 버튼 -->
+    <!-- 질문 제목 + 작성자 전용 액션 버튼 - 같은 줄에 배치(.notice-detail-title-row가 flex space-between) -->
     <div class="notice-detail-title-row">
-      <!-- 비밀글 배지: 이 페이지에 도달했다는 것 자체가 작성자 본인 또는 관리자라는 뜻이므로 별도 권한 체크 불필요 -->
-      <span class="badge" th:if="${qna.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:8px">🔒 비공개</span>
+      <h1 class="notice-detail-title">
+        <!-- 비밀글 배지: 이 페이지에 도달했다는 것 자체가 작성자 본인 또는 관리자라는 뜻이므로 별도 권한 체크 불필요 -->
+        <span class="badge" th:if="${qna.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:8px">🔒 비공개</span>
+        <span th:text="${qna.qnaTitle}">제목</span>
+      </h1>
       <!-- 작성자 본인에게만 노출. th:if로 세션의 loginMember.memberId와 게시글 작성자 memberId를 직접 비교 (Spring Security sec:authorize 미사용) -->
       <div class="owner-actions" th:if="${session.loginMember != null and session.loginMember.memberId == qna.memberId}"
            style="display:flex;gap:8px;flex-shrink:0">
@@ -40,7 +43,6 @@
                 th:onclick="|if(confirm('정말 삭제하시겠습니까?')) deleteQna(${qna.qnaId})|">삭제</button>
       </div>
     </div>
-    <h1 class="notice-detail-title" th:text="${qna.qnaTitle}">제목</h1>
 
     <!-- 질문 메타 정보: 작성자 / 등록일 / 조회수 -->
     <div class="notice-detail-meta">

@@ -13,6 +13,11 @@
 .member-subtabs button { padding:8px 14px; border-radius:6px; border:1px solid var(--border); background:none; color:var(--text-2); font-size:13px; font-weight:600; }
 .member-subtabs button.active { color:var(--text-0); border-color:var(--accent); background:rgba(230,57,70,0.1); }
 
+/* ---------- 신고처리 탭 안의 "미처리/처리완료" 작은 서브 탭 (member-subtabs와 동일한 스타일) ---------- */
+.report-subtabs { display:flex; gap:6px; margin-top:20px; margin-bottom:8px; flex-wrap:wrap; }
+.report-subtabs button { padding:8px 14px; border-radius:6px; border:1px solid var(--border); background:none; color:var(--text-2); font-size:13px; font-weight:600; }
+.report-subtabs button.active { color:var(--text-0); border-color:var(--accent); background:rgba(230,57,70,0.1); }
+
 /* ---------- 회원 검색창 + 페이지네이션(회원목록 5명씩 보기) ---------- */
 .member-search-row { display:flex; gap:8px; margin-top:16px; }
 .member-search-row input { flex:1; max-width:320px; background:var(--bg-2); border:1px solid var(--border); border-radius:6px; padding:10px; color:#fff; font-size:13px; }

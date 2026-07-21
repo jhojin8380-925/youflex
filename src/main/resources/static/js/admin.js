@@ -270,9 +270,14 @@ async function submitWarning() {
     });
     closeWarningModal();
     if (reportContext) {
-      await adminFetch(`${REPORT_API_BASE}/${reportContext.reportType}/${reportContext.reportId}/resolve`, { method: "POST" });
-      markReportRowResolved(reportContext.row);
-      alert("경고가 부여되고 신고가 처리완료 처리되었습니다.");
+      // 경고처리 = 경고 부여 + 신고된 콘텐츠 삭제(REVIEW/QNA/QNA댓글 완전삭제, 댓글 소프트삭제) + 신고 처리완료.
+      // "삭제" 버튼과 동일한 엔드포인트를 재사용한다.
+      await adminFetch(`${REPORT_API_BASE}/${reportContext.reportType}/${reportContext.reportId}`, {
+        method: "DELETE",
+        body: JSON.stringify({ targetId: reportContext.targetId }),
+      });
+      reportContext.row.remove();
+      alert("경고가 부여되고 신고된 콘텐츠가 삭제되었습니다.");
     } else {
       alert("경고가 부여되었습니다. (누적 3회 시 자동 강제탈퇴 처리됩니다)");
       await loadMemberList(memberListState.page);
@@ -394,21 +399,13 @@ document.getElementById("noticeCreateBtn").addEventListener("click", async () =>
 // ==========================================================================
 const REPORT_API_BASE = "/api/admin/reports";
 
-// 신고 1건을 처리 상태로 표시하고 반려/경고처리/삭제 버튼을 비활성화.
-// label/pillClass를 넘기지 않으면 반려/경고처리(콘텐츠는 그대로 유지)에 해당하는 기본값을 사용.
-function markReportRowResolved(row, label, pillClass) {
-  // 열 순서: No/대상/내용요약/작성자/신고자/사유/접수일/상태/액션 -> 상태는 7번 인덱스
-  const statusCell = row.children[7];
-  statusCell.innerHTML = `<span class="status-pill ${pillClass || "status-active"}">${label || "처리완료 (유지)"}</span>`;
-  row.querySelectorAll(".actions button").forEach((btn) => (btn.disabled = true));
-}
-
+// 신고 처리(반려/경고처리/삭제)가 끝나면 미처리 탭에서는 사라지고, 새로고침하면 처리완료 탭에서 보임
 async function rejectReport(btn) {
   const row = btn.closest("tr");
   if (!confirm("이 신고를 반려(콘텐츠 유지) 처리하시겠습니까?")) return;
   try {
     await adminFetch(`${REPORT_API_BASE}/${row.dataset.reportType}/${row.dataset.reportId}/resolve`, { method: "POST" });
-    markReportRowResolved(row);
+    row.remove();
   } catch (e) {
     alert(e.message);
   }
@@ -423,10 +420,20 @@ async function deleteReportedContent(btn) {
       method: "DELETE",
       body: JSON.stringify({ targetId: Number(row.dataset.targetId) }),
     });
-    // 내용 요약 칸(3번째 열)은 이미 삭제된 원본 콘텐츠의 옛 텍스트라 그대로 두면 오해의 소지가 있어 갱신
-    row.children[2].textContent = "삭제된 콘텐츠입니다";
-    markReportRowResolved(row, "삭제완료", "status-blacklist");
-    alert("신고된 콘텐츠가 삭제되었습니다.");
+    row.remove();
+    alert("신고된 콘텐츠가 삭제되었습니다. (처리완료 탭으로 이동은 새로고침 후 반영됩니다)");
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// 처리완료 탭 - 신고 기록 자체를 완전 삭제(원본 콘텐츠는 이미 정리된 뒤라 여기선 건드리지 않음)
+async function purgeResolvedReport(btn) {
+  const row = btn.closest("tr");
+  if (!confirm("이 신고 기록을 완전히 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+  try {
+    await adminFetch(`${REPORT_API_BASE}/${row.dataset.reportType}/${row.dataset.reportId}/purge`, { method: "DELETE" });
+    row.remove();
   } catch (e) {
     alert(e.message);
   }
@@ -438,6 +445,7 @@ function openReportWarningModal(btn) {
   activeReportWarningContext = {
     reportType: row.dataset.reportType,
     reportId: row.dataset.reportId,
+    targetId: Number(row.dataset.targetId),
     row,
   };
   document.getElementById("warning_target_member_id").value = row.dataset.reportedMemberId;
@@ -490,6 +498,7 @@ function initTablePagination(tbodyId, paginationId, pageSize) {
 }
 
 initTablePagination("reportListBody", "reportPagination", 10);
+initTablePagination("resolvedReportListBody", "resolvedReportPagination", 10);
 
 document.querySelectorAll(".member-subtabs button").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -497,6 +506,18 @@ document.querySelectorAll(".member-subtabs button").forEach((btn) => {
     btn.classList.add("active");
     document.querySelectorAll("[data-subpanel]").forEach((panel) => {
       panel.style.display = panel.dataset.subpanel === btn.dataset.subtab ? "" : "none";
+    });
+  });
+});
+
+// 신고 처리 탭의 미처리/처리완료 서브탭. member-subtabs와 이름이 겹치지 않도록
+// 별도 attribute(data-report-subpanel/data-report-subtab)를 사용해서 서로 간섭하지 않게 한다.
+document.querySelectorAll(".report-subtabs button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".report-subtabs button").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("[data-report-subpanel]").forEach((panel) => {
+      panel.style.display = panel.dataset.reportSubpanel === btn.dataset.reportSubtab ? "" : "none";
     });
   });
 });

@@ -23,11 +23,7 @@ public class AdminStatsService {
         return adminStatsMapper.countJoinedThisWeek();
     }
 
-    public int getTodayWithdrawCount() {
-        return adminStatsMapper.countWithdrawnToday();
-    }
-
-    public int getThisWeekWithdrawCount() {
-        return adminStatsMapper.countWithdrawnThisWeek();
+    public int getTotalWithdrawnCount() {
+        return adminStatsMapper.countTotalWithdrawn();
     }
 }
