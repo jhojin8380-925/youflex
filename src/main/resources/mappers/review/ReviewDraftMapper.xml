@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youflex.mapper.ReviewDraftMapper">
 
-	<!-- 1. 기존 임시저장 내역 삭제(회원당 1개 유지) -->
-	<delete id="deleteDraftByMemberId" parameterType="int">
+	<!-- 1. 특정 임시저장 개별 삭제 -->
+	<delete id="deleteDraftById" parameterType="int">
 		DELETE FROM review_draft
-		WHERE member_id = #{memberId}
+		WHERE review_draft_id = #{reviewDraftId}
 	</delete>
 
 	<!-- 2. 제목, 내용, 저장 시각 INSERT -->
@@ -25,15 +25,35 @@
 		)
 	</insert>
 
-	<!-- 3. 임시저장 내역 조회 (에러 원인 해결을 위해 추가된 쿼리) -->
-	<select id="selectDraftByMemberId" parameterType="int" resultType="com.youflex.dto.ReviewDraftDTO">
+	<!-- [추가된 쿼리] 3-1. 특정 임시저장 단건 상세 조회 -->
+	<select id="selectDraftById" parameterType="int" resultType="com.youflex.dto.ReviewDraftDTO">
 		SELECT 
 			review_draft_id AS reviewDraftId,
 			member_id AS memberId,
 			review_draft_title AS reviewDraftTitle,
 			review_draft_content AS reviewDraftContent,
 			review_draft_saved_at AS reviewDraftSavedAt,
-			review_draft_related
+			review_draft_related AS reviewDraftRelated
+		FROM review_draft
+		WHERE review_draft_id = #{reviewDraftId}
+	</select>
+
+	<!-- 3-2. 특정 회원의 임시저장 목록 전체 조회 -->
+	<select id="selectDraftListByMemberId" parameterType="int" resultType="com.youflex.dto.ReviewDraftDTO">
+		SELECT 
+			review_draft_id AS reviewDraftId,
+			member_id AS memberId,
+			review_draft_title AS reviewDraftTitle,
+			review_draft_content AS reviewDraftContent,
+			review_draft_saved_at AS reviewDraftSavedAt,
+			review_draft_related AS reviewDraftRelated
+		FROM review_draft
+		WHERE member_id = #{memberId}
+	</select>
+	
+	<!-- 4. 임시저장 개수 조회 -->
+	<select id="countDraftByMemberId" parameterType="int" resultType="int">
+		SELECT COUNT(*)
 		FROM review_draft
 		WHERE member_id = #{memberId}
 	</select>

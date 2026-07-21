@@ -228,44 +228,38 @@ document.addEventListener('DOMContentLoaded', () => {
     draftBtn.addEventListener('click', () => {
       const titleInput = document.getElementById('review_title');
       const contentInput = document.getElementById('review_content');
-      const ratingVal = ratingInput ? ratingInput.value : 0;
-	  const reviewRelatedInput = document.getElementById('review_related');
+      const reviewRelatedInput = document.getElementById('review_related');
       
       const title = titleInput ? titleInput.value.trim() : '';
       const content = contentInput ? contentInput.value.trim() : '';
-	  const reviewRelated = reviewRelatedInput?reviewRelatedInput.value.trim() : '';
+      const reviewRelated = reviewRelatedInput ? reviewRelatedInput.value.trim() : '';
       
       if (!title && !content) {
         alert('제목이나 내용 중 하나 이상 입력 후 임시저장해 주세요.');
         return;
       }
-      
+
       /*new FormData() : HTML폼 전송 데이터를 자바스크립트 객체 형태로 쉽게 만들 수 있게 해주는 기능.*/
       const formData = new FormData();
       formData.append('reviewDraftTitle', title);	/*데이터 추가 : append(key, value)*/
       formData.append('reviewDraftContent', content);
-      formData.append('reviewRating', ratingVal); // 별점 전송
-	  formData.append('reviewDraftRelated', reviewRelated);
+      formData.append('reviewDraftRelated', reviewRelated);
 	  console.log(formData);
 
-      // 선택된 장르 ID 전송
-      if (genreGrid) {
-        genreGrid.querySelectorAll('.genre-chip.selected').forEach(chip => {
-          formData.append('genreCategoryIds', chip.getAttribute('data-genre-id'));
-        });
-      }
-      
       fetch('/review/draft/save', {	/* 브라우저 내장 비동기 http 요청 함수 */
         method: 'POST',
         body: formData
       })
-      .then(response => {
+      .then(async response => {
         /*401 : 로그인하지 않은 사용자가 접근했을 때 리턴하도록 설정된 에러 코드*/
         if (response.status === 401) {
           alert('로그인이 필요한 기능입니다.');
           return;
         }
-        if (response.ok) {
+		
+		const restText = await response.text();
+		
+        if (response.ok && restText === 'SUCCESS') {
           // 저장 성공 시 현재 시각 표시 (예 : 15:55)
           const now = new Date();	/*new Date() : 현재 날짜와 시간 정보를 가지고 있는 내장 객체*/
           const hh = String(now.getHours()).padStart(2, '0');	/*padStart(2, '0') : 9분->09분*/
@@ -280,8 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
           
           alert(`임시저장 되었습니다. (${timeStr})`);
 
-          // 저장 후 즉시 목록 갱신
-          fetchDraftList();
+          fetchDraftList();	// 저장 후 즉시 목록 갱신
+        } else if (restText === 'MISSING_GENRE') {
+          alert('장르를 선택하지 않으면 임시저장을 할 수 없습니다. 관련 장르를 선택해주세요.');
+        } else if (restText === 'MAX_LIMIT_EXCEEDED'){
+          alert('임시저장은 최대 5개까지만 가능합니다.\n기존 임시저장 글을 삭제 후 다시 시도해주세요.')
         } else {
           alert('임시저장에 실패했습니다.');
         }
@@ -363,13 +360,13 @@ function renderDraftList(drafts) {
     loadBtn.type = 'button';
     loadBtn.className = 'btn btn-sm btn-load';
     loadBtn.textContent = '불러오기';
-    loadBtn.addEventListener('click', () => loadDraft());
+    loadBtn.addEventListener('click', () => loadDraft(draft.reviewDraftId));
 
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'btn btn-sm btn-delete';
     deleteBtn.textContent = '삭제';
-    deleteBtn.addEventListener('click', () => deleteDraft());
+    deleteBtn.addEventListener('click', () => deleteDraft(draft.reviewDraftId));
 
     actionsEl.appendChild(loadBtn);
     actionsEl.appendChild(deleteBtn);
@@ -382,8 +379,8 @@ function renderDraftList(drafts) {
 }
 
 // 3. 불러오기 버튼 처리
-function loadDraft() {
-  fetch('/review/draft/detail')
+function loadDraft(draftId) {
+  fetch(`/review/draft/detail/${draftId}`)
     .then(response => {
       if (!response.ok) throw new Error('임시저장 조회 실패');
       return response.json();
@@ -434,10 +431,10 @@ function loadDraft() {
 }
 
 // 4. 삭제 버튼 처리
-function deleteDraft() {
+function deleteDraft(draftId) {
   if (!confirm('이 임시저장 글을 삭제하시겠습니까?')) return;
 
-  fetch('/review/draft/delete', {
+  fetch(`/review/draft/delete/${draftId}`, {
     method: 'DELETE'
   })
     .then(response => {
