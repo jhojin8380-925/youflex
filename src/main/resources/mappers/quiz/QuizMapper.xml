@@ -5,9 +5,14 @@
 
 <mapper namespace="com.youflex.mapper.QuizMapper">
 
+    <!-- 이 회원이 방금 직전에 응시한 문제(quiz_attempt 최신 1건)는 제외하고 뽑아서 같은 문제가 연속으로 나오지 않게 함 -->
     <select id="selectRandomQuiz" resultType="com.youflex.dto.QuizDTO">
         SELECT *
         FROM quiz
+        WHERE quiz_id != COALESCE(
+            (SELECT quiz_id FROM quiz_attempt WHERE member_id = #{memberId} ORDER BY quiz_attempt_attempted_at DESC LIMIT 1),
+            0
+        )
         ORDER BY RAND()
         LIMIT 1
     </select>

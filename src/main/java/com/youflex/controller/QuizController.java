@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-// 챗봇 퀴즈 - 사이트 전체 챗봇 패널(fragments/layout.html)에서 fetch로 호출하는 API.
+// 퀴즈 - 사이트 전체 퀴즈 패널(fragments/layout.html)에서 fetch로 호출하는 API.
 // 로그인한 회원만 이용 가능(비회원은 401).
 @RestController
 @RequestMapping("/api/quiz")
