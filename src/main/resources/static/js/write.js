@@ -393,10 +393,13 @@ function loadDraft() {
 
       const titleInput = document.getElementById('review_title');
       const contentInput = document.getElementById('review_content');
+	  const relatedInput = document.getElementById('review_related');
 
       // 1) 제목 & 내용 복구
       if (titleInput) titleInput.value = draft.reviewDraftTitle || '';
       if (contentInput) contentInput.value = draft.reviewDraftContent || '';
+      if (relatedInput) relatedInput.value = draft.reviewDraftRelated || '';
+	  
 
       // 2) 별점 복구
       if (draft.reviewRating !== undefined && ratingInput) {
