@@ -67,7 +67,7 @@ background: linear-gradient(90deg, #ffffff 0%, #ffd47a 60%, var(--accent) 100%);
   display: block;     /* 1. 인라인 속성을 블록 속성으로 체인지해 글자 공백 제거 */
   vertical-align: bottom; /* 2. 만약 display 변경이 안 먹힐 때를 대비한 교차 방어선 */
 }
-.post-body-text { line-height:1.8; color:var(--text-1); font-size:15px; }
+.post-body-text { line-height:1.8; color:var(--text-1); font-size:15px; white-space:pre-line; } /* pre-line -> textarea에 입력된 줄바꿈을 그대로 살려서 보여줌 */
 .related-works { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:20px 0; font-size:13px; }
 .related-works strong { color:var(--text-1); font-weight:700; margin-right:2px; }
 

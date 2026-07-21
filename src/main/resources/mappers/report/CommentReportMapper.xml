@@ -36,4 +36,10 @@
         WHERE comment_report_id = #{commentReportId}
     </update>
 
+    <!-- 댓글 신고 등록 - comment_report_status는 컬럼 DEFAULT('접수') 사용 -->
+    <insert id="insertReport" parameterType="com.youflex.dto.CommentReportDTO">
+        INSERT INTO comment_report (comment_id, member_id, comment_report_reason, comment_report_content)
+        VALUES (#{commentId}, #{memberId}, #{commentReportReason}, #{commentReportContent})
+    </insert>
+
 </mapper>

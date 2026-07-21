@@ -5,14 +5,21 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.youflex.dto.BookmarkDTO;
 import com.youflex.dto.PageInfo;
 import com.youflex.dto.ReviewDTO;
+import com.youflex.dto.ReviewLikeDTO;
+import com.youflex.dto.ReviewReportDTO;
+import com.youflex.exception.ReviewNotFoundException;
+import com.youflex.mapper.BookmarkMapper;
 import com.youflex.mapper.CommentMapper;
 import com.youflex.mapper.ReviewDraftMapper;
 import com.youflex.mapper.ReviewLikeMapper;
 import com.youflex.mapper.ReviewMapper;
 import com.youflex.mapper.ReviewReportMapper;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -20,13 +27,16 @@ import lombok.RequiredArgsConstructor;
 public class ReviewService {
 
 	private static final int MY_REVIEWS_PAGE_SIZE = 5;
+	private static final int MY_BOOKMARKS_PAGE_SIZE = 5;
 
 	private final ReviewMapper reviewMapper;
 	private final CommentMapper commentMapper;
-	// 좋아요, 북마크, 신고, 게시글 입시저장
+	// 좋아요, 북마크, 신고, 게시글 임시저장
 	private final ReviewLikeMapper reviewLikeMapper;
+	private final BookmarkMapper bookmarkMapper;
 	private final ReviewReportMapper reviewReportMapper;
 	private final ReviewDraftMapper reviewDraftMapper;
+	private final PointService pointService;
 	
 //	1) 게시글 저장
 	@Transactional
@@ -51,9 +61,24 @@ public class ReviewService {
 		return reviewMapper.countAll(keyword);
 	}
 	
-//	3) 게시글 상세 조회
-	public ReviewDTO findById(int postId) {
-		return reviewMapper.findById(postId);
+//	3) 게시글 상세 조회 (항상 조회수 증가)
+	public ReviewDTO findById(int reviewId) {
+		return findById(reviewId, true);
+	}
+
+//	3-1) 게시글 상세 조회 - increaseHit이 true일 때만 조회수 증가(F5 새로고침 등 중복 호출 시
+//	     조회수가 무한정 올라가지 않도록 increaseHit 여부는 호출부(Controller)에서 판단해서 넘김
+	public ReviewDTO findById(int reviewId, boolean increaseHit) {
+		ReviewDTO review = reviewMapper.findById(reviewId);
+		if (review == null) {
+			throw new ReviewNotFoundException("존재하지 않는 게시글입니다. reviewId=" + reviewId);
+		}
+		if (increaseHit) {
+			reviewMapper.increaseHit(reviewId);
+			review.setReviewHit(review.getReviewHit() + 1);
+		}
+		review.setGenreList(reviewMapper.findGenresByReviewId(reviewId));
+		return review;
 	}
 	
 //	4) 게시글 수정
@@ -75,5 +100,84 @@ public class ReviewService {
 
 	public int getMyReviewsPageSize() {
 		return MY_REVIEWS_PAGE_SIZE;
+	}
+
+//	6) 좋아요 토글 - 이미 눌렀으면 취소, 아니면 등록. 등록 시에만(자추 제외) 글쓴이에게 포인트 1점 지급.
+//	   (project-plan.md: "좋아요 - 토글 방식, 1인 1회 제한", "1 좋아요 -> 1 포인트", "자추 제외")
+	@Transactional
+	public LikeResult toggleLike(int reviewId, int memberId) {
+		ReviewDTO review = reviewMapper.findById(reviewId);
+		if (review == null) {
+			throw new ReviewNotFoundException("존재하지 않는 게시글입니다. reviewId=" + reviewId);
+		}
+		boolean alreadyLiked = reviewLikeMapper.existsLike(reviewId, memberId) > 0;
+		if (alreadyLiked) {
+			reviewLikeMapper.deleteLike(reviewId, memberId);
+		} else {
+			reviewLikeMapper.insertLike(ReviewLikeDTO.builder().reviewId(reviewId).memberId(memberId).build());
+			if (review.getMemberId() != memberId) {
+				pointService.awardPoints(review.getMemberId(), 1, "게시글 좋아요");
+			}
+		}
+		int likeCount = reviewLikeMapper.countLikes(reviewId);
+		return new LikeResult(!alreadyLiked, likeCount);
+	}
+
+//	이 회원이 이 게시글에 좋아요를 눌렀는지 여부 (상세 페이지 초기 렌더링용)
+	public boolean isLikedByMember(int reviewId, int memberId) {
+		return reviewLikeMapper.existsLike(reviewId, memberId) > 0;
+	}
+
+//	게시글의 전체 좋아요 수 (상세 페이지 초기 렌더링용)
+	public int getLikeCount(int reviewId) {
+		return reviewLikeMapper.countLikes(reviewId);
+	}
+
+//	7) 북마크 토글 - 이미 등록되어 있으면 취소, 아니면 등록 (포인트 지급 없음)
+	@Transactional
+	public boolean toggleBookmark(int reviewId, int memberId) {
+		boolean alreadyBookmarked = bookmarkMapper.existsBookmark(reviewId, memberId) > 0;
+		if (alreadyBookmarked) {
+			bookmarkMapper.deleteBookmark(reviewId, memberId);
+		} else {
+			bookmarkMapper.insertBookmark(BookmarkDTO.builder().reviewId(reviewId).memberId(memberId).build());
+		}
+		return !alreadyBookmarked;
+	}
+
+//	이 회원이 이 게시글을 북마크했는지 여부 (상세 페이지 초기 렌더링용)
+	public boolean isBookmarkedByMember(int reviewId, int memberId) {
+		return bookmarkMapper.existsBookmark(reviewId, memberId) > 0;
+	}
+
+//	마이페이지 - 북마크 탭(5개씩 페이징). page는 1부터 시작.
+	public List<BookmarkDTO> getMyBookmarks(int memberId, int page) {
+		int offset = PageInfo.of(page, MY_BOOKMARKS_PAGE_SIZE, 0).getOffset();
+		return bookmarkMapper.findByMemberId(memberId, offset, MY_BOOKMARKS_PAGE_SIZE);
+	}
+
+	public int getMyBookmarksTotalCount(int memberId) {
+		return bookmarkMapper.countByMemberId(memberId);
+	}
+
+	public int getMyBookmarksPageSize() {
+		return MY_BOOKMARKS_PAGE_SIZE;
+	}
+
+//	8) 게시글 신고 등록 (처리 상태는 DB 기본값 '접수', 실제 처리는 관리자 신고 관리 화면(AdminReportService)에서 진행)
+	public void reportReview(int reviewId, int memberId, String reason, String content) {
+		reviewReportMapper.insertReport(ReviewReportDTO.builder()
+				.reviewId(reviewId)
+				.memberId(memberId)
+				.reviewReportReason(reason)
+				.reviewReportContent(content)
+				.build());
+	}
+
+	@Data
+	@AllArgsConstructor
+	public static class LikeResult {
+		private boolean liked;
+		private int likeCount;
 	}
 }

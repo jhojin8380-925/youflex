@@ -63,7 +63,7 @@ public class AdminReportService {
                     .reason(r.getReviewReportReason())
                     .status(r.getReviewReportStatus())
                     .createdAt(r.getReviewReportCreatedAt())
-                    .detailUrl(null) // 게시글 상세 화면 라우팅이 아직 없어 보류
+                    .detailUrl("/review/" + r.getReviewId())
                     .build());
         }
 

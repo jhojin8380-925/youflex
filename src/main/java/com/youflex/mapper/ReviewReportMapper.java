@@ -16,4 +16,7 @@ public interface ReviewReportMapper {
     // 관리자 - 신고 처리 상태 변경(반려/경고처리 공용 - '처리완료'로 전환)
     void updateReviewReportStatus(@Param("reviewReportId") int reviewReportId,
                                    @Param("reviewReportStatus") String reviewReportStatus);
+
+    // 게시글 신고 등록 (review_report_status는 DB 기본값 '접수' 사용)
+    void insertReport(ReviewReportDTO reviewReportDTO);
 }

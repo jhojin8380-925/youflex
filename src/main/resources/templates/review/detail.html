@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouFlex - 게시글 상세</title>
+<link rel="stylesheet" th:href="@{/css/common.css}" />
+<link rel="stylesheet" th:href="@{/css/detail.css}" />
+</head>
+<body>
+
+    <!-- 
+    ==================================
+      공통 헤더바
+    ==================================
+    -->
+    <header th:replace="~{fragments/layout :: header}"></header>
+    <!-- 
+    ==================================
+      공통 네비게이션 바
+    ==================================
+    -->
+    <nav class="category-nav" th:replace="~{fragments/layout :: nav}"></nav>
+
+
+<!-- 
+  ==================================
+  메인 영역 
+  ==================================
+  -->
+<main class="container">
+  <div class="detail-wrap">
+    <!-- 좋아요/북마크/신고 요청을 보낼 때 detail.js가 참조하는 이 게시글의 id -->
+    <input type="hidden" id="currentReviewId" th:value="${review.reviewId}" />
+    <div class="detail-meta-top">
+      <span class="badge badge-user" th:text="${review.reviewPlatform}">드라마</span>
+      <span th:text="|조회수 ${review.reviewHit}|">조회수 15,204</span>
+    </div>
+    <h1 class="detail-title" th:text="${review.reviewTitle}">「오징어게임 3」, 이대로 끝내도 되는가 - 결말 완전분석</h1>
+
+    <!-- 
+      ==================================
+      작성자 정보
+      ==================================
+    -->
+    <div class="author-row">
+      <div class="author-info">
+        <div class="author-avatar">
+          <img th:if="${review.memberProfileImg != null}" th:src="@{'/upload/' + ${review.memberProfileImg}}"
+               class="profile-img" style="object-fit: cover;" alt="프로필 이미지">
+        </div>
+        <div>
+          <div class="author-name">
+            <span th:text="${review.memberName}">리뷰왕</span>
+            <span th:switch="${review.memberGrade}">
+              <span class="badge badge-admin" th:case="'관리자'" th:text="${review.memberGrade}">관리자</span>
+              <span class="badge badge-critic" th:case="'평론가'" th:text="${review.memberGrade}">평론가</span>
+              <span class="badge badge-user" th:case="*" th:text="${review.memberGrade}">시청자</span>
+            </span>
+          </div>
+          <div class="author-sub" th:text="|${#temporals.format(review.reviewCreatedAt, 'yyyy-MM-dd HH:mm')} 작성|">2026-06-30 14:22 작성</div>
+        </div>
+      </div>
+      
+      <!--
+        ==================================
+        관리자 전용 삭제 버튼 (삭제 기능 자체는 아직 미구현 - 노출 조건만 수정)
+        ==================================
+        -->
+      <div class="owner-actions" th:if="${session.loginMember != null and session.loginMember.memberGrade == '관리자'}">
+        <button class="btn btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="alert('게시글이 삭제되었습니다.')">관리자 삭제</button>
+      </div>
+    </div>
+
+    <!-- 
+      ==================================
+      별점 및, 수정 삭제 버튼
+      ==================================
+    -->
+    <div class="rating-block">
+      <span class="rating-label">작성자 평점</span>
+      <span class="score section-heading"><span
+          th:each="i : ${#numbers.sequence(1, 5)}"
+          th:text="${i <= T(java.lang.Math).round(review.reviewRating ?: 0.0)} ? '★' : '☆'">★</span></span>
+      <span class="stars section-heading" th:text="${review.reviewRating ?: 0.0}">4.5</span>
+      <!-- 작성자 본인에게만 노출 (수정/삭제 기능은 아직 미구현이라 자리만 유지 - 이번 작업 범위 아님) -->
+      <div class="owner-actions" style="margin-left:auto">
+        <a href="12_update.html" class="btn btn-sm">수정</a>
+        <button class="btn btn-sm">삭제</button>
+      </div>
+    </div>
+    <!-- .text-muted 주석(웅조) -->
+    <!-- <div class="text-muted" style="font-size:13px;margin:-10px 0 10px" data-role-visible="user,critic,admin">
+      내 별점 매기기: <span class="stars" style="cursor:pointer;letter-spacing:2px">☆☆☆☆☆</span> <span style="font-size:12px">(0.5점 단위 선택 가능)</span>
+    </div> -->
+
+    <!-- 대표 이미지 -->
+    <div class="post-body-img" th:if="${review.reviewImg != null}">
+      <img th:src="@{'/upload/' + ${review.reviewImg}}" th:alt="${review.reviewTitle}">
+    </div>
+    <!-- 본문 내용 (white-space:pre-line으로 줄바꿈 그대로 표시 - common.css .notice-detail-body와 동일한 방식) -->
+    <div class="post-body-text" th:text="${review.reviewContent}">본문</div>
+
+    <!-- 관련작품 -->
+    <div class="related-works" th:if="${review.reviewRelated != null and !#strings.isEmpty(review.reviewRelated)}">
+      <strong>관련작품 : </strong>
+      <span class="badge badge-user" th:text="${review.reviewRelated}">오징어게임 시즌1</span>
+    </div>
+    <!-- 장르 카테고리 태그 -->
+    <div class="genre-tags" th:if="${review.genreList != null and !#lists.isEmpty(review.genreList)}">
+      <span class="genre-tags-label">장르</span>
+      <span class="genre-tag" th:each="genre : ${review.genreList}" th:text="${genre.genreCategoryName}">액션</span>
+    </div>
+
+    <div class="interaction-bar">
+      <button class="btn" id="likeBtn" th:if="${session.loginMember != null}"
+              th:classappend="${liked} ? 'active' : ''"
+              th:text="|❤ 좋아요 ${likeCount}|">❤ 좋아요 892</button>
+      <button class="btn" disabled th:unless="${session.loginMember != null}"
+              th:text="|❤ 좋아요 ${likeCount}|">❤ 좋아요 892</button>
+
+      <button class="btn" id="bookmarkBtn" th:if="${session.loginMember != null}"
+              th:classappend="${bookmarked} ? 'active' : ''">🔖 북마크</button>
+      <button class="btn" disabled th:unless="${session.loginMember != null}">🔖 북마크</button>
+
+      <button class="btn btn-ghost" style="margin-left:auto" th:if="${session.loginMember != null}" onclick="openReportModal('post')">🚩 신고</button>
+      <button class="btn btn-ghost" style="margin-left:auto" disabled th:unless="${session.loginMember != null}">🚩 신고</button>
+    </div>
+
+    <section class="comment-section">
+      <h3 th:text="|댓글 ${commentCount}|">댓글 128</h3>
+
+      <form id="commentForm" class="comment-input-row" th:if="${session.loginMember != null}" onsubmit="return false">
+        <input type="text" id="comment_content" name="comment_content" placeholder="댓글을 입력하세요 (비속어 자동 필터링)" />
+        <button type="button" class="btn btn-primary" onclick="submitNewComment()">등록</button>
+      </form>
+      <div class="comment-input-row" th:unless="${session.loginMember != null}">
+        <input type="text" placeholder="로그인 후 댓글 작성이 가능합니다" disabled />
+        <button class="btn" disabled>등록</button>
+      </div>
+
+      <div class="text-muted" style="text-align:center;padding:24px 0" th:if="${#lists.isEmpty(comments)}">
+        아직 댓글이 없습니다. 첫 댓글을 남겨보세요!
+      </div>
+
+      <th:block th:if="${!#lists.isEmpty(bestComments)}">
+        <div class="comment-subheading">🏆 베스트 댓글</div>
+        <div class="comment-item best" th:each="best, bestStat : ${bestComments}" th:attr="data-comment-id=${best.commentId}">
+          <div class="c-head">
+            <span class="c-head-left">
+              <span class="c-author" th:text="${best.memberName}">작성자</span>
+              <span class="badge badge-best" th:text="|BEST ${bestStat.count}|">BEST 1</span>
+            </span>
+            <span class="c-date" th:text="${#temporals.format(best.commentCreatedAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+          </div>
+          <div class="c-body" th:text="${best.commentContent}">내용</div>
+          <div class="comment-actions">
+            <span class="comment-like" th:classappend="${best.likedByMe} ? 'liked' : ''"
+                  th:text="|♥ 좋아요 ${best.likeCount}|" onclick="toggleCommentLike(this)">♥ 좋아요 0</span>
+            <span onclick="openReportModal('comment', this)" style="cursor:pointer" th:if="${session.loginMember != null}">신고</span>
+          </div>
+        </div>
+      </th:block>
+
+      <th:block th:if="${!#lists.isEmpty(comments)}">
+        <div class="comment-subheading">전체 댓글</div>
+        <div class="comment-item" th:each="comment : ${comments}" th:attr="data-comment-id=${comment.commentId}">
+
+          <th:block th:if="${comment.commentDeleteStatus == '삭제'}">
+            <div class="c-head"><span class="c-author text-muted">알 수 없음</span><span class="c-date" th:text="${#temporals.format(comment.commentCreatedAt, 'yyyy-MM-dd HH:mm')}">날짜</span></div>
+            <div class="c-body text-muted" style="font-style:italic">삭제된 댓글입니다.</div>
+          </th:block>
+
+          <th:block th:unless="${comment.commentDeleteStatus == '삭제'}">
+            <div class="c-head"><span class="c-author" th:text="${comment.memberName}">작성자</span><span class="c-date" th:text="${#temporals.format(comment.commentCreatedAt, 'yyyy-MM-dd HH:mm')}">날짜</span></div>
+            <div class="c-body" th:text="${comment.commentContent}">내용</div>
+            <div class="comment-actions">
+              <span class="reply-toggle" th:if="${session.loginMember != null}" onclick="toggleReplyForm(this)">답글달기</span>
+              <span class="comment-like" th:classappend="${comment.likedByMe} ? 'liked' : ''"
+                    th:text="|♥ 좋아요 ${comment.likeCount}|" onclick="toggleCommentLike(this)">♥ 좋아요 0</span>
+              <span onclick="openReportModal('comment', this)" style="cursor:pointer" th:if="${session.loginMember != null}">신고</span>
+              <th:block th:if="${session.loginMember != null and session.loginMember.memberId == comment.memberId}">
+                <span onclick="editComment(this)" style="cursor:pointer">수정</span>
+                <span onclick="deleteComment(this)" style="cursor:pointer">삭제</span>
+              </th:block>
+            </div>
+          </th:block>
+
+          <div class="reply-list" th:if="${!#lists.isEmpty(comment.replies)}">
+            <div class="reply-item" th:each="reply : ${comment.replies}" th:attr="data-comment-id=${reply.commentId}">
+              <th:block th:if="${reply.commentDeleteStatus == '삭제'}">
+                <div class="c-head"><span class="c-author text-muted">알 수 없음</span><span class="c-date" th:text="${#temporals.format(reply.commentCreatedAt, 'yyyy-MM-dd HH:mm')}">날짜</span></div>
+                <div class="c-body text-muted" style="font-style:italic">삭제된 댓글입니다.</div>
+              </th:block>
+              <th:block th:unless="${reply.commentDeleteStatus == '삭제'}">
+                <div class="c-head"><span class="c-author" th:text="${reply.memberName}">작성자</span><span class="c-date" th:text="${#temporals.format(reply.commentCreatedAt, 'yyyy-MM-dd HH:mm')}">날짜</span></div>
+                <div class="c-body" th:text="${reply.commentContent}">내용</div>
+                <div class="comment-actions">
+                  <span class="comment-like" th:classappend="${reply.likedByMe} ? 'liked' : ''"
+                        th:text="|♥ 좋아요 ${reply.likeCount}|" onclick="toggleCommentLike(this)">♥ 좋아요 0</span>
+                  <span onclick="openReportModal('comment', this)" style="cursor:pointer" th:if="${session.loginMember != null}">신고</span>
+                  <th:block th:if="${session.loginMember != null and session.loginMember.memberId == reply.memberId}">
+                    <span onclick="editComment(this)" style="cursor:pointer">수정</span>
+                    <span onclick="deleteComment(this)" style="cursor:pointer">삭제</span>
+                  </th:block>
+                </div>
+              </th:block>
+            </div>
+          </div>
+
+          <form class="reply-form" style="display:none" th:if="${session.loginMember != null}" onsubmit="return false">
+            <input type="text" placeholder="답글을 입력하세요" />
+            <button type="button" class="btn btn-primary btn-sm" onclick="submitReplyForm(this)">등록</button>
+          </form>
+        </div>
+      </th:block>
+    </section>
+  </div>
+</main>
+
+<!-- 신고하기 모달 -->
+<div class="report-modal-backdrop" id="reportModalBackdrop">
+  <div class="report-modal">
+    <h2>🚩 신고하기</h2>
+    <div class="target-chip" id="reportTargetChip">신고 대상: 게시글</div>
+    <form id="reportForm">
+    <div class="form-row">
+      <label>신고 사유</label>
+      <select id="reportReasonSelect">
+        <option>스팸 / 도배</option>
+        <option>욕설 / 비방</option>
+        <option>음란물</option>
+        <option>저작권 침해</option>
+        <option>기타</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>상세 내용</label>
+      <textarea id="reportDetailInput" placeholder="신고 사유를 구체적으로 입력해주세요"></textarea>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn" onclick="closeReportModal()">취소</button>
+      <button type="button" class="btn btn-primary" onclick="submitReportModal()">신고하기</button>
+    </div>
+    </form>
+  </div>
+</div>
+
+<!-- 
+  ==================================
+  공통 푸터 영역
+  ==================================
+  -->
+<footer class="site-footer main-footer" th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- 
+  ================================
+  오버레이 영역
+  ================================
+  -->
+<div class="overlay-backdrop" id="notificationBackdrop"></div>
+
+<!-- 
+  ================================
+  알림 영역
+  ================================
+  -->
+<aside class="slide-panel" id="notificationPanel">
+  <div class="panel-header"><h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button></div>
+  <!-- 알림 내용 -->
+  <div class="panel-body">
+    <div class="notification-clear-row"><button class="notification-clear-all" type="button">모두 삭제</button></div>
+    <div class="notification-item">
+      <span class="notification-icon">⚠</span>
+      <div>
+        <div class="notification-text">비속어 사용으로 경고 1회가 부여되었습니다.</div>
+        <div class="notification-time">10분 전</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+    <div class="notification-item">
+      <span class="notification-icon">💬</span>
+      <div>
+        <div class="notification-text">작성하신 질문 "디즈니+ 로그인 오류에 어떻게 대처하나요?"에 관리자 답변이 등록되었습니다.</div>
+        <div class="notification-time">2시간 전</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+    <div class="notification-item">
+      <span class="notification-icon">📝</span>
+      <div>
+        <div class="notification-text">내 게시글 "「오징어게임 3」, 이대로 끝내도 되는가"에 새 댓글이 달렸습니다.</div>
+        <div class="notification-time">어제</div>
+      </div>
+      <button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
+    </div>
+  </div>
+</aside>
+
+    <!--
+  ================================
+  퀴즈 영역
+  ================================
+  -->
+    <button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
+    <div class="overlay-backdrop" id="quizBackdrop"></div>
+    <aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
+
+
+    <!-- 
+  ================================
+  채팅방 영역
+  ================================
+  -->
+	<div class="overlay-backdrop" id="chatroomBackdrop"></div>
+	<!--layout.html의 채팅방 영역 -->
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
+
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/detail.js}"></script>
+</body>
+</html>

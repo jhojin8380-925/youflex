@@ -9,4 +9,42 @@
         WHERE comment_id = #{commentId}
     </update>
 
+    <!-- 댓글/대댓글 전체 조회 - parent_id는 NULL이면 0으로 변환해서 내려줌
+         (CommentDTO.parentId가 int라서 0=최상위 댓글로 취급) -->
+    <select id="findByReviewId" resultType="com.youflex.dto.CommentDTO">
+        SELECT c.comment_id, c.member_id, c.review_id,
+            COALESCE(c.parent_id, 0) AS parent_id,
+            c.comment_content, c.comment_delete_status,
+            c.comment_created_at, c.comment_updated_at,
+            m.member_name AS memberName,
+            (SELECT COUNT(*) FROM comment_like cl WHERE cl.comment_id = c.comment_id) AS likeCount,
+            (SELECT COUNT(*) FROM comment_like cl2
+              WHERE cl2.comment_id = c.comment_id AND cl2.member_id = #{memberId}) > 0 AS likedByMe
+        FROM comment c
+        JOIN member m ON m.member_id = c.member_id
+        WHERE c.review_id = #{reviewId}
+        ORDER BY c.comment_created_at ASC
+    </select>
+
+    <select id="findById" resultType="com.youflex.dto.CommentDTO">
+        SELECT comment_id, member_id, review_id,
+            COALESCE(parent_id, 0) AS parent_id,
+            comment_content, comment_delete_status, comment_created_at, comment_updated_at
+        FROM comment
+        WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- parentId=0(최상위)이면 NULLIF로 실제 parent_id 컬럼에는 NULL이 들어감 -->
+    <insert id="insertComment" parameterType="com.youflex.dto.CommentDTO" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO comment (member_id, review_id, parent_id, comment_content)
+        VALUES (#{memberId}, #{reviewId}, NULLIF(#{parentId}, 0), #{commentContent})
+    </insert>
+
+    <update id="updateComment" parameterType="com.youflex.dto.CommentDTO">
+        UPDATE comment
+        SET comment_content = #{commentContent},
+            comment_updated_at = NOW()
+        WHERE comment_id = #{commentId}
+    </update>
+
 </mapper>

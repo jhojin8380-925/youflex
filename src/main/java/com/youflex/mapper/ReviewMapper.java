@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.youflex.dto.GenreCategoryDTO;
 import com.youflex.dto.ReviewDTO;
 
 @Mapper
@@ -29,8 +30,14 @@ public interface ReviewMapper {
 	// 검색 결과 전체 개수 조회 : 총 페이지 수 계산(PageInfo 생성자)에 사용
 	int countAll(@Param("keyword") String keyword);
 	
-	// 게시글 상세 조회
-	ReviewDTO findById(int reviewId);
+	// 게시글 상세 조회 (작성자 이름/프로필이미지/등급 join)
+	ReviewDTO findById(@Param("reviewId") int reviewId);
+
+	// 게시글 상세 - 선택된 장르 태그 목록 조회
+	List<GenreCategoryDTO> findGenresByReviewId(@Param("reviewId") int reviewId);
+
+	// 게시글 상세 조회수 1 증가
+	void increaseHit(@Param("reviewId") int reviewId);
 
 	// 마이페이지 - 내 글 탭: 내가 쓴 게시글만 최신순 페이징 조회
 	List<ReviewDTO> findByMemberId(@Param("memberId") int memberId,

@@ -38,4 +38,10 @@
         WHERE review_report_id = #{reviewReportId}
     </update>
 
+    <!-- 게시글 신고 등록 - review_report_status는 컬럼 DEFAULT('접수') 사용 -->
+    <insert id="insertReport" parameterType="com.youflex.dto.ReviewReportDTO">
+        INSERT INTO review_report (review_id, member_id, review_report_reason, review_report_content)
+        VALUES (#{reviewId}, #{memberId}, #{reviewReportReason}, #{reviewReportContent})
+    </insert>
+
 </mapper>

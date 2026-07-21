@@ -10,4 +10,18 @@
         VALUES (#{memberId}, #{pointHistoryAmount}, #{pointHistoryType}, #{pointHistoryReason})
     </insert>
 
+    <!-- 오래된 순으로 조회 - PointService가 앞에서부터 누적 합산해서 각 건의 잔액을 계산함 -->
+    <select id="findByMemberId" resultType="com.youflex.dto.PointHistoryDTO">
+        SELECT *
+        FROM point_history
+        WHERE member_id = #{memberId}
+        ORDER BY point_history_created_at ASC, point_history_id ASC
+    </select>
+
+    <select id="countByMemberId" resultType="int">
+        SELECT COUNT(*)
+        FROM point_history
+        WHERE member_id = #{memberId}
+    </select>
+
 </mapper>

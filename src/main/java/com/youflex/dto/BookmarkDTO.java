@@ -20,4 +20,5 @@ public class BookmarkDTO {
     // join 조회용 (DB 컬럼 아님)
     private String reviewTitle;
     private String reviewImg;
+    private String memberName;
 }

@@ -54,4 +54,30 @@
 		FROM review
 		WHERE member_id = #{memberId}
 	</select>
+
+	<!-- 게시글 상세 조회 - 작성자 이름/프로필이미지/등급을 member 테이블과 join -->
+	<select id="findById" resultType="com.youflex.dto.ReviewDTO">
+		SELECT r.*,
+			m.member_name AS memberName,
+			m.member_profile_img AS memberProfileImg,
+			m.member_grade AS memberGrade
+		FROM review r
+		JOIN member m ON m.member_id = r.member_id
+		WHERE r.review_id = #{reviewId}
+	</select>
+
+	<!-- 게시글 상세 - 선택된 장르 태그 목록(review_mapping 다대다 조인) -->
+	<select id="findGenresByReviewId" resultType="com.youflex.dto.GenreCategoryDTO">
+		SELECT gc.genre_category_id, gc.genre_category_name
+		FROM review_mapping rm
+		JOIN genre_category gc ON gc.genre_category_id = rm.genre_category_id
+		WHERE rm.review_id = #{reviewId}
+	</select>
+
+	<!-- 게시글 상세 조회수 1 증가 -->
+	<update id="increaseHit">
+		UPDATE review
+		SET review_hit = review_hit + 1
+		WHERE review_id = #{reviewId}
+	</update>
 </mapper>
