@@ -4,7 +4,8 @@
 
 	<!-- 1. 기존 임시저장 내역 삭제(회원당 1개 유지) -->
 	<delete id="deleteDraftByMemberId" parameterType="int">
-		delete from review_draft where member_id = #{memberId}
+		DELETE FROM review_draft
+		WHERE member_id = #{memberId}
 	</delete>
 
 	<!-- 2. 제목, 내용, 저장 시각 INSERT -->
@@ -13,12 +14,28 @@
 			member_id,
 			review_draft_title,
 			review_draft_content,
-			review_draft_saved_at
+			review_draft_saved_at,
+			review_draft_related
 		) VALUES(
 			#{memberId},
 			#{reviewDraftTitle},
 			#{reviewDraftContent},
-			NOW()
+			NOW(),
+			#{reviewDraftRelated}
 		)
 	</insert>
+
+	<!-- 3. 임시저장 내역 조회 (에러 원인 해결을 위해 추가된 쿼리) -->
+	<select id="selectDraftByMemberId" parameterType="int" resultType="com.youflex.dto.ReviewDraftDTO">
+		SELECT 
+			review_draft_id AS reviewDraftId,
+			member_id AS memberId,
+			review_draft_title AS reviewDraftTitle,
+			review_draft_content AS reviewDraftContent,
+			review_draft_saved_at AS reviewDraftSavedAt,
+			review_draft_related
+		FROM review_draft
+		WHERE member_id = #{memberId}
+	</select>
+
 </mapper>

@@ -184,11 +184,33 @@
     임시저장 영역 
     ==================================
     -->
-			<aside class="draft-sidebar">
+	<!-- 작성 페이지 2단 그리드 레이아웃 -->
+	<div class="write-page-grid">
+	  
+	  <!-- [왼쪽] 글 작성 메인 폼 영역 -->
+	  <div class="write-wrap">
+	    <!-- 기존 작성 폼 내용들... -->
+	  </div>
+
+	  <!-- [오른쪽] 임시저장 목록 사이드바 (CSS의 .draft-sidebar 활용) -->
+	  <aside class="draft-sidebar">
+	    <h3>임시저장 목록</h3>
+	    
+	    <!-- 데이터가 없을 때 보일 안내 메시지 -->
+	    <div id="draftEmptyMsg" style="color: var(--text-2); font-size: 13px;">
+	      임시저장된 글이 없습니다.
+	    </div>
+
+	    <!-- write.js에서 목록을 추가해 줄 컨테이너 -->
+	    <div id="draftList"></div>
+	  </aside>
+
+	</div>
+			<!--<aside class="draft-sidebar">
 				<h3>임시저장 목록</h3>
 				<div id="draftList"></div>
 				<p class="text-muted" id="draftEmptyMsg" style="font-size:12px">임시저장된 글이 없습니다.</p>
-			</aside>
+			</aside>-->
 		</div>
 	</main>
 

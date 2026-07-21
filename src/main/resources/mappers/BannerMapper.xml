@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.BannerMapper">
+
+    <resultMap id="bannerResultMap" type="com.youflex.dto.BannerDTO">
+        <id property="bannerId" column="banner_id" />
+        <result property="bannerBadge" column="banner_badge" />
+        <result property="bannerTitle" column="banner_title" />
+        <result property="bannerContent" column="banner_content" />
+        <result property="bannerImg" column="banner_img" />
+    </resultMap>
+
+    <select id="selectBannerList" resultMap="bannerResultMap">
+        SELECT banner_id, banner_badge, banner_title, banner_content, banner_img
+        FROM banner
+        ORDER BY banner_id
+    </select>
+
+    <select id="selectBannerById" parameterType="int" resultMap="bannerResultMap">
+        SELECT banner_id, banner_badge, banner_title, banner_content, banner_img
+        FROM banner
+        WHERE banner_id = #{bannerId}
+    </select>
+
+    <insert id="insertBanner" parameterType="com.youflex.dto.BannerDTO" useGeneratedKeys="true" keyProperty="bannerId">
+        INSERT INTO banner (banner_badge, banner_title, banner_content, banner_img)
+        VALUES (#{bannerBadge}, #{bannerTitle}, #{bannerContent}, #{bannerImg})
+    </insert>
+
+    <update id="updateBanner" parameterType="com.youflex.dto.BannerDTO">
+        UPDATE banner
+        SET banner_badge = #{bannerBadge},
+            banner_title = #{bannerTitle},
+            banner_content = #{bannerContent},
+            banner_img = #{bannerImg}
+        WHERE banner_id = #{bannerId}
+    </update>
+
+    <delete id="deleteBanner" parameterType="int">
+        DELETE FROM banner
+        WHERE banner_id = #{bannerId}
+    </delete>
+
+</mapper>

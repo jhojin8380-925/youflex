@@ -18,4 +18,5 @@ public class ReviewDraftDTO {
     private String reviewDraftTitle;
     private String reviewDraftContent;
     private LocalDateTime reviewDraftSavedAt;
+    private String reviewDraftRelated;
 }

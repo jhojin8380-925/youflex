@@ -1,12 +1,17 @@
 package com.youflex.controller.admin;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.youflex.dto.MemberDTO;
+import com.youflex.dto.ReportDTO;
+import com.youflex.service.BannerService;
 import com.youflex.service.admin.AdminReportService;
+import com.youflex.service.admin.AdminStatsService;
 import com.youflex.service.MemberService;
 import com.youflex.service.qna.QnaService;
 
@@ -25,6 +30,8 @@ public class AdminViewController {
     private final MemberService memberService;
     private final AdminReportService adminReportService;
     private final QnaService qnaService;
+    private final AdminStatsService adminStatsService;
+    private final BannerService bannerService;
 
     @GetMapping
     public String adminPage(HttpSession session, Model model) {
@@ -42,10 +49,22 @@ public class AdminViewController {
         model.addAttribute("withdrawnMembers", memberService.getWithdrawnMembers());
 
         // 신고 처리 탭 - 검색/페이징이 없어 전체 목록을 SSR로 한 번에 내려줌
-        model.addAttribute("reportList", adminReportService.getAllReports());
+        List<ReportDTO> reportList = adminReportService.getAllReports();
+        model.addAttribute("reportList", reportList);
 
         // Q&A 답변 탭 - 검색/페이징이 없어 전체 목록을 SSR로 한 번에 내려줌
         model.addAttribute("qnaList", qnaService.getQnaList());
+
+        // 배너 설정 탭
+        model.addAttribute("bannerList", bannerService.getBannerList());
+
+        // 상단 KPI 카드 - 오늘/이번주 가입·탈퇴 수치, 신고 접수(미처리)
+        model.addAttribute("todayJoinCount", adminStatsService.getTodayJoinCount());
+        model.addAttribute("weekJoinCount", adminStatsService.getThisWeekJoinCount());
+        model.addAttribute("todayWithdrawCount", adminStatsService.getTodayWithdrawCount());
+        model.addAttribute("weekWithdrawCount", adminStatsService.getThisWeekWithdrawCount());
+        model.addAttribute("pendingReportCount",
+                reportList.stream().filter(r -> !"처리완료".equals(r.getStatus())).count());
 
         return "admin/admin";
     }

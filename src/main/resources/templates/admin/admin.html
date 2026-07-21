@@ -33,28 +33,22 @@
     <div class="kpi-grid">
       <div class="card kpi-card">
         <div class="label">오늘 가입자 수</div>
-        <div class="value">128</div>
-        <div class="delta">▲ 12% (전일 대비)</div>
+        <div class="value" th:text="${todayJoinCount}">128</div>
+        <div class="delta" th:text="'이번주 ' + ${weekJoinCount} + '명'">이번주 0명</div>
       </div>
       <div class="card kpi-card">
         <div class="label">오늘 탈퇴자 수</div>
-        <div class="value">4</div>
-        <div class="delta down">▲ 1건 증가</div>
-      </div>
-      <div class="card kpi-card">
-        <div class="label">오늘 작성 게시글</div>
-        <div class="value">312</div>
-        <div class="delta">▲ 8%</div>
+        <div class="value" th:text="${todayWithdrawCount}">4</div>
+        <div class="delta down" th:text="'이번주 ' + ${weekWithdrawCount} + '명'">이번주 0명</div>
       </div>
       <div class="card kpi-card">
         <div class="label">누적 회원 수</div>
-        <div class="value">48,203</div>
-        <div class="delta">-</div>
+        <div class="value" th:text="${memberTotalCount}">0</div>
       </div>
       <div class="card kpi-card">
         <div class="label">신고 접수 (미처리)</div>
-        <div class="value">7</div>
-        <div class="delta down">확인 필요</div>
+        <div class="value" th:text="${pendingReportCount}">0</div>
+        <div class="delta down" th:if="${pendingReportCount > 0}">확인 필요</div>
       </div>
     </div>
   </div>
@@ -193,6 +187,7 @@
         <tr th:each="r, stat : ${reportList}"
             th:data-report-type="${r.reportType}"
             th:data-report-id="${r.reportId}"
+            th:data-target-id="${r.targetId}"
             th:data-reported-member-id="${r.reportedMemberId}"
             th:data-reported-member-name="${r.reportedMemberName}">
           <td th:text="${stat.count}">1</td>
@@ -210,6 +205,7 @@
             <a th:if="${r.detailUrl != null}" th:href="@{${r.detailUrl}}" class="btn btn-sm">게시글 이동</a>
             <button type="button" class="btn btn-sm" th:disabled="${r.status == '처리완료'}" onclick="rejectReport(this)">반려</button>
             <button type="button" class="btn btn-sm btn-danger" th:disabled="${r.status == '처리완료'}" onclick="openReportWarningModal(this)">경고처리</button>
+            <button type="button" class="btn btn-sm btn-danger" th:disabled="${r.status == '처리완료'}" onclick="deleteReportedContent(this)">삭제</button>
           </td>
         </tr>
         <tr th:if="${#lists.isEmpty(reportList)}">
@@ -288,17 +284,25 @@
     <table class="table" id="bannerTable">
       <thead><tr><th>순서</th><th>이미지</th><th>뱃지</th><th>제목</th><th>설명</th><th></th></tr></thead>
       <tbody id="bannerTableBody">
-        <tr data-badge="NETFLIX 시리즈" data-title="살인자ㅇ난감" data-desc="우발적 살인에서 시작된 예측 불가 추적 스릴러" data-image="">
-          <td>1</td><td><div class="banner-thumb"></div></td><td>NETFLIX 시리즈</td><td>살인자ㅇ난감</td><td>우발적 살인에서 시작된 예측 불가 추적 스릴러</td>
+        <tr th:each="b, stat : ${bannerList}"
+            th:data-banner-id="${b.bannerId}"
+            th:data-badge="${b.bannerBadge}"
+            th:data-title="${b.bannerTitle}"
+            th:data-desc="${b.bannerContent}"
+            th:data-image="${b.bannerImg}">
+          <td th:text="${stat.count}">1</td>
+          <td>
+            <div class="banner-thumb">
+              <img th:if="${b.bannerImg != null}" th:src="@{'/upload/' + ${b.bannerImg}}" alt="배너 이미지" />
+            </div>
+          </td>
+          <td th:text="${b.bannerBadge}">NETFLIX 시리즈</td>
+          <td th:text="${b.bannerTitle}">살인자ㅇ난감</td>
+          <td th:text="${b.bannerContent}">우발적 살인에서 시작된 예측 불가 추적 스릴러</td>
           <td class="actions"><button class="btn btn-sm" onclick="openBannerModal(this)">수정</button><button class="btn btn-sm btn-danger" onclick="deleteBannerRow(this)">삭제</button></td>
         </tr>
-        <tr data-badge="DISNEY+ 시리즈" data-title="아바타: 물의 길" data-desc="판도라 행성에서 펼쳐지는 또 다른 대서사시" data-image="">
-          <td>2</td><td><div class="banner-thumb"></div></td><td>DISNEY+ 시리즈</td><td>아바타: 물의 길</td><td>판도라 행성에서 펼쳐지는 또 다른 대서사시</td>
-          <td class="actions"><button class="btn btn-sm" onclick="openBannerModal(this)">수정</button><button class="btn btn-sm btn-danger" onclick="deleteBannerRow(this)">삭제</button></td>
-        </tr>
-        <tr data-badge="TVING 오리지널" data-title="환승연애3" data-desc="다시 만난 인연, 새로운 설렘의 시작" data-image="">
-          <td>3</td><td><div class="banner-thumb"></div></td><td>TVING 오리지널</td><td>환승연애3</td><td>다시 만난 인연, 새로운 설렘의 시작</td>
-          <td class="actions"><button class="btn btn-sm" onclick="openBannerModal(this)">수정</button><button class="btn btn-sm btn-danger" onclick="deleteBannerRow(this)">삭제</button></td>
+        <tr th:if="${#lists.isEmpty(bannerList)}">
+          <td colspan="6" class="text-muted" style="text-align:center">등록된 배너가 없습니다.</td>
         </tr>
       </tbody>
     </table>

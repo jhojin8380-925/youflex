@@ -8,8 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (tabButton) tabButton.click();
 });
 
+const BANNER_API_BASE = "/api/banner";
+
 let editingBannerRow = null;
-let currentBannerImage = "";
+let currentBannerFile = null; // 실제 업로드할 File 객체(미리보기용 data URL과는 별개)
 
 const bannerFileInput = document.getElementById("banner_img");
 const bannerImagePreview = document.getElementById("bannerImagePreview");
@@ -24,20 +26,20 @@ bannerFileInput.addEventListener("change", (event) => {
     bannerFileInput.value = "";
     return;
   }
+  currentBannerFile = file;
   const reader = new FileReader();
   reader.onload = (e) => {
-    currentBannerImage = e.target.result;
-    bannerImagePreview.src = currentBannerImage;
+    bannerImagePreview.src = e.target.result;
     bannerImagePreview.style.display = "block";
     bannerUploadPlaceholder.style.display = "none";
   };
   reader.readAsDataURL(file);
 });
 
-function setBannerImagePreview(src) {
-  currentBannerImage = src || "";
-  if (currentBannerImage) {
-    bannerImagePreview.src = currentBannerImage;
+// existingImageName: 수정 모달을 열 때 기존 배너의 저장된 파일명(row.dataset.image)
+function setBannerImagePreview(existingImageName) {
+  if (existingImageName) {
+    bannerImagePreview.src = `/upload/${existingImageName}`;
     bannerImagePreview.style.display = "block";
     bannerUploadPlaceholder.style.display = "none";
   } else {
@@ -48,6 +50,7 @@ function setBannerImagePreview(src) {
 
 function openBannerModal(btn) {
   editingBannerRow = btn ? btn.closest("tr") : null;
+  currentBannerFile = null;
   document.getElementById("bannerModalTitle").textContent = editingBannerRow ? "🖼 배너 수정" : "🖼 배너 추가";
   document.getElementById("bannerBadgeInput").value = editingBannerRow ? editingBannerRow.dataset.badge : "";
   document.getElementById("banner_title").value = editingBannerRow ? editingBannerRow.dataset.title : "";
@@ -59,7 +62,24 @@ function openBannerModal(btn) {
 function closeBannerModal() {
   document.getElementById("bannerModalBackdrop").classList.remove("open");
 }
-function saveBanner() {
+
+// adminFetch는 Content-Type: application/json을 강제로 붙이는데, multipart/form-data는
+// 브라우저가 boundary를 포함해 자동으로 설정해야 하므로 별도의 fetch 래퍼를 쓴다.
+async function bannerFetch(url, options) {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    let message = "요청 처리 중 오류가 발생했습니다.";
+    try {
+      const body = await res.json();
+      if (body && body.message) message = body.message;
+    } catch (e) {
+      // 응답 바디가 없거나 JSON이 아닌 경우 기본 메시지 사용
+    }
+    throw new Error(message);
+  }
+}
+
+async function saveBanner() {
   const badge = document.getElementById("bannerBadgeInput").value.trim();
   const title = document.getElementById("banner_title").value.trim();
   const desc = document.getElementById("banner_content").value.trim();
@@ -67,35 +87,48 @@ function saveBanner() {
     alert("배너 제목을 입력해주세요.");
     return;
   }
-  const tbody = document.getElementById("bannerTableBody");
-  let row = editingBannerRow;
-  if (!row) {
-    row = document.createElement("tr");
-    row.innerHTML = '<td></td><td><div class="banner-thumb"></div></td><td></td><td></td><td></td><td class="actions"><button class="btn btn-sm" onclick="openBannerModal(this)">수정</button><button class="btn btn-sm btn-danger" onclick="deleteBannerRow(this)">삭제</button></td>';
-    tbody.appendChild(row);
+  if (!editingBannerRow && !currentBannerFile) {
+    alert("배너 이미지를 첨부해주세요.");
+    return;
   }
-  row.dataset.badge = badge;
-  row.dataset.title = title;
-  row.dataset.desc = desc;
-  row.dataset.image = currentBannerImage;
-  row.children[1].innerHTML = currentBannerImage
-    ? `<div class="banner-thumb"><img src="${currentBannerImage}" alt="배너 이미지" /></div>`
-    : '<div class="banner-thumb"></div>';
-  row.children[2].textContent = badge;
-  row.children[3].textContent = title;
-  row.children[4].textContent = desc;
-  renumberBannerRows();
 
-  closeBannerModal();
-  alert("배너가 저장되었습니다. (데모)");
+  const formData = new FormData();
+  formData.append("bannerBadge", badge);
+  formData.append("bannerTitle", title);
+  formData.append("bannerContent", desc);
+  if (currentBannerFile) {
+    formData.append("bannerImgFile", currentBannerFile);
+  }
+
+  try {
+    if (editingBannerRow) {
+      await bannerFetch(`${BANNER_API_BASE}/${editingBannerRow.dataset.bannerId}`, { method: "PUT", body: formData });
+    } else {
+      await bannerFetch(BANNER_API_BASE, { method: "POST", body: formData });
+    }
+    closeBannerModal();
+    // 그냥 location.reload()를 쓰면 현재 주소(tab= 없는 /admin)를 그대로 새로고침해서
+    // 첫 번째 탭(회원 관리)으로 돌아가버리므로, 배너 탭으로 명시적으로 이동
+    location.href = "/admin?tab=banner";
+  } catch (e) {
+    alert(e.message);
+  }
 }
-function deleteBannerRow(btn) {
-  btn.closest("tr").remove();
-  renumberBannerRows();
+
+async function deleteBannerRow(btn) {
+  const row = btn.closest("tr");
+  if (!confirm("이 배너를 삭제하시겠습니까?")) return;
+  try {
+    await adminFetch(`${BANNER_API_BASE}/${row.dataset.bannerId}`, { method: "DELETE" });
+    row.remove();
+    renumberBannerRows();
+  } catch (e) {
+    alert(e.message);
+  }
 }
 function renumberBannerRows() {
   Array.from(document.getElementById("bannerTableBody").children).forEach((r, i) => {
-    r.children[0].textContent = i + 1;
+    if (r.children.length > 1) r.children[0].textContent = i + 1;
   });
 }
 
@@ -361,11 +394,12 @@ document.getElementById("noticeCreateBtn").addEventListener("click", async () =>
 // ==========================================================================
 const REPORT_API_BASE = "/api/admin/reports";
 
-// 신고 1건을 처리완료 상태로 표시하고 반려/경고처리 버튼을 비활성화
-function markReportRowResolved(row) {
+// 신고 1건을 처리 상태로 표시하고 반려/경고처리/삭제 버튼을 비활성화.
+// label/pillClass를 넘기지 않으면 반려/경고처리(콘텐츠는 그대로 유지)에 해당하는 기본값을 사용.
+function markReportRowResolved(row, label, pillClass) {
   // 열 순서: No/대상/내용요약/작성자/신고자/사유/접수일/상태/액션 -> 상태는 7번 인덱스
   const statusCell = row.children[7];
-  statusCell.innerHTML = '<span class="status-pill status-active">처리완료 (유지)</span>';
+  statusCell.innerHTML = `<span class="status-pill ${pillClass || "status-active"}">${label || "처리완료 (유지)"}</span>`;
   row.querySelectorAll(".actions button").forEach((btn) => (btn.disabled = true));
 }
 
@@ -375,6 +409,24 @@ async function rejectReport(btn) {
   try {
     await adminFetch(`${REPORT_API_BASE}/${row.dataset.reportType}/${row.dataset.reportId}/resolve`, { method: "POST" });
     markReportRowResolved(row);
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// 신고된 원본 콘텐츠(게시글/댓글/QNA/QNA댓글)를 실제로 삭제하고 신고를 처리완료 처리
+async function deleteReportedContent(btn) {
+  const row = btn.closest("tr");
+  if (!confirm("신고된 원본 콘텐츠를 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+  try {
+    await adminFetch(`${REPORT_API_BASE}/${row.dataset.reportType}/${row.dataset.reportId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ targetId: Number(row.dataset.targetId) }),
+    });
+    // 내용 요약 칸(3번째 열)은 이미 삭제된 원본 콘텐츠의 옛 텍스트라 그대로 두면 오해의 소지가 있어 갱신
+    row.children[2].textContent = "삭제된 콘텐츠입니다";
+    markReportRowResolved(row, "삭제완료", "status-blacklist");
+    alert("신고된 콘텐츠가 삭제되었습니다.");
   } catch (e) {
     alert(e.message);
   }
