@@ -2,4 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youflex.mapper.CommentMapper">
 
+    <!-- 관리자 신고 처리 - 삭제 액션. 대댓글 보존을 위해 하드 삭제 대신 소프트 삭제 처리 -->
+    <update id="deleteComment" parameterType="int">
+        UPDATE comment
+        SET comment_delete_status = '삭제'
+        WHERE comment_id = #{commentId}
+    </update>
+
 </mapper>

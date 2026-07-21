@@ -12,10 +12,14 @@ import com.youflex.dto.QnaCommentReportDTO;
 import com.youflex.dto.QnaReportDTO;
 import com.youflex.dto.ReportDTO;
 import com.youflex.dto.ReviewReportDTO;
+import com.youflex.mapper.CommentMapper;
 import com.youflex.mapper.CommentReportMapper;
 import com.youflex.mapper.QnaCommentReportMapper;
 import com.youflex.mapper.QnaReportMapper;
+import com.youflex.mapper.ReviewMapper;
 import com.youflex.mapper.ReviewReportMapper;
+import com.youflex.mapper.qna.QnaCommentMapper;
+import com.youflex.mapper.qna.QnaMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +39,13 @@ public class AdminReportService {
     private final QnaReportMapper qnaReportMapper;
     private final QnaCommentReportMapper qnaCommentReportMapper;
 
+    // "삭제" 액션 - 신고된 원본 콘텐츠 자체를 지우기 위해, 소유권 체크가 있는 도메인 서비스를 거치지 않고
+    // 위의 *ReportMapper들과 동일하게 raw mapper를 직접 사용한다.
+    private final ReviewMapper reviewMapper;
+    private final CommentMapper commentMapper;
+    private final QnaMapper qnaMapper;
+    private final QnaCommentMapper qnaCommentMapper;
+
     // 미처리(접수/처리중) 신고를 위로, 그 안에서는 최신순으로 정렬해서 반환
     public List<ReportDTO> getAllReports() {
         List<ReportDTO> reports = new ArrayList<>();
@@ -44,6 +55,7 @@ public class AdminReportService {
                     .reportType("REVIEW")
                     .reportTypeLabel("게시글")
                     .reportId(r.getReviewReportId())
+                    .targetId(r.getReviewId())
                     .contentSummary(r.getReviewReportContent())
                     .reporterName(r.getMemberName())
                     .reportedMemberId(r.getReportedMemberId())
@@ -60,6 +72,7 @@ public class AdminReportService {
                     .reportType("COMMENT")
                     .reportTypeLabel("댓글")
                     .reportId(r.getCommentReportId())
+                    .targetId(r.getCommentId())
                     .contentSummary(r.getCommentReportContent())
                     .reporterName(r.getMemberName())
                     .reportedMemberId(r.getReportedMemberId())
@@ -76,6 +89,7 @@ public class AdminReportService {
                     .reportType("QNA")
                     .reportTypeLabel("QNA")
                     .reportId(r.getQnaReportId())
+                    .targetId(r.getQnaId())
                     .contentSummary(r.getQnaReportContent())
                     .reporterName(r.getMemberName())
                     .reportedMemberId(r.getReportedMemberId())
@@ -92,6 +106,7 @@ public class AdminReportService {
                     .reportType("QNA_COMMENT")
                     .reportTypeLabel("QNA댓글")
                     .reportId(r.getQnaCommentReportId())
+                    .targetId(r.getQnaCommentId())
                     .contentSummary(r.getQnaCommentReportContent())
                     .reporterName(r.getMemberName())
                     .reportedMemberId(r.getReportedMemberId())
@@ -117,6 +132,31 @@ public class AdminReportService {
             case "COMMENT" -> commentReportMapper.updateCommentReportStatus(reportId, STATUS_DONE);
             case "QNA" -> qnaReportMapper.updateQnaReportStatus(reportId, STATUS_DONE);
             case "QNA_COMMENT" -> qnaCommentReportMapper.updateCommentReportStatus(reportId, STATUS_DONE);
+            default -> throw new IllegalArgumentException("알 수 없는 신고 유형: " + reportType);
+        }
+    }
+
+    // 신고를 "삭제" 처리 - 신고된 원본 콘텐츠 자체를 지우고, 신고 상태도 "처리완료"로 전환.
+    // REVIEW/QNA/QNA_COMMENT는 하드 삭제(기존 도메인 삭제 메서드 재사용), COMMENT는 스키마상 소프트 삭제.
+    @Transactional
+    public void deleteReportedContent(String reportType, int reportId, int targetId) {
+        switch (reportType) {
+            case "REVIEW" -> {
+                reviewMapper.delete(targetId);
+                reviewReportMapper.updateReviewReportStatus(reportId, STATUS_DONE);
+            }
+            case "COMMENT" -> {
+                commentMapper.deleteComment(targetId);
+                commentReportMapper.updateCommentReportStatus(reportId, STATUS_DONE);
+            }
+            case "QNA" -> {
+                qnaMapper.deleteQna(targetId);
+                qnaReportMapper.updateQnaReportStatus(reportId, STATUS_DONE);
+            }
+            case "QNA_COMMENT" -> {
+                qnaCommentMapper.deleteComment(targetId);
+                qnaCommentReportMapper.updateCommentReportStatus(reportId, STATUS_DONE);
+            }
             default -> throw new IllegalArgumentException("알 수 없는 신고 유형: " + reportType);
         }
     }

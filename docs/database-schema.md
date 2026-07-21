@@ -31,6 +31,9 @@
   채워야 함 — 안 넣으면 "Field 'quiz_attempt_date' doesn't have a default value" 에러 발생.
 - FK는 대부분 `ON DELETE CASCADE` — 회원 탈퇴(row 삭제) 시 관련 데이터가 통째로
   같이 삭제됨. (소프트 삭제면 `member_delete_status`만 바꿔야지 실제 delete 하면 안 됨)
+- `banner.banner_badge` 컬럼은 2026.7.21에 관리자 배너 관리 기능 구현하면서 추가됨(기존 DDL에는 없었음).
+  로컬 DB에 아직 반영 안 했다면 아래 마이그레이션을 먼저 실행해야 배너 등록/수정이 동작함:
+  `ALTER TABLE banner ADD COLUMN banner_badge VARCHAR(50) NOT NULL DEFAULT '' AFTER banner_title;`
 
 ## 전체 DDL (원본 그대로)
 
@@ -463,6 +466,7 @@ create table qna_comment_report (
 -- 배너 게시판 --
 create table banner (
     banner_id         int not null auto_increment,
+    banner_badge         varchar(50) not null default '', -- [수정] 관리자 배너 관리 화면의 뱃지(예: NETFLIX 시리즈) 표시용, 2026.7.21 추가
     banner_title        varchar(100) not null,
     banner_content       text not null,
     banner_img           varchar(500) not null,

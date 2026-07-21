@@ -17,6 +17,7 @@ public class ReportDTO {
     private String reportType;       // REVIEW | COMMENT | QNA | QNA_COMMENT (API 경로/액션 구분용)
     private String reportTypeLabel;  // 게시글 | 댓글 | QNA | QNA댓글 (화면 표시용)
     private int reportId;            // 신고 원본 PK (review_report_id 등)
+    private int targetId;            // 신고 대상 원본 콘텐츠 PK (review_id/comment_id/qna_id/qna_comment_id) - "삭제" 액션용
     private String contentSummary;   // 신고 대상 콘텐츠 제목/본문
     private String reporterName;     // 신고자 이름
     private int reportedMemberId;    // 신고 대상 콘텐츠 작성자 memberId (경고 부여 대상)
