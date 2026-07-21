@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouFlex - 오류</title>
+<link rel="stylesheet" th:href="@{/css/common.css}" />
+<link rel="stylesheet" th:href="@{/css/error.css}" />
+</head>
+<body>
+
+<!-- BasicErrorController가 넘겨주는 status(404, 500 등) 값으로 서버에서 바로 아이콘/문구를 분기 -->
+<div class="error-wrap">
+  <div class="error-logo"><a th:href="@{/}"><img th:src="@{/img/logo.png}" alt="YouFlex" /></a></div>
+  <div class="error-illust" th:text="${status == 404} ? '🛰️' : '🛠️'">🛰️</div>
+  <div class="error-code" th:text="${status}">404</div>
+  <div class="error-msg"
+       th:text="${status == 404} ? '존재하지 않거나 잘못된 주소입니다.' : '서버에 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'">존재하지 않거나 잘못된 주소입니다.</div>
+  <a th:href="@{/}" class="btn btn-primary">메인 화면으로 이동</a>
+</div>
+
+</body>
+</html>

@@ -9,8 +9,8 @@ import com.youflex.dto.QuizDTO;
 @Mapper
 public interface QuizMapper {
 
-    // 객관식/OX 구분 없이 전체 문제 중 랜덤으로 1개 조회
-    QuizDTO selectRandomQuiz();
+    // 객관식/OX 구분 없이 전체 문제 중 랜덤으로 1개 조회. 이 회원이 직전에 응시한 문제는 제외해서 연속 출제를 막는다.
+    QuizDTO selectRandomQuiz(@Param("memberId") int memberId);
 
     // 문제 단건 조회(정답 채점용 - quiz_answer/quiz_ox_answer/quiz_point/quiz_explanation까지 필요해서 씀)
     QuizDTO findById(@Param("quizId") int quizId);

@@ -38,9 +38,4 @@
 .comment-input-row input { flex: 1; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: #fff; }
 .comment-input-row input:focus { outline: none; border-color: var(--accent); }
 
-/* ---------- 챗봇 퀴즈 (객관식 1문제 + OX 1문제, 하루 3회) ---------- */
-#qnaQuizPlay { margin-top: 12px; }
-.quiz-progress { font-size: 11px; color: var(--text-2); margin-bottom: 6px; }
-.quiz-question { font-size: 13px; font-weight: 700; line-height: 1.5; margin-bottom: 4px; }
-#qnaQuizNextBtn { margin-top: 12px; }
-.quiz-result { margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--gold); }
+/* 퀴즈 패널 공통 스타일(#qnaQuizPlay, .quiz-question, .quiz-result 등)은 common.css로 이전함 */

@@ -11,7 +11,7 @@
 let currentChatroomId = null;
 
 // ==========================================================================
-// 오버레이 패널 공통 함수 (챗봇 / 채팅방 / 알림 패널이 모두 이 함수를 재사용함)
+// 오버레이 패널 공통 함수 (퀴즈 / 채팅방 / 알림 패널이 모두 이 함수를 재사용함)
 // ==========================================================================
 /**
  * @param panelId          열고 닫을 패널(aside)의 id
@@ -97,49 +97,20 @@ function initTabs(tabGroupSelector) {
 }
 
 // ==========================================================================
-// 챗봇 퀴즈: /api/quiz/random으로 문제를 받아 채팅 메시지로 출제하고,
-// 채팅 입력창(panel-input-row)에 타이핑한 답을 /api/quiz/answer로 채점받는다.
+// 퀴즈: /api/quiz/random으로 문제를 받아 보기 버튼으로 출제하고,
+// 클릭한 보기의 값을 그대로 /api/quiz/answer로 보내 채점받는다.
 // 객관식/OX 합쳐서 하루 3회, 서버(quiz_attempt 테이블)가 기준으로 제한한다.
 // ==========================================================================
-function initQnaChatbotQuiz() {
+function initQnaQuiz() {
     const startBtn = document.getElementById('qnaQuizStartBtn');
     const countLabel = document.getElementById('qnaQuizCount');
-    const messagesBox = document.getElementById('qnaQuizMessages');
-    const answerInput = document.getElementById('qnaQuizAnswerInput');
-    const answerSendBtn = document.getElementById('qnaQuizAnswerSendBtn');
-    if (!startBtn) return; // 챗봇 퀴즈 UI가 없는 페이지면 종료
+    const playBox = document.getElementById('qnaQuizPlay');
+    const questionEl = document.getElementById('qnaQuizQuestion');
+    const optionsBox = document.getElementById('qnaQuizOptions');
+    const resultBox = document.getElementById('qnaQuizResult');
+    if (!startBtn) return; // 퀴즈 UI가 없는 페이지면 종료
 
     let currentQuiz = null; // 지금 출제 중인 문제(quizId 포함). null이면 채점 제출을 받지 않음.
-
-    // 챗봇이 보낸 것처럼 보이는 말풍선 추가(줄바꿈이 그대로 보이도록 pre-line 처리)
-    function addBotMessage(text) {
-        const msg = document.createElement('div');
-        msg.className = 'chat-msg';
-        msg.innerHTML = '<div class="avatar"></div><div class="bubble"></div>';
-        const bubble = msg.querySelector('.bubble');
-        bubble.style.whiteSpace = 'pre-line';
-        bubble.textContent = text;
-        messagesBox.appendChild(msg);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-    }
-
-    // 내가 타이핑해서 보낸 답을 오른쪽 말풍선으로 추가
-    function addUserMessage(text) {
-        const msg = document.createElement('div');
-        msg.className = 'chat-msg me';
-        msg.innerHTML = '<div class="avatar"></div><div class="bubble"></div>';
-        msg.querySelector('.bubble').textContent = text;
-        messagesBox.appendChild(msg);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-    }
-
-    // 답을 입력받을 수 있는 상태인지에 따라 채팅 입력창을 켜고 끔
-    function setAnswering(enabled) {
-        answerInput.disabled = !enabled;
-        answerSendBtn.disabled = !enabled;
-        answerInput.placeholder = enabled ? '정답을 입력하세요 (객관식은 번호, OX는 O/X)' : '퀴즈를 먼저 시작해주세요';
-        if (enabled) answerInput.focus();
-    }
 
     // 남은 횟수 표시 + 시작 버튼 활성/비활성
     function renderCount(remaining) {
@@ -148,8 +119,23 @@ function initQnaChatbotQuiz() {
         startBtn.textContent = remaining <= 0 ? '오늘 퀴즈를 모두 사용했어요' : '퀴즈 시작';
     }
 
-    // 서버에서 문제 하나를 받아와 채팅 메시지로 출제
+    // 보기 버튼 하나 생성: 클릭하면 그 버튼의 값을 답으로 바로 제출
+    function createOptionButton(label, value) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = label;
+        btn.addEventListener('click', () => submitAnswer(btn, value));
+        return btn;
+    }
+
+    function showResult(text) {
+        resultBox.textContent = text;
+        resultBox.style.display = 'block';
+    }
+
+    // 서버에서 문제 하나를 받아와 보기 버튼으로 출제
     function startQuiz() {
+        resultBox.style.display = 'none';
         fetch('/api/quiz/random')
             .then((res) => {
                 if (res.status === 401) throw new Error('unauthorized');
@@ -159,64 +145,60 @@ function initQnaChatbotQuiz() {
             .then((data) => {
                 renderCount(data.remainingAttempts);
                 if (!data.quiz || !data.quiz.quizId) {
-                    addBotMessage('오늘 퀴즈 응시 횟수를 모두 사용했어요. 내일 다시 도전해주세요!');
+                    playBox.style.display = 'none';
+                    showResult('오늘 퀴즈 응시 횟수를 모두 사용했어요. 내일 다시 도전해주세요!');
                     return;
                 }
                 currentQuiz = data.quiz;
                 const q = data.quiz;
+                questionEl.textContent = `Q. ${q.quizContent}`;
+                optionsBox.innerHTML = '';
                 if (q.quizType === '객관식') {
-                    const options = [q.quizOption1, q.quizOption2, q.quizOption3, q.quizOption4]
-                        .map((opt, i) => (opt ? `${i + 1}) ${opt}` : null))
-                        .filter(Boolean)
-                        .join('\n');
-                    addBotMessage(`Q. ${q.quizContent}\n${options}\n정답 번호를 채팅창에 입력해주세요!`);
+                    [q.quizOption1, q.quizOption2, q.quizOption3, q.quizOption4].forEach((opt, i) => {
+                        if (opt) optionsBox.appendChild(createOptionButton(`${i + 1}) ${opt}`, String(i + 1)));
+                    });
                 } else {
-                    addBotMessage(`Q. ${q.quizContent}\nO 또는 X로 답해주세요!`);
+                    optionsBox.appendChild(createOptionButton('O', 'O'));
+                    optionsBox.appendChild(createOptionButton('X', 'X'));
                 }
-                setAnswering(true);
+                playBox.style.display = 'block';
             })
             .catch((err) => {
-                addBotMessage(err.message === 'unauthorized' ? '로그인 후 이용할 수 있어요.' : '문제를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+                playBox.style.display = 'none';
+                showResult(err.message === 'unauthorized' ? '로그인 후 이용할 수 있어요.' : '문제를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
             });
     }
 
-    // 채팅창에 입력한 답을 제출하고, 채점 결과를 다시 챗봇 메시지로 표시
-    function submitAnswer() {
-        const answer = answerInput.value.trim();
-        if (!answer || !currentQuiz) return;
-        addUserMessage(answer);
-        answerInput.value = '';
-        setAnswering(false);
+    // 클릭한 보기 버튼의 값을 제출하고, 채점 결과를 표시
+    function submitAnswer(selectedBtn, answer) {
+        if (!currentQuiz) return;
+        const quizId = currentQuiz.quizId;
+        currentQuiz = null;
+        Array.from(optionsBox.children).forEach((btn) => (btn.disabled = true));
 
         fetch('/api/quiz/answer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ quizId: currentQuiz.quizId, answer }),
+            body: JSON.stringify({ quizId, answer }),
         })
             .then((res) => {
                 if (!res.ok) throw new Error('answer submit failed');
                 return res.json();
             })
             .then((data) => {
-                currentQuiz = null;
+                selectedBtn.classList.add(data.correct ? 'correct' : 'wrong');
                 const feedback = data.correct
                     ? `✅ 정답이에요! ${data.pointsAwarded}P를 적립했어요.`
                     : '❌ 아쉽지만 오답이에요.';
-                addBotMessage(data.explanation ? `${feedback}\n${data.explanation}` : feedback);
+                showResult(data.explanation ? `${feedback} ${data.explanation}` : feedback);
                 renderCount(data.remainingAttempts);
             })
             .catch(() => {
-                addBotMessage('채점 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+                showResult('채점 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
             });
     }
 
     startBtn.addEventListener('click', startQuiz);
-    answerSendBtn.addEventListener('click', submitAnswer);
-    answerInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') submitAnswer();
-    });
-
-    setAnswering(false);
 
     // 페이지 로드 시 남은 횟수만 먼저 조회해서 표시(비로그인 상태면 401이라 조용히 무시)
     fetch('/api/quiz/random')
@@ -725,8 +707,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initHeroSlider();
     initCategoryNav();
 
-    // 오버레이 3종 (챗봇 / 채팅방 / 알림) 초기화
-    initOverlay("chatbotPanel", "chatbotBackdrop", ["chatbotFab"], ["chatbotClose"], null, true);
+    // 오버레이 3종 (퀴즈 / 채팅방 / 알림) 초기화
+    initOverlay("quizPanel", "quizBackdrop", ["quizFab"], ["quizClose"], null, true);
     initOverlay("chatroomPanel", "chatroomBackdrop", ["chatroomTrigger"], ["chatroomClose"], "chatroom-open");
     initOverlay("notificationPanel", "notificationBackdrop", ["notificationTrigger"], ["notificationClose"], "notification-open");
 
@@ -740,7 +722,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initChatroomChat();
     initChatroomMenu();   // 케밥 메뉴 및 나가기 기능 초기화
     initGenreChips();
-    initQnaChatbotQuiz();
+    initQnaQuiz();
 });
 
 // ==========================================================================

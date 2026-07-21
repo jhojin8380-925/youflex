@@ -169,23 +169,25 @@
   <div class="panel-body" id="notificationBody"></div>
 </aside>
 
-<!-- 챗봇 실행 플로팅 버튼(FAB) 및 챗봇 패널 -->
-<button class="fab" id="chatbotFab" title="챗봇 실행">🤖</button>
-<div class="overlay-backdrop" id="chatbotBackdrop"></div>
-<aside class="slide-panel" id="chatbotPanel">
-  <div class="panel-header"><h3>🤖 YouFlex 챗봇</h3><button class="panel-close" id="chatbotClose">✕</button></div>
+<!-- 퀴즈 실행 플로팅 버튼(FAB) 및 퀴즈 패널 -->
+<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
+<div class="overlay-backdrop" id="quizBackdrop"></div>
+<aside class="slide-panel" id="quizPanel">
+  <div class="panel-header"><h3>💡 YouFlex 퀴즈</h3><button class="panel-close" id="quizClose">✕</button></div>
   <div class="panel-body">
-    <!-- 챗봇 초기 안내 메시지 -->
-    <div class="chat-msg"><div class="avatar"></div><div class="bubble">무엇을 도와드릴까요? 객관식/OX 문제를 하루 3번(합산)까지 풀 수 있어요. 퀴즈를 시작하고 채팅창에 정답을 입력해보세요!</div></div>
     <!-- 퀴즈 기능 영역: 하루 3회(객관식+OX 합산) 제한 -->
     <div class="quiz-box" id="qnaQuizBox">
+      <p class="quiz-intro">객관식/OX 문제를 하루 3번(합산)까지 풀 수 있어요. 퀴즈를 시작하고 정답 버튼을 선택해보세요!</p>
       <div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
       <button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
+      <!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
+      <div id="qnaQuizPlay" style="display:none">
+        <div class="quiz-question" id="qnaQuizQuestion"></div>
+        <div class="quiz-options" id="qnaQuizOptions"></div>
+      </div>
+      <div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
     </div>
-    <!-- 문제 출제/정답 결과가 실제 대화처럼 여기 쌓임(app.js의 initQnaChatbotQuiz가 채움) -->
-    <div id="qnaQuizMessages"></div>
   </div>
-  <div class="panel-input-row"><input type="text" id="qnaQuizAnswerInput" placeholder="퀴즈를 먼저 시작해주세요" disabled /><button class="btn btn-primary" id="qnaQuizAnswerSendBtn" disabled>전송</button></div>
 </aside>
 
 <!-- 커뮤니티 채팅 패널: 목록/채팅/개설 탭 구성 -->

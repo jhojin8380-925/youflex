@@ -123,7 +123,7 @@
 	</div>
 	</main>
 
-	<!-- 알림/챗봇/채팅방 패널: HTML 구조만 유지, 내용은 전부 AJAX로 채워짐 -->
+	<!-- 알림/퀴즈/채팅방 패널: HTML 구조만 유지, 내용은 전부 AJAX로 채워짐 -->
 
 	<!-- 알림 패널 열림 시 배경을 어둡게 처리하는 오버레이 -->
 	<div class="overlay-backdrop" id="notificationBackdrop"></div>
@@ -137,27 +137,25 @@
 		</div>
 	</aside>
 
-	<!-- 챗봇 실행 플로팅 버튼 (FAB) -->
-	<button class="fab" id="chatbotFab" title="챗봇 실행">🤖</button>
-	<!-- 챗봇 패널 열림 시 배경 오버레이 -->
-	<div class="overlay-backdrop" id="chatbotBackdrop"></div>
-	<aside class="slide-panel" id="chatbotPanel">
-		<div class="panel-header"><h3>🤖 YouFlex 챗봇</h3><button class="panel-close" id="chatbotClose">✕</button></div>
+	<!-- 퀴즈 실행 플로팅 버튼 (FAB) -->
+	<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
+	<!-- 퀴즈 패널 열림 시 배경 오버레이 -->
+	<div class="overlay-backdrop" id="quizBackdrop"></div>
+	<aside class="slide-panel" id="quizPanel">
+		<div class="panel-header"><h3>💡 YouFlex 퀴즈</h3><button class="panel-close" id="quizClose">✕</button></div>
 		<div class="panel-body">
-			<div class="chat-msg"><div class="avatar"></div><div class="bubble">무엇을 도와드릴까요? 객관식 1문제 + OX 1문제, 하루 3번까지 풀 수 있어요!</div></div>
 			<div class="quiz-box" id="qnaQuizBox">
+				<p class="quiz-intro">객관식/OX 문제를 하루 3번까지 풀 수 있어요. 퀴즈를 시작하고 정답 버튼을 선택해보세요!</p>
 				<div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
 				<button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
+				<!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
 				<div id="qnaQuizPlay" style="display:none">
-					<div class="quiz-progress" id="qnaQuizProgress"></div>
 					<div class="quiz-question" id="qnaQuizQuestion"></div>
 					<div class="quiz-options" id="qnaQuizOptions"></div>
-					<button class="btn btn-sm btn-primary" id="qnaQuizNextBtn" style="display:none">다음 문제 ›</button>
 				</div>
 				<div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
 			</div>
 		</div>
-		<div class="panel-input-row"><input type="text" placeholder="질문을 입력하세요" /><button class="btn btn-primary">전송</button></div>
 	</aside>
 
 	<!-- 채팅방 패널 열림 시 배경 오버레이 -->
@@ -170,7 +168,7 @@
 	<footer class="site-footer main-footer" th:replace="~{fragments/layout :: footer}"></footer>
 
 
-	<!-- 공통 스크립트: 알림/챗봇/채팅방 등 공통 UI 동작 처리 -->
+	<!-- 공통 스크립트: 알림/퀴즈/채팅방 등 공통 UI 동작 처리 -->
 	<!-- 마이그레이션 중 목업 경로(/assets/js)가 남아있던 버그 수정: static/js로 이전 완료된 실제 경로로 교체 -->
 
 	<script th:src="@{/js/app.js}"></script>

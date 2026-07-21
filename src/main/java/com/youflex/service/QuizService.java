@@ -11,7 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-// 챗봇 퀴즈 - 객관식/OX 합쳐서 하루 3회 제한, 채팅 입력창에 타이핑한 답을 서버에서 채점
+// 퀴즈 - 객관식/OX 합쳐서 하루 3회 제한, 채팅 입력창에 타이핑한 답을 서버에서 채점
 @Service
 @RequiredArgsConstructor
 public class QuizService {
@@ -27,12 +27,12 @@ public class QuizService {
         return Math.max(0, DAILY_ATTEMPT_LIMIT - used);
     }
 
-    // 랜덤 문제 1개(객관식/OX 구분 없이 통째로 뽑음). 남은 횟수가 없으면 null.
+    // 랜덤 문제 1개(객관식/OX 구분 없이 통째로 뽑음). 직전에 응시한 문제는 제외됨. 남은 횟수가 없으면 null.
     public QuizDTO getRandomQuiz(int memberId) {
         if (getRemainingAttempts(memberId) <= 0) {
             return null;
         }
-        return quizMapper.selectRandomQuiz();
+        return quizMapper.selectRandomQuiz(memberId);
     }
 
     // 정답 제출 - 채점 + 시도기록 저장(맞아도 틀려도 1회 소모) + 정답이면 포인트 지급까지 한 트랜잭션으로 처리
@@ -58,7 +58,7 @@ public class QuizService {
         int pointsAwarded = 0;
         if (correct) {
             pointsAwarded = quiz.getQuizPoint();
-            pointService.awardPoints(memberId, pointsAwarded, "챗봇 퀴즈 정답");
+            pointService.awardPoints(memberId, pointsAwarded, "퀴즈 정답");
         }
 
         return QuizResult.builder()
