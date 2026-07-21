@@ -55,6 +55,10 @@ public interface MemberMapper {
     // 탈퇴 승인 - 계정/작성글/댓글 완전 삭제(FK ON DELETE CASCADE로 연쇄 삭제, 되돌릴 수 없음)
     void deleteMemberPermanently(int memberId);
 
+    // 탈퇴 승인 시 회원 row가 완전삭제되어 이력이 안 남으므로, 삭제 직전에 통계용 로그 1행 남김
+    // (관리자 대시보드 "누적 탈퇴자수" 집계용)
+    void insertWithdrawalLog(@Param("memberId") int memberId, @Param("memberName") String memberName);
+
     // 포인트 적립/차감 - amount에 음수를 넘기면 차감도 이 메서드로 처리 가능
     void addPoint(@Param("memberId") int memberId, @Param("amount") int amount);
 }

@@ -26,4 +26,5 @@ public class ReportDTO {
     private String status;
     private LocalDateTime createdAt;
     private String detailUrl;        // "게시글 이동" 링크. 이동할 화면이 없으면 null
+    private long elapsedDays;        // 신고 접수일로부터 경과일 - 처리완료 탭 표시용
 }

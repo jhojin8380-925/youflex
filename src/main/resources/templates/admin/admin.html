@@ -37,9 +37,8 @@
         <div class="delta" th:text="'이번주 ' + ${weekJoinCount} + '명'">이번주 0명</div>
       </div>
       <div class="card kpi-card">
-        <div class="label">오늘 탈퇴자 수</div>
-        <div class="value" th:text="${todayWithdrawCount}">4</div>
-        <div class="delta down" th:text="'이번주 ' + ${weekWithdrawCount} + '명'">이번주 0명</div>
+        <div class="label">탈퇴 신청자 수</div>
+        <div class="value" th:text="${pendingWithdrawCount}">0</div>
       </div>
       <div class="card kpi-card">
         <div class="label">누적 회원 수</div>
@@ -49,6 +48,10 @@
         <div class="label">신고 접수 (미처리)</div>
         <div class="value" th:text="${pendingReportCount}">0</div>
         <div class="delta down" th:if="${pendingReportCount > 0}">확인 필요</div>
+      </div>
+      <div class="card kpi-card">
+        <div class="label">누적 탈퇴자수</div>
+        <div class="value" th:text="${totalWithdrawnCount}">0</div>
       </div>
     </div>
   </div>
@@ -181,39 +184,73 @@
     =========================================
     -->
   <div data-tab-panel="reports" class="mt-24" style="display:none">
-    <table class="table">
-      <thead><tr><th>No</th><th>대상</th><th>내용 요약</th><th>작성자</th><th>신고자</th><th>사유</th><th>접수일</th><th>상태</th><th></th></tr></thead>
-      <tbody id="reportListBody">
-        <tr th:each="r, stat : ${reportList}"
-            th:data-report-type="${r.reportType}"
-            th:data-report-id="${r.reportId}"
-            th:data-target-id="${r.targetId}"
-            th:data-reported-member-id="${r.reportedMemberId}"
-            th:data-reported-member-name="${r.reportedMemberName}">
-          <td th:text="${stat.count}">1</td>
-          <td><span class="badge badge-user" th:text="${r.reportTypeLabel}">게시글</span></td>
-          <td th:text="${r.contentSummary}">광고성 스팸 게시물입니다</td>
-          <td th:text="${r.reportedMemberName}">무비홀릭</td>
-          <td th:text="${r.reporterName}">드라마러버</td>
-          <td th:text="${r.reason}">스팸/도배</td>
-          <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-06-29</td>
-          <td>
-            <span class="status-pill status-pending" th:unless="${r.status == '처리완료'}">대기중</span>
-            <span class="status-pill status-active" th:if="${r.status == '처리완료'}">처리완료 (유지)</span>
-          </td>
-          <td class="actions">
-            <a th:if="${r.detailUrl != null}" th:href="@{${r.detailUrl}}" class="btn btn-sm">게시글 이동</a>
-            <button type="button" class="btn btn-sm" th:disabled="${r.status == '처리완료'}" onclick="rejectReport(this)">반려</button>
-            <button type="button" class="btn btn-sm btn-danger" th:disabled="${r.status == '처리완료'}" onclick="openReportWarningModal(this)">경고처리</button>
-            <button type="button" class="btn btn-sm btn-danger" th:disabled="${r.status == '처리완료'}" onclick="deleteReportedContent(this)">삭제</button>
-          </td>
-        </tr>
-        <tr th:if="${#lists.isEmpty(reportList)}">
-          <td colspan="9" class="text-muted" style="text-align:center">접수된 신고가 없습니다.</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="pagination" id="reportPagination"></div>
+    <div class="report-subtabs">
+      <button class="active" data-report-subtab="pending">미처리</button>
+      <button data-report-subtab="resolved">처리완료</button>
+    </div>
+
+    <div data-report-subpanel="pending">
+      <table class="table">
+        <thead><tr><th>No</th><th>대상</th><th>내용 요약</th><th>작성자</th><th>신고자</th><th>사유</th><th>접수일</th><th>상태</th><th></th></tr></thead>
+        <tbody id="reportListBody">
+          <tr th:each="r, stat : ${reportList}"
+              th:data-report-type="${r.reportType}"
+              th:data-report-id="${r.reportId}"
+              th:data-target-id="${r.targetId}"
+              th:data-reported-member-id="${r.reportedMemberId}"
+              th:data-reported-member-name="${r.reportedMemberName}">
+            <td th:text="${stat.count}">1</td>
+            <td><span class="badge badge-user" th:text="${r.reportTypeLabel}">게시글</span></td>
+            <td th:text="${r.contentSummary}">광고성 스팸 게시물입니다</td>
+            <td th:text="${r.reportedMemberName}">무비홀릭</td>
+            <td th:text="${r.reporterName}">드라마러버</td>
+            <td th:text="${r.reason}">스팸/도배</td>
+            <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-06-29</td>
+            <td><span class="status-pill status-pending">대기중</span></td>
+            <td class="actions">
+              <a th:if="${r.detailUrl != null}" th:href="@{${r.detailUrl}}" class="btn btn-sm">게시글 이동</a>
+              <button type="button" class="btn btn-sm" onclick="rejectReport(this)">반려</button>
+              <button type="button" class="btn btn-sm btn-danger" onclick="openReportWarningModal(this)">경고처리</button>
+              <button type="button" class="btn btn-sm btn-danger" onclick="deleteReportedContent(this)">삭제</button>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(reportList)}">
+            <td colspan="9" class="text-muted" style="text-align:center">접수된 신고가 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination" id="reportPagination"></div>
+    </div>
+
+    <div data-report-subpanel="resolved" style="display:none">
+      <table class="table">
+        <thead><tr><th>No</th><th>대상</th><th>내용 요약</th><th>작성자</th><th>신고자</th><th>사유</th><th>접수일</th><th>경과일</th><th></th></tr></thead>
+        <tbody id="resolvedReportListBody">
+          <tr th:each="r, stat : ${resolvedReportList}"
+              th:data-report-type="${r.reportType}"
+              th:data-report-id="${r.reportId}">
+            <td th:text="${stat.count}">1</td>
+            <td><span class="badge badge-user" th:text="${r.reportTypeLabel}">게시글</span></td>
+            <td th:text="${r.contentSummary}">광고성 스팸 게시물입니다</td>
+            <td th:text="${r.reportedMemberName}">무비홀릭</td>
+            <td th:text="${r.reporterName}">드라마러버</td>
+            <td th:text="${r.reason}">스팸/도배</td>
+            <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-06-29</td>
+            <td>
+              <span th:text="${r.elapsedDays} + '일 경과'"
+                    th:style="${r.elapsedDays >= 3} ? 'color:var(--danger);font-weight:700' : ''">0일 경과</span>
+            </td>
+            <td class="actions">
+              <button type="button" class="btn btn-sm btn-danger" onclick="purgeResolvedReport(this)">삭제</button>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(resolvedReportList)}">
+            <td colspan="9" class="text-muted" style="text-align:center">처리완료된 신고가 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination" id="resolvedReportPagination"></div>
+    </div>
   </div>
 
   <!-- 

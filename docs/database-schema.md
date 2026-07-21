@@ -31,9 +31,34 @@
   채워야 함 — 안 넣으면 "Field 'quiz_attempt_date' doesn't have a default value" 에러 발생.
 - FK는 대부분 `ON DELETE CASCADE` — 회원 탈퇴(row 삭제) 시 관련 데이터가 통째로
   같이 삭제됨. (소프트 삭제면 `member_delete_status`만 바꿔야지 실제 delete 하면 안 됨)
+- 2026.7.21 관리자페이지 기능 추가로 생긴 스키마 변경 3건(배너 뱃지 컬럼, 탈퇴 이력 테이블, 신고 FK
+  set null)은 한 번에 실행 가능한 스크립트로 `sql/migration_2026_07_21_admin_features.sql`에 모아뒀음.
+  팀원 로컬 DB에 아직 반영 안 했다면 이 파일을 먼저 실행할 것.
 - `banner.banner_badge` 컬럼은 2026.7.21에 관리자 배너 관리 기능 구현하면서 추가됨(기존 DDL에는 없었음).
   로컬 DB에 아직 반영 안 했다면 아래 마이그레이션을 먼저 실행해야 배너 등록/수정이 동작함:
   `ALTER TABLE banner ADD COLUMN banner_badge VARCHAR(50) NOT NULL DEFAULT '' AFTER banner_title;`
+- `review_report.review_id` / `qna_report.qna_id` / `qna_comment_report.qna_comment_id`는 2026.7.21에
+  `not null` + `on delete cascade` → `null` 허용 + `on delete set null`로 변경됨. 관리자가 신고 처리 중
+  "삭제"로 원본(게시글/QNA/QNA댓글)을 완전삭제하면 예전에는 FK CASCADE로 신고 기록까지 같이 사라져서
+  관리자 페이지 "처리완료" 탭에 이력이 하나도 안 남았음 — 이제는 참조 컬럼만 NULL로 바뀌고 신고 기록 자체는
+  남아서 처리완료 탭에서 계속 보임(그 신고 기록을 마지막으로 지우는 건 관리자가 "처리완료" 탭에서 수동으로
+  삭제해야 함). 이 변경 때문에 `ReviewReportMapper`/`QnaReportMapper`/`QnaCommentReportMapper`의
+  원본 조회 JOIN도 전부 LEFT JOIN으로 바뀌었음(INNER JOIN이면 참조가 NULL인 순간 그 행 자체가 결과에서
+  빠져버리기 때문). 로컬 DB 마이그레이션:
+
+  ```sql
+  ALTER TABLE review_report DROP FOREIGN KEY fk_reviewreport_review;
+  ALTER TABLE review_report MODIFY review_id INT NULL;
+  ALTER TABLE review_report ADD CONSTRAINT fk_reviewreport_review FOREIGN KEY (review_id) REFERENCES review(review_id) ON DELETE SET NULL;
+
+  ALTER TABLE qna_report DROP FOREIGN KEY fk_qnareport_qna;
+  ALTER TABLE qna_report MODIFY qna_id INT NULL;
+  ALTER TABLE qna_report ADD CONSTRAINT fk_qnareport_qna FOREIGN KEY (qna_id) REFERENCES qna(qna_id) ON DELETE SET NULL;
+
+  ALTER TABLE qna_comment_report DROP FOREIGN KEY fk_qna_comment_report_comment;
+  ALTER TABLE qna_comment_report MODIFY qna_comment_id INT NULL;
+  ALTER TABLE qna_comment_report ADD CONSTRAINT fk_qna_comment_report_comment FOREIGN KEY (qna_comment_id) REFERENCES qna_comment(qna_comment_id) ON DELETE SET NULL;
+  ```
 
 ## 전체 DDL (원본 그대로)
 
@@ -181,14 +206,14 @@ create table bookmark (
 -- 리뷰 신고 --
 create table review_report (
     review_report_id          int auto_increment,
-    review_id                  int not null,
+    review_id                  int null, -- [수정] 2026.7.21 not null -> null, FK on delete cascade -> set null로 변경
     member_id                  int not null,
     review_report_reason       varchar(200) not null,
     review_report_status       enum('접수','처리중','처리완료') not null default '접수',
     review_report_created_at   datetime not null default now(),
     review_report_content      varchar(200) not null,
     constraint pk_review_report primary key (review_report_id),
-    constraint fk_reviewreport_review foreign key (review_id) references review(review_id) on delete cascade,
+    constraint fk_reviewreport_review foreign key (review_id) references review(review_id) on delete set null,
     constraint fk_reviewreport_member foreign key (member_id) references member(member_id) on delete cascade
 );
 
@@ -329,11 +354,11 @@ CREATE TABLE quiz_attempt (
     quiz_attempt_check          INT NOT NULL, -- 정답 여부 (0/1)
     quiz_attempt_attempted_at   DATETIME NOT NULL DEFAULT NOW(),
     quiz_attempt_date           DATE NOT NULL, -- 매일 제한 체크용
-    
+
     CONSTRAINT pk_quiz_attempt PRIMARY KEY (quiz_attempt_id),
-    CONSTRAINT fk_quizattempt_quiz 
+    CONSTRAINT fk_quizattempt_quiz
         FOREIGN KEY (quiz_id) REFERENCES quiz(quiz_id) ON DELETE CASCADE,
-    CONSTRAINT fk_quizattempt_member 
+    CONSTRAINT fk_quizattempt_member
         FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
 a);
 
@@ -410,14 +435,14 @@ create table qna (
 -- 질문 게시글 신고 --
 create table qna_report (
     qna_report_id           int auto_increment,
-    qna_id                    int not null,
+    qna_id                    int null, -- [수정] 2026.7.21 not null -> null, FK on delete cascade -> set null로 변경
     member_id                 int not null,
     qna_report_reason          varchar(200) not null,
     qna_report_status          enum('접수','처리중','처리완료') not null default '접수',
     qna_report_created_at      datetime not null default now(),
     qna_report_content         varchar(200) not null,
     constraint pk_qna_report primary key (qna_report_id),
-    constraint fk_qnareport_qna foreign key (qna_id) references qna(qna_id) on delete cascade,
+    constraint fk_qnareport_qna foreign key (qna_id) references qna(qna_id) on delete set null,
     constraint fk_qnareport_member foreign key (member_id) references member(member_id) on delete cascade
 );
 
@@ -451,14 +476,14 @@ create table admin_answer (
 -- 질문 댓글 신고 --
 create table qna_comment_report (
     qna_comment_report_id           int auto_increment,
-    qna_comment_id                    int not null,
+    qna_comment_id                    int null, -- [수정] 2026.7.21 not null -> null, FK on delete cascade -> set null로 변경
     member_id                         int not null,
     qna_comment_report_reason          varchar(200) not null,
     qna_comment_report_status          enum('접수','처리중','처리완료') not null default '접수',
     qna_comment_report_created_at      datetime not null default now(),
     qna_comment_report_content         varchar(200) not null,
     constraint pk_qna_comment_report primary key (qna_comment_report_id),
-    constraint fk_qna_comment_report_comment foreign key (qna_comment_id) references qna_comment(qna_comment_id) on delete cascade,
+    constraint fk_qna_comment_report_comment foreign key (qna_comment_id) references qna_comment(qna_comment_id) on delete set null,
     constraint fk_qna_comment_report_member foreign key (member_id) references member(member_id) on delete cascade
 );
 
@@ -471,6 +496,18 @@ create table banner (
     banner_content       text not null,
     banner_img           varchar(500) not null,
     constraint pk_banner primary key (banner_id)
+);
+
+-- 28.5
+-- 회원 탈퇴 승인(완전삭제) 이력 -- [수정] 2026.7.21 추가. 관리자 대시보드 "누적 탈퇴자수" 집계용.
+-- 탈퇴 승인 시 member row가 완전삭제(FK CASCADE)되어 이력이 안 남기 때문에,
+-- MemberService.approveWithdraw()에서 삭제 직전에 이 테이블에 1행 INSERT해서 통계용 흔적을 남김.
+create table member_withdrawal_log (
+    member_withdrawal_log_id  int auto_increment,
+    member_id                   int not null,
+    member_name                  varchar(20) not null, -- 원본 회원 row가 삭제된 뒤에도 이름 확인 가능하도록 스냅샷 저장
+    withdrawn_at                  datetime not null default now(),
+    constraint pk_member_withdrawal_log primary key (member_withdrawal_log_id)
 );
 
 -- ---------------------------------------------------------
@@ -490,3 +527,4 @@ create table notifications (
     constraint pk_notifications primary key (notifications_id),
     constraint fk_notifications foreign key (member_id) references member(member_id) on delete cascade
 );
+```
