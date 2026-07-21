@@ -2,4 +2,26 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youflex.mapper.CommentLikeMapper">
 
+    <select id="existsLike" resultType="int">
+        SELECT COUNT(*)
+        FROM comment_like
+        WHERE comment_id = #{commentId} AND member_id = #{memberId}
+    </select>
+
+    <insert id="insertLike" parameterType="com.youflex.dto.CommentLikeDTO">
+        INSERT INTO comment_like (comment_id, member_id)
+        VALUES (#{commentId}, #{memberId})
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM comment_like
+        WHERE comment_id = #{commentId} AND member_id = #{memberId}
+    </delete>
+
+    <select id="countLikes" resultType="int">
+        SELECT COUNT(*)
+        FROM comment_like
+        WHERE comment_id = #{commentId}
+    </select>
+
 </mapper>

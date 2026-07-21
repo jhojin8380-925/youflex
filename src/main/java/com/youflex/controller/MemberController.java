@@ -14,11 +14,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.youflex.dto.BookmarkDTO;
 import com.youflex.dto.MemberDTO;
 import com.youflex.dto.PageInfo;
+import com.youflex.dto.PointHistoryDTO;
 import com.youflex.dto.ReviewDTO;
 import com.youflex.service.GenreCategoryService;
 import com.youflex.service.MemberService;
+import com.youflex.service.PointService;
 import com.youflex.service.ReviewService;
 
 import jakarta.servlet.http.Cookie;
@@ -36,6 +39,7 @@ public class MemberController {
     private final MemberService memberService;
     private final GenreCategoryService genreCategoryService;
     private final ReviewService reviewService;
+    private final PointService pointService;
 
     // 로그인 폼 진입 시 rememberedId 쿠키가 있으면 아이디 입력창에 미리 채워줌
     @GetMapping("/login")
@@ -216,6 +220,48 @@ public class MemberController {
         PageInfo pageInfo = PageInfo.of(page, reviewService.getMyReviewsPageSize(), totalCount);
         return ResponseEntity.ok(Map.of(
                 "reviews", reviews,
+                "totalCount", pageInfo.getTotalCount(),
+                "totalPages", pageInfo.getTotalPages(),
+                "page", pageInfo.getPage()
+        ));
+    }
+
+    // 마이페이지 - "북마크" 탭이 fetch로 호출하는 AJAX 엔드포인트. 내가 북마크한 글만 5개씩 페이징해서 내려줌.
+    @GetMapping("/mypage/bookmarks")
+    @ResponseBody
+    public ResponseEntity<?> myBookmarks(@RequestParam(value = "page", defaultValue = "1") int page,
+                                          HttpSession session) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (!(loginMemberObj instanceof MemberDTO loginMember)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        int memberId = loginMember.getMemberId();
+        List<BookmarkDTO> bookmarks = reviewService.getMyBookmarks(memberId, page);
+        int totalCount = reviewService.getMyBookmarksTotalCount(memberId);
+        PageInfo pageInfo = PageInfo.of(page, reviewService.getMyBookmarksPageSize(), totalCount);
+        return ResponseEntity.ok(Map.of(
+                "bookmarks", bookmarks,
+                "totalCount", pageInfo.getTotalCount(),
+                "totalPages", pageInfo.getTotalPages(),
+                "page", pageInfo.getPage()
+        ));
+    }
+
+    // 마이페이지 - "포인트 내역" 탭이 fetch로 호출하는 AJAX 엔드포인트. 10개씩 페이징해서 내려줌.
+    @GetMapping("/mypage/points")
+    @ResponseBody
+    public ResponseEntity<?> myPoints(@RequestParam(value = "page", defaultValue = "1") int page,
+                                       HttpSession session) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (!(loginMemberObj instanceof MemberDTO loginMember)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        int memberId = loginMember.getMemberId();
+        List<PointHistoryDTO> history = pointService.getHistory(memberId, page);
+        int totalCount = pointService.getHistoryTotalCount(memberId);
+        PageInfo pageInfo = PageInfo.of(page, pointService.getHistoryPageSize(), totalCount);
+        return ResponseEntity.ok(Map.of(
+                "history", history,
                 "totalCount", pageInfo.getTotalCount(),
                 "totalPages", pageInfo.getTotalPages(),
                 "page", pageInfo.getPage()

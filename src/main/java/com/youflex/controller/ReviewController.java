@@ -5,23 +5,37 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.youflex.dto.CommentDTO;
 import com.youflex.dto.MemberDTO;
 import com.youflex.dto.ReviewDTO;
+import com.youflex.service.CommentService;
 import com.youflex.service.GenreCategoryService;
 import com.youflex.service.ReviewService;
+import com.youflex.service.ReviewService.LikeResult;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -31,6 +45,7 @@ public class ReviewController {
 	
 	private final GenreCategoryService genreCategoryService;
 	private final ReviewService reviewService;
+	private final CommentService commentService;
 	
 	
 //	application.properties의 youflex.upload.path값을 가져옴
@@ -81,6 +96,93 @@ public class ReviewController {
 //		저장 완료 후 메인 화면으로 이동
 		return "redirect:/";
 	}
+
+//	3) 게시글 상세보기
+	@GetMapping("/review/{reviewId}")
+	public String detail(@PathVariable("reviewId") int reviewId, Model model, HttpSession session) {
+//		같은 세션에서 이미 조회한 게시글이면 조회수를 다시 올리지 않음 (F5 새로고침 등)
+		boolean increaseHit = isFirstViewInSession(session, reviewId);
+		ReviewDTO review = reviewService.findById(reviewId, increaseHit);
+		model.addAttribute("review", review);
+
+//		좋아요/북마크 버튼 초기 상태(로그인 상태일 때만 의미가 있음)
+		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+		boolean liked = loginMember != null && reviewService.isLikedByMember(reviewId, loginMember.getMemberId());
+		boolean bookmarked = loginMember != null && reviewService.isBookmarkedByMember(reviewId, loginMember.getMemberId());
+		model.addAttribute("liked", liked);
+		model.addAttribute("bookmarked", bookmarked);
+		model.addAttribute("likeCount", reviewService.getLikeCount(reviewId));
+
+//		댓글/대댓글 목록 (로그인 상태면 좋아요 여부까지 함께 조회)
+		Integer viewerMemberId = loginMember != null ? loginMember.getMemberId() : null;
+		List<CommentDTO> comments = commentService.getComments(reviewId, viewerMemberId);
+		model.addAttribute("comments", comments);
+		model.addAttribute("commentCount", comments.stream().mapToInt(c -> 1 + c.getReplies().size()).sum());
+
+//		베스트 댓글 미리보기(상위 3개, 좋아요 많은 순) - comments 리스트 안에도 그대로 남아있어 전체 댓글에도 같이 보임
+		List<CommentDTO> bestComments = comments.stream()
+				.filter(CommentDTO::isBest)
+				.sorted(Comparator.comparingInt(CommentDTO::getLikeCount).reversed())
+				.collect(Collectors.toList());
+		model.addAttribute("bestComments", bestComments);
+		return "review/detail";
+	}
+
+//	좋아요 토글
+	@PostMapping("/review/{reviewId}/like")
+	@ResponseBody
+	public ResponseEntity<?> toggleLike(@PathVariable("reviewId") int reviewId, HttpSession session) {
+		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+		if (loginMember == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		LikeResult result = reviewService.toggleLike(reviewId, loginMember.getMemberId());
+		return ResponseEntity.ok(Map.of("liked", result.isLiked(), "likeCount", result.getLikeCount()));
+	}
+
+//	북마크 토글
+	@PostMapping("/review/{reviewId}/bookmark")
+	@ResponseBody
+	public ResponseEntity<?> toggleBookmark(@PathVariable("reviewId") int reviewId, HttpSession session) {
+		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+		if (loginMember == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		boolean bookmarked = reviewService.toggleBookmark(reviewId, loginMember.getMemberId());
+		return ResponseEntity.ok(Map.of("bookmarked", bookmarked));
+	}
+
+//	게시글 신고 등록
+	@PostMapping("/review/{reviewId}/report")
+	@ResponseBody
+	public ResponseEntity<?> report(@PathVariable("reviewId") int reviewId,
+			@RequestBody ReportRequest request, HttpSession session) {
+		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+		if (loginMember == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		reviewService.reportReview(reviewId, loginMember.getMemberId(), request.getReason(), request.getContent());
+		return ResponseEntity.ok().build();
+	}
+
+//	신고 등록 요청 바디 - { reason, content }
+	@Data
+	static class ReportRequest {
+		private String reason;
+		private String content;
+	}
+
+//	세션에 이 게시글을 조회한 이력이 있는지 확인하고, 없으면 이력에 추가하면서 true(최초 조회) 반환
+	@SuppressWarnings("unchecked")
+	private boolean isFirstViewInSession(HttpSession session, int reviewId) {
+		Set<Integer> viewedReviewIds = (Set<Integer>) session.getAttribute("viewedReviewIds");
+		if (viewedReviewIds == null) {
+			viewedReviewIds = new HashSet<>();
+			session.setAttribute("viewedReviewIds", viewedReviewIds);
+		}
+		return viewedReviewIds.add(reviewId);
+	}
+
 //	----- 파일 저장 메서드 -----
 //	반환값 : DB에 저장할 새 파일명(UUID기반)
 	private String saveFile(MultipartFile file) throws IOException{

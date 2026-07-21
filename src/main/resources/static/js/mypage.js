@@ -155,6 +155,10 @@ const myPostsPagination = document.getElementById('myPostsPagination');
 function renderMyPostRow(review) {
   const row = document.createElement('div');
   row.className = 'post-row';
+  // 클릭하면 해당 게시글 상세 페이지로 이동
+  row.addEventListener('click', () => {
+    location.href = '/review/' + review.reviewId;
+  });
 
   const thumb = document.createElement('div');
   thumb.className = 'post-row-thumb';
@@ -191,25 +195,25 @@ function renderMyPostRow(review) {
   return row;
 }
 
-// 페이지 버튼(이전/숫자/다음)을 다시 그림. 버튼 클릭 시 해당 페이지를 다시 불러옴.
-// 페이지가 1개뿐이어도(게시글 5개 이하) 항상 보여줌.
-function renderMyPostsPagination(totalPages, currentPage) {
-  myPostsPagination.innerHTML = '';
+// 페이지 버튼(이전/숫자/다음) 공통 렌더러. 내 글/북마크/포인트 내역 탭이 모두 공유해서 쓴다.
+// 페이지가 1개뿐이어도 항상 보여주고, 버튼 클릭 시 onPageClick(page)로 페이지 이동을 위임한다.
+function renderPagination(container, totalPages, currentPage, onPageClick) {
+  container.innerHTML = '';
 
   const prevBtn = document.createElement('button');
   prevBtn.className = 'page-btn prev';
   prevBtn.setAttribute('aria-label', '이전 페이지');
   prevBtn.textContent = '‹';
   prevBtn.disabled = currentPage <= 1;
-  prevBtn.addEventListener('click', () => loadMyPosts(currentPage - 1));
-  myPostsPagination.appendChild(prevBtn);
+  prevBtn.addEventListener('click', () => onPageClick(currentPage - 1));
+  container.appendChild(prevBtn);
 
   for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement('button');
     btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
     btn.textContent = i;
-    btn.addEventListener('click', () => loadMyPosts(i));
-    myPostsPagination.appendChild(btn);
+    btn.addEventListener('click', () => onPageClick(i));
+    container.appendChild(btn);
   }
 
   const nextBtn = document.createElement('button');
@@ -217,8 +221,12 @@ function renderMyPostsPagination(totalPages, currentPage) {
   nextBtn.setAttribute('aria-label', '다음 페이지');
   nextBtn.textContent = '›';
   nextBtn.disabled = currentPage >= totalPages;
-  nextBtn.addEventListener('click', () => loadMyPosts(currentPage + 1));
-  myPostsPagination.appendChild(nextBtn);
+  nextBtn.addEventListener('click', () => onPageClick(currentPage + 1));
+  container.appendChild(nextBtn);
+}
+
+function renderMyPostsPagination(totalPages, currentPage) {
+  renderPagination(myPostsPagination, totalPages, currentPage, loadMyPosts);
 }
 
 function loadMyPosts(page) {
@@ -243,4 +251,126 @@ function loadMyPosts(page) {
 
 if (myPostsList) {
   loadMyPosts(1);
+}
+
+// ===================== 북마크 탭 =====================
+// 정적 목업 대신 /mypage/bookmarks를 fetch해서 5개씩 페이징으로 채움("내 글" 탭과 같은 post-row 구조 재사용)
+const myBookmarksList = document.getElementById('myBookmarksList');
+const myBookmarksPagination = document.getElementById('myBookmarksPagination');
+
+// 북마크 한 건을 post-row 구조(썸네일 + 제목/작성자 + 날짜)로 그려줌
+function renderBookmarkRow(bookmark) {
+  const row = document.createElement('div');
+  row.className = 'post-row';
+  // 클릭하면 해당 게시글 상세 페이지로 이동
+  row.addEventListener('click', () => {
+    location.href = '/review/' + bookmark.reviewId;
+  });
+
+  const thumb = document.createElement('div');
+  thumb.className = 'post-row-thumb';
+  if (bookmark.reviewImg) {
+    const img = document.createElement('img');
+    img.src = '/upload/' + bookmark.reviewImg;
+    img.className = 'post-img';
+    thumb.appendChild(img);
+  }
+  row.appendChild(thumb);
+
+  const body = document.createElement('div');
+  const title = document.createElement('div');
+  title.className = 'post-row-title';
+  title.textContent = bookmark.reviewTitle;
+  const sub = document.createElement('div');
+  sub.className = 'post-row-sub';
+  sub.textContent = bookmark.memberName || '';
+  body.appendChild(title);
+  body.appendChild(sub);
+  row.appendChild(body);
+
+  const right = document.createElement('div');
+  right.className = 'post-row-right';
+  right.textContent = (bookmark.bookmarkCreatedAt || '').slice(0, 10);
+  row.appendChild(right);
+
+  return row;
+}
+
+function loadMyBookmarks(page) {
+  fetch(`/mypage/bookmarks?page=${page}`)
+    .then((res) => {
+      if (!res.ok) throw new Error('my bookmarks request failed');
+      return res.json();
+    })
+    .then((data) => {
+      myBookmarksList.innerHTML = '';
+      if (!data.bookmarks.length) {
+        myBookmarksList.innerHTML = '<div class="text-muted" style="text-align:center;padding:24px 0">북마크한 글이 없습니다.</div>';
+      } else {
+        data.bookmarks.forEach((bookmark) => myBookmarksList.appendChild(renderBookmarkRow(bookmark)));
+      }
+      renderPagination(myBookmarksPagination, data.totalPages, data.page, loadMyBookmarks);
+    })
+    .catch(() => {
+      myBookmarksList.innerHTML = '<div class="text-muted" style="text-align:center;padding:24px 0">북마크 목록을 불러오지 못했습니다.</div>';
+    });
+}
+
+if (myBookmarksList) {
+  loadMyBookmarks(1);
+}
+
+// ===================== 포인트 내역 탭 =====================
+// 정적 목업 대신 /mypage/points를 fetch해서 10개씩 페이징으로 채움
+const myPointsBody = document.getElementById('myPointsBody');
+const myPointsPagination = document.getElementById('myPointsPagination');
+
+// 포인트 내역 한 건을 표의 한 행(일자/내역/포인트/잔액)으로 그려줌
+function renderPointRow(history) {
+  const tr = document.createElement('tr');
+
+  const dateTd = document.createElement('td');
+  dateTd.textContent = (history.pointHistoryCreatedAt || '').slice(0, 10);
+  tr.appendChild(dateTd);
+
+  const reasonTd = document.createElement('td');
+  reasonTd.textContent = history.pointHistoryReason;
+  tr.appendChild(reasonTd);
+
+  // 서버가 '적립'/'사용'/'만료' 타입으로 내려주므로 여기서 부호만 붙여서 표시
+  const signed = history.pointHistoryType === '적립' ? history.pointHistoryAmount : -history.pointHistoryAmount;
+  const amountTd = document.createElement('td');
+  amountTd.textContent = (signed > 0 ? '+' : '') + signed + ' P';
+  amountTd.style.color = signed > 0 ? 'var(--success)' : signed < 0 ? 'var(--danger)' : 'var(--text-2)';
+  tr.appendChild(amountTd);
+
+  const balanceTd = document.createElement('td');
+  balanceTd.textContent = history.pointHistoryBalance + ' P';
+  tr.appendChild(balanceTd);
+
+  return tr;
+}
+
+function loadMyPoints(page) {
+  fetch(`/mypage/points?page=${page}`)
+    .then((res) => {
+      if (!res.ok) throw new Error('my points request failed');
+      return res.json();
+    })
+    .then((data) => {
+      myPointsBody.innerHTML = '';
+      if (!data.history.length) {
+        myPointsBody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:24px 0">포인트 내역이 없습니다.</td></tr>';
+      } else {
+        data.history.forEach((h) => myPointsBody.appendChild(renderPointRow(h)));
+      }
+      renderPagination(myPointsPagination, data.totalPages, data.page, loadMyPoints);
+    })
+    .catch(() => {
+      myPointsBody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:24px 0">포인트 내역을 불러오지 못했습니다.</td></tr>';
+    });
+}
+
+if (myPointsBody) {
+  loadMyPoints(1);
 }

@@ -250,6 +250,7 @@ img { max-width: 100%; display: block; }             /* 이미지가 부모 영�
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-1);
+  cursor: pointer; /* 클릭하면 해당 게시글 상세로 이동함(mypage.js) */
 }
 .post-row:last-child { border-bottom: none; }
 .post-row:hover { background: var(--bg-2); }

@@ -40,6 +40,11 @@
         WHERE review_report_id = #{reviewReportId}
     </update>
 
+    <!-- 게시글 신고 등록 - review_report_status는 컬럼 DEFAULT('접수') 사용 -->
+    <insert id="insertReport" parameterType="com.youflex.dto.ReviewReportDTO">
+        INSERT INTO review_report (review_id, member_id, review_report_reason, review_report_content)
+        VALUES (#{reviewId}, #{memberId}, #{reviewReportReason}, #{reviewReportContent})
+    </insert> <!-- 댓글과 동일하게 오류나면 수정 -->
     <!-- 처리완료 탭 - 신고 기록 자체 완전 삭제(원본 게시글과는 무관) -->
     <delete id="deleteReviewReport" parameterType="int">
         DELETE FROM review_report

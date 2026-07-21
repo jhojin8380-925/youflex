@@ -19,4 +19,7 @@ public class PointHistoryDTO {
     private String pointHistoryReason;
     private LocalDateTime pointHistoryCreatedAt;
     private LocalDateTime pointHistoryUpdatedAt;
+
+    // 마이페이지 "포인트 내역" 탭 표시용 - 이 거래 직후 잔액(DB 컬럼 아님, PointService가 계산해서 채움)
+    private int pointHistoryBalance;
 }

@@ -17,6 +17,8 @@ public interface CommentReportMapper {
     void updateCommentReportStatus(@Param("commentReportId") int commentReportId,
                                     @Param("commentReportStatus") String commentReportStatus);
 
+    // 댓글 신고 등록 (comment_report_status는 DB 기본값 '접수' 사용)
+    void insertReport(CommentReportDTO commentReportDTO);
     // 관리자 - 처리완료 탭에서 신고 기록 자체를 완전 삭제(원본 댓글과는 무관)
     void deleteCommentReport(int commentReportId);
 }

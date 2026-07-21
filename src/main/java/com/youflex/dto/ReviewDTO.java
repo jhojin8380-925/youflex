@@ -32,6 +32,8 @@ public class ReviewDTO {
     
     // join 조회용 (DB 컬럼 아님)
     private String memberName;
+    private String memberProfileImg;
+    private String memberGrade;
     private String genreCategoryName;
     private int likeCount;
     private int commentCount;

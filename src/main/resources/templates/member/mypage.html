@@ -90,64 +90,9 @@
 
   <!-- 북마크 -->
   <div data-tab-panel="bookmark" class="mt-24" style="display:none">
-    <!-- 내글 탭과 구조 통일 (post-grid → post-row-list) -나영- -->
-    <div class="post-row-list">
-      <a class="post-row" href="13_detail.html">
-        <!-- 북마크 썸네일 추가, 클래스 post-thumb→post-row-thumb 로 변경 -나영- -->
-        <div class="post-row-thumb">
-          <!-- 클래스 bookmark-img→post-img 로 변경 -나영- -->
-          <img src="./assets/img/disney+/lionking.png" class="post-img">
-        </div>
-        <!-- 클래스 post-card-body 제거 (post-row 구조엔 불필요) -나영- -->
-        <div>
-          <!-- 클래스 post-card-title→post-row-title 로 변경 -나영- -->
-          <div class="post-row-title">「무빙」 최종화, 그 후 이야기</div>
-          <!-- 클래스 post-card-meta→post-row-sub 로 변경, 날짜는 오른쪽으로 이동 -나영- -->
-          <div class="post-row-sub">드라마러버</div>
-        </div>
-        <!-- 날짜 내글처럼 오른쪽에 배치 -나영- -->
-        <div class="post-row-right">3일 전</div>
-      </a>
-      <a class="post-row" href="13_detail.html">
-        <!-- 북마크 썸네일 추가, 클래스 post-thumb→post-row-thumb 로 변경 -나영- -->
-        <div class="post-row-thumb">
-          <!-- 클래스 bookmark-img→post-img 로 변경 -나영- -->
-          <img src="./assets/img/tving/blacklight.png" class="post-img">
-        </div>
-        <div>
-          <!-- 클래스 post-card-title→post-row-title 로 변경 -나영- -->
-          <div class="post-row-title">애니 「던전밥」 원작 팬의 시청 후기</div>
-          <!-- 클래스 post-card-meta→post-row-sub 로 변경, 날짜는 오른쪽으로 이동 -나영- -->
-          <div class="post-row-sub">애니덕후</div>
-        </div>
-        <!-- 날짜 내글처럼 오른쪽에 배치 -나영- -->
-        <div class="post-row-right">1주 전</div>
-      </a>
-      <a class="post-row" href="13_detail.html">
-        <!-- 북마크 썸네일 추가, 클래스 post-thumb→post-row-thumb 로 변경 -나영- -->
-        <div class="post-row-thumb">
-          <!-- 클래스 bookmark-img→post-img 로 변경 -나영- -->
-          <img src="./assets/img/tving/now_you_see_me.png" class="post-img">
-        </div>
-        <div>
-          <!-- 클래스 post-card-title→post-row-title 로 변경 -나영- -->
-          <div class="post-row-title">애니 「던전밥」 원작 팬의 시청 후기</div>
-          <!-- 클래스 post-card-meta→post-row-sub 로 변경, 날짜는 오른쪽으로 이동 -나영- -->
-          <div class="post-row-sub">애니덕후</div>
-        </div>
-        <!-- 날짜 내글처럼 오른쪽에 배치 -나영- -->
-        <div class="post-row-right">1주 전</div>
-      </a>
-    </div>
-
-    <!-- 북마크 페이지네이션 추가 -나영- -->
-    <div class="pagination">
-      <button class="page-btn prev" aria-label="이전 페이지">‹</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn next" aria-label="다음 페이지">›</button>
-    </div>
+    <!-- 북마크 목록/페이지네이션은 정적 목업 대신 mypage.js가 /mypage/bookmarks를 fetch해서 채움(5개씩 페이징) -->
+    <div class="post-row-list" id="myBookmarksList"></div>
+    <div class="pagination" id="myBookmarksPagination"></div>
   </div>
 
   <!-- 포인트 내역 -->
@@ -156,14 +101,10 @@
       <thead>
         <tr><th>일자</th><th>내역</th><th>포인트</th><th>잔액</th></tr>
       </thead>
-      <tbody>
-        <tr><td>2026-06-30</td><td>OTT 상식 퀴즈 정답</td><td style="color:var(--success)">+100 P</td><td>3,420 P</td></tr>
-        <tr><td>2026-06-29</td><td>내 게시글 좋아요 적립 (10건)</td><td style="color:var(--success)">+10 P</td><td>3,320 P</td></tr>
-        <tr><td>2026-06-27</td><td>게시글 하이라이트 노출 사용 (7일)</td><td style="color:var(--danger)">-1000 P</td><td>3,310 P</td></tr>
-        <tr><td>2026-06-20</td><td>경고 1회 차감 사용</td><td style="color:var(--danger)">-10,000 P</td><td>3,810 P</td></tr>
-        <tr><td>2026-06-15</td><td>OTT 상식 퀴즈 오답</td><td style="color:var(--text-2)">±0 P</td><td>13,810 P</td></tr>
-      </tbody>
+      <!-- 내역/페이지네이션은 정적 목업 대신 mypage.js가 /mypage/points를 fetch해서 채움(10개씩 페이징) -->
+      <tbody id="myPointsBody"></tbody>
     </table>
+    <div class="pagination" id="myPointsPagination"></div>
   </div>
 
   <!-- 포인트 상점 -->
@@ -260,25 +201,12 @@
     </div>
   </div>
 </aside>
+
 <!-- 퀴즈 영역 -->
-<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
-<div class="overlay-backdrop" id="quizBackdrop"></div>
-<aside class="slide-panel" id="quizPanel">
-  <div class="panel-header"><h3>💡 YouFlex 퀴즈</h3><button class="panel-close" id="quizClose">✕</button></div>
-  <div class="panel-body">
-    <div class="quiz-box" id="qnaQuizBox">
-      <p class="quiz-intro">객관식/OX 문제를 하루 3번(합산)까지 풀 수 있어요. 퀴즈를 시작하고 정답 버튼을 선택해보세요!</p>
-      <div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
-      <button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
-      <!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
-      <div id="qnaQuizPlay" style="display:none">
-        <div class="quiz-question" id="qnaQuizQuestion"></div>
-        <div class="quiz-options" id="qnaQuizOptions"></div>
-      </div>
-      <div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
-    </div>
-  </div>
-</aside>
+    <button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
+    <div class="overlay-backdrop" id="quizBackdrop"></div>
+    <aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
+
 <!-- 커뮤니티 채팅 영역 -->
 <div class="overlay-backdrop" id="chatroomBackdrop"></div>
 <aside class="slide-panel" id="chatroomPanel">
