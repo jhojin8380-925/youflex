@@ -1,0 +1,177 @@
+-- ============================================================
+-- 플랫폼별 리뷰 테스트 데이터
+-- - 넷플릭스/티빙/디즈니+/기타 플랫폼별로 5개씩 리뷰 생성
+-- - review_hit에 서로 다른 조회수를 부여하고, review_like로 좋아요 수를 다르게 설정
+-- - member_loginid, review_title에 [TEST]를 붙여서 나중에 삭제/정리하기 쉽도록 구성
+--
+-- 실행: MySQL Workbench/DBeaver 등에서 youflex 스키마 선택 후 전체 실행
+-- ============================================================
+
+USE youflex;
+
+-- 데이터 재실행을 위한 정리
+DELETE rl
+FROM review_like rl
+JOIN review r ON rl.review_id = r.review_id
+WHERE r.review_title LIKE '[TEST] %';
+
+DELETE FROM review WHERE review_title LIKE '[TEST] %';
+DELETE FROM member WHERE member_loginid LIKE 'test_pf_%';
+
+-- 테스트용 회원 15명 생성
+INSERT INTO member (member_loginid, member_pwd, member_name, member_email, member_grade)
+VALUES
+  ('test_pf_writer1', 'test1234', '플랫폼작성자1', 'test_pf_writer1@test.com', '시청자'),
+  ('test_pf_writer2', 'test1234', '플랫폼작성자2', 'test_pf_writer2@test.com', '시청자'),
+  ('test_pf_writer3', 'test1234', '플랫폼작성자3', 'test_pf_writer3@test.com', '시청자'),
+  ('test_pf_writer4', 'test1234', '플랫폼작성자4', 'test_pf_writer4@test.com', '시청자'),
+  ('test_pf_writer5', 'test1234', '플랫폼작성자5', 'test_pf_writer5@test.com', '시청자'),
+  ('test_pf_liker1', 'test1234', '좋아요사용자1', 'test_pf_liker1@test.com', '시청자'),
+  ('test_pf_liker2', 'test1234', '좋아요사용자2', 'test_pf_liker2@test.com', '시청자'),
+  ('test_pf_liker3', 'test1234', '좋아요사용자3', 'test_pf_liker3@test.com', '시청자'),
+  ('test_pf_liker4', 'test1234', '좋아요사용자4', 'test_pf_liker4@test.com', '시청자'),
+  ('test_pf_liker5', 'test1234', '좋아요사용자5', 'test_pf_liker5@test.com', '시청자'),
+  ('test_pf_liker6', 'test1234', '좋아요사용자6', 'test_pf_liker6@test.com', '시청자'),
+  ('test_pf_liker7', 'test1234', '좋아요사용자7', 'test_pf_liker7@test.com', '시청자'),
+  ('test_pf_liker8', 'test1234', '좋아요사용자8', 'test_pf_liker8@test.com', '시청자'),
+  ('test_pf_liker9', 'test1234', '좋아요사용자9', 'test_pf_liker9@test.com', '시청자'),
+  ('test_pf_liker10', 'test1234', '좋아요사용자10', 'test_pf_liker10@test.com', '시청자');
+
+-- 리뷰 데이터 생성
+INSERT INTO review (member_id, review_platform, review_title, review_content, review_img, review_hit, review_rating, review_highlighted, review_created_at)
+VALUES
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer1'), '넷플릭스', '[TEST] 넷플릭스 리뷰 1', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Netflix+1', 120, 4.5, 'Y', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer2'), '넷플릭스', '[TEST] 넷플릭스 리뷰 2', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Netflix+2', 210, 3.8, 'N', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer3'), '넷플릭스', '[TEST] 넷플릭스 리뷰 3', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Netflix+3', 345, 4.9, 'Y', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer4'), '넷플릭스', '[TEST] 넷플릭스 리뷰 4', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Netflix+4', 475, 4.1, 'N', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer5'), '넷플릭스', '[TEST] 넷플릭스 리뷰 5', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Netflix+5', 605, 3.2, 'N', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer1'), '티빙', '[TEST] 티빙 리뷰 1', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Tving+1', 180, 4.0, 'N', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer2'), '티빙', '[TEST] 티빙 리뷰 2', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Tving+2', 305, 4.6, 'Y', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer3'), '티빙', '[TEST] 티빙 리뷰 3', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Tving+3', 425, 3.9, 'N', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer4'), '티빙', '[TEST] 티빙 리뷰 4', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Tving+4', 545, 4.7, 'Y', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer5'), '티빙', '[TEST] 티빙 리뷰 5', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Tving+5', 665, 4.2, 'N', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer1'), '디즈니+', '[TEST] 디즈니+ 리뷰 1', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Disney+1', 215, 3.7, 'N', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer2'), '디즈니+', '[TEST] 디즈니+ 리뷰 2', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Disney+2', 340, 5.0, 'Y', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer3'), '디즈니+', '[TEST] 디즈니+ 리뷰 3', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Disney+3', 455, 4.3, 'Y', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer4'), '디즈니+', '[TEST] 디즈니+ 리뷰 4', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Disney+4', 580, 4.8, 'N', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer5'), '디즈니+', '[TEST] 디즈니+ 리뷰 5', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Disney+5', 695, 3.6, 'N', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer1'), '기타', '[TEST] 기타 리뷰 1', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Etc+1', 155, 4.4, 'N', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer2'), '기타', '[TEST] 기타 리뷰 2', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Etc+2', 275, 4.1, 'N', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer3'), '기타', '[TEST] 기타 리뷰 3', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Etc+3', 395, 3.5, 'Y', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer4'), '기타', '[TEST] 기타 리뷰 4', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Etc+4', 515, 4.0, 'Y', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  ((SELECT member_id FROM member WHERE member_loginid = 'test_pf_writer5'), '기타', '[TEST] 기타 리뷰 5', '플랫폼별 테스트용 리뷰 콘텐츠입니다. 조회수/좋아요 확인용.', 'https://via.placeholder.com/120x120?text=Etc+5', 635, 4.9, 'N', DATE_SUB(NOW(), INTERVAL 5 DAY));
+
+-- 좋아요 수 조정용 review_like 데이터
+INSERT INTO review_like (review_id, member_id)
+VALUES
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 넷플릭스 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 티빙 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker8')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker8')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker9')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 디즈니+ 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 1'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 2'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker8')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 3'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker8')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 4'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker9')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker1')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker2')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker3')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker4')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker5')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker6')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker7')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker8')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker9')),
+  ((SELECT review_id FROM review WHERE review_title = '[TEST] 기타 리뷰 5'), (SELECT member_id FROM member WHERE member_loginid = 'test_pf_liker10'));

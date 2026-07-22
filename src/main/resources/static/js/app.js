@@ -1055,13 +1055,35 @@ function initCategoryNav() {
     const nav = document.querySelector(".category-nav");
     if (!nav) return;
 
-    const isListPage = location.pathname.split("/").pop() === "04_list.html";
-    const current = isListPage
+    const pathname = location.pathname;
+    const isSinglePageList = pathname.split("/").pop() === "04_list.html";
+    const isReviewList = pathname.endsWith("/review/list");
+    const current = isSinglePageList
         ? new URLSearchParams(location.search).get("cat") || "all"
-        : document.body.dataset.navCurrent || "";
+        : isReviewList
+            ? new URLSearchParams(location.search).get("platform") || "all"
+            : document.body.dataset.navCurrent || "";
 
     nav.querySelectorAll("a[data-nav]").forEach((a) => {
         a.classList.toggle("active", a.dataset.nav === current);
+    });
+}
+
+function initReviewListSort() {
+    const buttons = document.querySelectorAll('.sort-group button[data-sort]');
+    if (!buttons.length) return;
+
+    const searchParams = new URLSearchParams(location.search);
+    const currentSort = searchParams.get('sort') || 'latest';
+
+    buttons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.sort === currentSort);
+        button.addEventListener('click', () => {
+            if (button.dataset.sort === currentSort) return;
+            searchParams.set('sort', button.dataset.sort);
+            searchParams.delete('page');
+            location.search = searchParams.toString();
+        });
     });
 }
 
@@ -1072,6 +1094,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initDropdowns();
     initHeroSlider();
     initCategoryNav();
+    initReviewListSort();
 
     // 오버레이 3종 (퀴즈 / 채팅방 / 알림) 초기화
     initOverlay("quizPanel", "quizBackdrop", ["quizFab"], ["quizClose"], null, true);

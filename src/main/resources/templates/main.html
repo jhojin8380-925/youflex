@@ -58,7 +58,7 @@
     -->
       <div class="section-title mt-40">
         <h2 class="section-heading section-heading--purple">❤️ 인기 리뷰글</h2>
-        <a href="04_list.html?cat=all" class="more" id="popularMoreLink"
+        <a th:href="@{/review/list}" class="more" id="popularMoreLink"
           >더보기 ›</a
         >
       </div>
@@ -611,7 +611,7 @@
           btn.addEventListener("click", function () {
             var moreLink = document.getElementById("popularMoreLink");
             if (moreLink)
-              moreLink.href = "04_list.html?cat=" + btn.dataset.tabTarget;
+              moreLink.href = "/review/list?platform=" + btn.dataset.tabTarget;
           });
         });
     </script>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.ReviewListMapper">
+<!-- 게시글 목록 조회 (검색어/기간/장르 필터 + 정렬 + 페이징) -->
+    <select id="findList" parameterType="com.youflex.dto.ReviewListSearchDTO" resultType="com.youflex.dto.ReviewDTO">
+        SELECT r.*,
+            m.member_name AS memberName,
+            m.member_profile_img AS memberProfileImg,
+            m.member_grade AS memberGrade,
+            (SELECT COUNT(*) FROM review_like rl WHERE rl.review_id = r.review_id) AS likeCount,
+            (SELECT COUNT(*) FROM comment c WHERE c.review_id = r.review_id AND c.comment_delete_status != '삭제') AS commentCount
+        FROM review r
+        JOIN member m ON m.member_id = r.member_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (r.review_title LIKE CONCAT('%', #{keyword}, '%')
+                     OR m.member_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="period != null and period != 'all'">
+                <choose>
+                    <when test="period == '1w'">AND r.review_created_at &gt;= DATE_SUB(NOW(), INTERVAL 1 WEEK)</when>
+                    <when test="period == '1m'">AND r.review_created_at &gt;= DATE_SUB(NOW(), INTERVAL 1 MONTH)</when>
+                    <when test="period == '3m'">AND r.review_created_at &gt;= DATE_SUB(NOW(), INTERVAL 3 MONTH)</when>
+                </choose>
+            </if>
+            <if test="platform != null and platform != '' and platform != 'all'">
+                <choose>
+                    <when test="platform == 'netflix'">AND r.review_platform = '넷플릭스'</when>
+                    <when test="platform == 'tving'">AND r.review_platform = '티빙'</when>
+                    <when test="platform == 'disney'">AND r.review_platform = '디즈니+'</when>
+                    <when test="platform == 'etc'">AND r.review_platform = '기타'</when>
+                    <otherwise>AND r.review_platform = #{platform}</otherwise>
+                </choose>
+            </if>
+            <if test="genreCategoryIds != null and genreCategoryIds.size() > 0">
+                AND r.review_id IN (
+                    SELECT rm.review_id
+                    FROM review_mapping rm
+                    WHERE rm.genre_category_id IN
+                    <foreach collection="genreCategoryIds" item="gid" open="(" separator="," close=")">
+                        #{gid}
+                    </foreach>
+                )
+            </if>
+        </where>
+        <choose>
+            <when test="sort == 'likes'">ORDER BY likeCount DESC</when>
+            <when test="sort == 'highlight'">ORDER BY r.review_highlighted DESC, COALESCE(r.review_highlight_started_at, r.review_created_at) DESC</when>
+            <when test="sort == 'rating'">ORDER BY r.review_rating DESC</when>
+            <when test="sort == 'views'">ORDER BY r.review_hit DESC</when>
+            <otherwise>ORDER BY r.review_created_at DESC</otherwise>
+        </choose>
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 위와 동일한 검색 조건으로 총 개수 조회 (페이징 totalPages 계산용) -->
+    <select id="countList" parameterType="com.youflex.dto.ReviewListSearchDTO" resultType="int">
+        SELECT COUNT(*)
+        FROM review r
+        JOIN member m ON m.member_id = r.member_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (r.review_title LIKE CONCAT('%', #{keyword}, '%')
+                     OR m.member_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="period != null and period != 'all'">
+                <choose>
+                    <when test="period == '1w'">AND r.review_created_at &gt;= DATE_SUB(NOW(), INTERVAL 1 WEEK)</when>
+                    <when test="period == '1m'">AND r.review_created_at &gt;= DATE_SUB(NOW(), INTERVAL 1 MONTH)</when>
+                    <when test="period == '3m'">AND r.review_created_at &gt;= DATE_SUB(NOW(), INTERVAL 3 MONTH)</when>
+                </choose>
+            </if>
+            <if test="platform != null and platform != '' and platform != 'all'">
+                <choose>
+                    <when test="platform == 'netflix'">AND r.review_platform = '넷플릭스'</when>
+                    <when test="platform == 'tving'">AND r.review_platform = '티빙'</when>
+                    <when test="platform == 'disney'">AND r.review_platform = '디즈니+'</when>
+                    <when test="platform == 'etc'">AND r.review_platform = '기타'</when>
+                    <otherwise>AND r.review_platform = #{platform}</otherwise>
+                </choose>
+            </if>
+            <if test="genreCategoryIds != null and genreCategoryIds.size() > 0">
+                AND r.review_id IN (
+                    SELECT rm.review_id
+                    FROM review_mapping rm
+                    WHERE rm.genre_category_id IN
+                    <foreach collection="genreCategoryIds" item="gid" open="(" separator="," close=")">
+                        #{gid}
+                    </foreach>
+                )
+            </if>
+        </where>
+    </select>
+
+    <!-- 취향 선택 모달에 뿌려줄 전체 장르 목록 -->
+    <select id="findAllGenres" resultType="com.youflex.dto.GenreCategoryDTO">
+        SELECT genre_category_id, genre_category_name
+        FROM genre_category
+        ORDER BY genre_category_id
+    </select>
+</mapper>
