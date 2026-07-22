@@ -388,9 +388,22 @@ function loadDraft(draftId) {
             const contentInput = document.getElementById('review_content');
             const relatedInput = document.getElementById('review_related');
 
+			// 이미지 관련 요소를 찾아 초기화 진행
+			const imgInput = document.getElementById('imgInput');
+			const imgPreview = document.getElementById('imgPreview');
+			
+			if(imgInput){
+				imgInput.value = '';	// 선택된 이미지 파일 취소
+			}
+			if(imgPreview){
+				imgPreview.src = '';
+				imgPreview.style.display = 'none';	// 이미지 미리보기 영역 숨김
+			}
+			
             if (draftIdInput) {
                 // ★ [수정 5] 불러온 데이터의 ID값을 hidden input에 대입
                 draftIdInput.value = String(draft.reviewDraftId);
+				draftIdInput.setAttribute('value', String(draft.reviewDraftId));
             }
 
             if (titleInput) titleInput.value = draft.reviewDraftTitle || '';
