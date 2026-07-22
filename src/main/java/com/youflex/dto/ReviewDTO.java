@@ -20,6 +20,8 @@ public class ReviewDTO {
     private String reviewContent;
     private String reviewImg;
     private int reviewHit;
+    // 좋아요 5개 단위 포인트 지급 마일스톤(중복지급 방지용, DB 컬럼)
+    private int reviewRewardedLikeCount;
     private Double reviewRating;
     private String reviewHighlighted;
     private LocalDateTime reviewHighlightStartedAt;

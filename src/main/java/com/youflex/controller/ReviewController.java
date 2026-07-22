@@ -97,8 +97,10 @@ public class ReviewController {
 		reviewDTO.setMemberId(loginMember.getMemberId());
 
 		try {
-			// 금칙어 포함 여부를 파일 저장 전에 먼저 검사해서 불필요한 업로드를 막음
+			// 금칙어 포함 여부를 파일 저장 전에 먼저 검사해서 불필요한 업로드를 막음 (제목/본문/관련 작품 모두 검사)
+			badWordService.validateContent(reviewDTO.getReviewTitle());
 			badWordService.validateContent(reviewDTO.getReviewContent());
+			badWordService.validateContent(reviewDTO.getReviewRelated());
 		} catch (BadWordDetectedException e) {
 			// 글쓰기 폼으로 되돌아가서 안내 문구를 보여줌 (작성 중이던 내용은 유지되지 않음)
 			return "redirect:/review/write?error=badword";

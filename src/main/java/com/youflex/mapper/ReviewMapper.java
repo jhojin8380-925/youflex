@@ -55,4 +55,9 @@ public interface ReviewMapper {
 
 	// 게시글 삭제
 	void delete(int reviewId);
+
+	// 좋아요 포인트 지급 마일스톤 갱신 - 이미 지급한 마일스톤(review_rewarded_like_count)보다 클 때만
+	// 갱신되는 조건부 UPDATE라서, 영향받은 행 수(1이면 갱신 성공=신규 마일스톤 도달, 0이면 이미 지급됨)로
+	// 포인트 지급 여부를 판단한다(좋아요 취소->재좋아요 반복으로 인한 중복 지급 방지).
+	int updateRewardedLikeCount(@Param("reviewId") int reviewId, @Param("milestone") int milestone);
 }

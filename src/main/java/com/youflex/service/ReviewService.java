@@ -28,6 +28,8 @@ public class ReviewService {
 
 	private static final int MY_REVIEWS_PAGE_SIZE = 5;
 	private static final int MY_BOOKMARKS_PAGE_SIZE = 5;
+	private static final int LIKE_REWARD_MILESTONE_STEP = 5; // 좋아요 몇 개 단위로 지급할지
+	private static final int LIKE_REWARD_POINT_AMOUNT = 5;   // 마일스톤 도달 시 지급할 포인트
 
 	private final ReviewMapper reviewMapper;
 	private final CommentMapper commentMapper;
@@ -42,9 +44,10 @@ public class ReviewService {
 //	1) 게시글 저장
 	@Transactional
 	public void write(ReviewDTO reviewDTO, List<Integer> genreCategoryIds) {
-		// 금칙어가 포함되어 있으면 등록 자체를 막음 (제목/본문 모두 검사)
+		// 금칙어가 포함되어 있으면 등록 자체를 막음 (제목/본문/관련 작품 모두 검사)
 		badWordService.validateContent(reviewDTO.getReviewTitle());
 		badWordService.validateContent(reviewDTO.getReviewContent());
+		badWordService.validateContent(reviewDTO.getReviewRelated());
 
 		// 1. 게시글 데이터 저장
 		reviewMapper.write(reviewDTO);
@@ -96,9 +99,10 @@ public class ReviewService {
 		if (existing.getMemberId() != requesterMemberId) {
 			throw new IllegalStateException("수정 권한이 없습니다.");
 		}
-		// 금칙어가 포함되어 있으면 수정도 막음 (필터 우회 방지, 제목/본문 모두 검사)
+		// 금칙어가 포함되어 있으면 수정도 막음 (필터 우회 방지, 제목/본문/관련 작품 모두 검사)
 		badWordService.validateContent(reviewDTO.getReviewTitle());
 		badWordService.validateContent(reviewDTO.getReviewContent());
+		badWordService.validateContent(reviewDTO.getReviewRelated());
 
 		// 새 이미지를 첨부하지 않았으면 기존 이미지를 그대로 유지
 		if (reviewDTO.getReviewImg() == null) {
@@ -140,8 +144,10 @@ public class ReviewService {
 		return MY_REVIEWS_PAGE_SIZE;
 	}
 
-//	6) 좋아요 토글 - 이미 눌렀으면 취소, 아니면 등록. 등록 시에만(자추 제외) 글쓴이에게 포인트 1점 지급.
-//	   (project-plan.md: "좋아요 - 토글 방식, 1인 1회 제한", "1 좋아요 -> 1 포인트", "자추 제외")
+//	6) 좋아요 토글 - 이미 눌렀으면 취소, 아니면 등록. 좋아요 수가 5의 배수(5, 10, 15...)에 새로
+//	   도달할 때마다(자추 제외) 글쓴이에게 5포인트 지급 (예전엔 좋아요 1개당 즉시 1포인트였으나 대체됨).
+//	   review.review_rewarded_like_count에 이미 지급한 마일스톤을 기록해두고 조건부 UPDATE로 갱신해서,
+//	   좋아요 취소 -> 재좋아요 반복으로 같은 마일스톤이 중복 지급되지 않도록 막는다.
 	@Transactional
 	public LikeResult toggleLike(int reviewId, int memberId) {
 		ReviewDTO review = reviewMapper.findById(reviewId);
@@ -153,11 +159,15 @@ public class ReviewService {
 			reviewLikeMapper.deleteLike(reviewId, memberId);
 		} else {
 			reviewLikeMapper.insertLike(ReviewLikeDTO.builder().reviewId(reviewId).memberId(memberId).build());
-			if (review.getMemberId() != memberId) {
-				pointService.awardPoints(review.getMemberId(), 1, "게시글 좋아요");
-			}
 		}
 		int likeCount = reviewLikeMapper.countLikes(reviewId);
+
+		if (!alreadyLiked && review.getMemberId() != memberId) {
+			int milestone = (likeCount / LIKE_REWARD_MILESTONE_STEP) * LIKE_REWARD_MILESTONE_STEP;
+			if (milestone > 0 && reviewMapper.updateRewardedLikeCount(reviewId, milestone) > 0) {
+				pointService.awardPoints(review.getMemberId(), LIKE_REWARD_POINT_AMOUNT, "게시글 좋아요 " + milestone + "개 달성");
+			}
+		}
 		return new LikeResult(!alreadyLiked, likeCount);
 	}
 

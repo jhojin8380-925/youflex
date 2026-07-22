@@ -37,6 +37,13 @@
 - `banner.banner_badge` 컬럼은 2026.7.21에 관리자 배너 관리 기능 구현하면서 추가됨(기존 DDL에는 없었음).
   로컬 DB에 아직 반영 안 했다면 아래 마이그레이션을 먼저 실행해야 배너 등록/수정이 동작함:
   `ALTER TABLE banner ADD COLUMN banner_badge VARCHAR(50) NOT NULL DEFAULT '' AFTER banner_title;`
+- `review.review_rewarded_like_count` 컬럼은 2026.7.22에 "게시글 좋아요 5개 단위 포인트 지급" 기능
+  구현하면서 추가됨(기존 DDL에는 없었음). 좋아요 1개당 즉시 1포인트를 지급하던 기존 방식을 대체해서,
+  좋아요 수가 5, 10, 15...에 도달할 때마다 글쓴이에게 5포인트씩 지급함(자추 제외, `ReviewService.toggleLike`).
+  이 컬럼은 "이미 포인트를 지급한 좋아요 수(마일스톤)"를 기록해서, 좋아요 취소 -> 재좋아요를 반복해도
+  이미 지급한 마일스톤은 재지급하지 않도록 막는 용도(조건부 UPDATE로 갱신, `ReviewMapper.updateRewardedLikeCount`).
+  로컬 DB에 아직 반영 안 했다면 아래 마이그레이션을 먼저 실행해야 함(`sql/migration_2026_07_22_review_like_reward.sql`):
+  `ALTER TABLE review ADD COLUMN review_rewarded_like_count INT NOT NULL DEFAULT 0 AFTER review_hit;`
 - `review_report.review_id` / `qna_report.qna_id` / `qna_comment_report.qna_comment_id`는 2026.7.21에
   `not null` + `on delete cascade` → `null` 허용 + `on delete set null`로 변경됨. 관리자가 신고 처리 중
   "삭제"로 원본(게시글/QNA/QNA댓글)을 완전삭제하면 예전에는 FK CASCADE로 신고 기록까지 같이 사라져서
@@ -142,6 +149,7 @@ create table review (
     review_content               text not null,
     review_img                   varchar(500),
     review_hit                   int not null default 0,
+    review_rewarded_like_count   int not null default 0, -- [수정] 2026.7.22 추가. 좋아요 5개 단위 포인트 지급 마일스톤(중복지급 방지용)
     review_rating                decimal(2, 1),
     review_highlighted           enum('N','Y') not null default 'N',
     review_highlight_started_at  datetime null, -- [수정4] 하이라이트 시작 시각

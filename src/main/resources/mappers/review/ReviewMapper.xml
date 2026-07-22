@@ -103,4 +103,12 @@
 	<delete id="delete" parameterType="int">
 		DELETE FROM review WHERE review_id = #{reviewId}
 	</delete>
+
+	<!-- 좋아요 포인트 지급 마일스톤 갱신 - 이미 지급한 마일스톤보다 클 때만 갱신(동시성/중복지급 방지) -->
+	<update id="updateRewardedLikeCount">
+		UPDATE review
+		SET review_rewarded_like_count = #{milestone}
+		WHERE review_id = #{reviewId}
+		  AND review_rewarded_like_count &lt; #{milestone}
+	</update>
 </mapper>
