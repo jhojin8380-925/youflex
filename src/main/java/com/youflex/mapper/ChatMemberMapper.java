@@ -2,26 +2,37 @@ package com.youflex.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import com.youflex.dto.ChatMemberDTO;
 
-@Mapper // MyBatis 매퍼 인터페이스로 등록 (구현체는 XML 매핑 파일이 대신함)
+@Mapper
 public interface ChatMemberMapper {
 
     /**
-     * 채팅방 참여자 등록
-     * - 방장 자동 입장(createChatroomWithHost) 및 일반 참여자 입장 시 공통으로 사용
-     * - chat_member 테이블에 (member_id, chatroom_id) 조합의 UNIQUE 제약이 있어서
-     *   이미 참여 중인 회원을 다시 넣으면 DuplicateKeyException 발생
-     * - 반환값: DB에 반영된 row 수 (보통 성공 시 1)
+     * 채팅방 참여 기록 추가
+     * @param chatMemberRole   "방장" 또는 "참여자" (DB enum 값과 정확히 일치해야 함)
+     * @param chatMemberStatus "참여중" (DB enum 값과 정확히 일치해야 함)
      */
-    int insertChatMember(ChatMemberDTO chatMember);
+    int insertChatMember(@Param("memberId") int memberId,
+                          @Param("chatroomId") int chatroomId,
+                          @Param("chatMemberRole") String chatMemberRole,
+                          @Param("chatMemberStatus") String chatMemberStatus);
 
-    // 특정 회원의 role 조회 ("방장" / "참여자")
-    String selectChatMemberRole(@Param("chatroomId") int chatroomId, @Param("memberId") int memberId);
+    /**
+     * 특정 회원의 특정 방 내 역할 조회
+     * @return "방장" / "참여자", 참여 기록이 없으면 null
+     */
+    String selectChatMemberRole(@Param("chatroomId") int chatroomId,
+                                 @Param("memberId") int memberId);
 
-    // 방장 나갈 때: 해당 채팅방의 참여자 전원 삭제
-    int deleteAllChatMembersByChatroomId(@Param("chatroomId") int chatroomId);
+    /** 방 삭제 시 해당 방의 모든 참여 기록 정리 */
+    int deleteAllChatMembersByChatroomId(int chatroomId);
 
-    // 일반 참여자 나갈 때: 본인 row만 삭제
-    int deleteChatMember(@Param("chatroomId") int chatroomId, @Param("memberId") int memberId);
+    /** 특정 회원의 참여 기록 삭제 (나가기) */
+    int deleteChatMember(@Param("chatroomId") int chatroomId,
+                          @Param("memberId") int memberId);
+
+ // int 타입으로 변경
+    int countActiveChatMemberByMemberId(int memberId);
+    
+ // ChatMemberMapper.java (인터페이스)
+    Integer selectActiveChatroomIdByMemberId(int memberId); // Integer로 변경
 }

@@ -1,27 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youflex.mapper.ChatroomMapper">
 
-    <!-- 채팅방 생성: PK인 chatroom_id는 auto_increment이므로 insert 문에서 제외
-         useGeneratedKeys="true" + keyProperty="chatroomId" 설정으로
-         insert 후 생성된 chatroom_id 값이 파라미터로 넘긴 chatroom 객체의 chatroomId 필드에 자동으로 채워짐 -->
-    <insert id="createChatroom" useGeneratedKeys="true" keyProperty="chatroomId">
-        INSERT INTO chatroom (member_id, chatroom_title, chatroom_max_member)
-        VALUES (#{memberId}, #{chatroomTitle}, #{chatroomMaxMember})
+    <!-- ChatroomDTO 결과 매핑 -->
+    <resultMap id="chatroomResultMap" type="com.youflex.dto.ChatroomDTO">
+        <id     property="chatroomId"         column="chatroom_id" />
+        <result property="memberId"           column="member_id" />
+        <result property="chatroomTitle"      column="chatroom_title" />
+        <result property="chatroomMaxMember"  column="chatroom_max_member" />
+        <result property="chatroomCreatedAt"  column="chatroom_created_at" />
+        <!-- join 조회용 (DB 컬럼 아님) -->
+        <result property="memberName"         column="member_name" />
+        <result property="currentMemberCount" column="current_member_count" />
+        <result property="joined"             column="joined" />
+    </resultMap>
+
+    <!-- 채팅방 생성 -->
+    <insert id="createChatroom" parameterType="com.youflex.dto.ChatroomDTO"
+            useGeneratedKeys="true" keyProperty="chatroomId">
+        INSERT INTO chatroom (member_id, chatroom_title, chatroom_max_member, chatroom_created_at)
+        VALUES (#{memberId}, #{chatroomTitle}, #{chatroomMaxMember}, NOW())
     </insert>
 
-    <!-- 채팅방 ID로 단건 조회 -->
-    <select id="selectChatroomById" resultType="com.youflex.dto.ChatroomDTO">
+    <!-- 채팅방 단건 조회 -->
+    <select id="selectChatroomById" parameterType="int" resultMap="chatroomResultMap">
         SELECT
-            c.chatroom_id       AS chatroomId,
-            c.member_id         AS memberId,
-            c.chatroom_title    AS chatroomTitle,
-            c.chatroom_max_member AS chatroomMaxMember,
-            c.chatroom_created_at AS chatroomCreatedAt,
+            c.chatroom_id,
+            c.member_id,
+            c.chatroom_title,
+            c.chatroom_max_member,
+            c.chatroom_created_at,
+            m.member_name,
             (SELECT COUNT(*) FROM chat_member cm
-             WHERE cm.chatroom_id = c.chatroom_id AND cm.chat_member_status = '참여중') AS currentMemberCount
+                WHERE cm.chatroom_id = c.chatroom_id
+                  AND cm.chat_member_status = '참여중') AS current_member_count,
+            0 AS joined
         FROM chatroom c
+        JOIN member m ON c.member_id = m.member_id
         WHERE c.chatroom_id = #{chatroomId}
     </select>
 	<!-- 전체 채팅방 목록 조회 (로그인 회원의 참여 여부 joined 포함) -->
@@ -51,9 +68,8 @@
     ORDER BY c.chatroom_created_at DESC
 </select>
 
-
-    <!-- 채팅방 정보 수정: chatroomId 기준으로 제목/최대인원만 수정 (member_id는 방장이라 보통 변경 안 함) -->
-    <update id="updateChatroom">
+    <!-- 채팅방 정보 수정 -->
+    <update id="updateChatroom" parameterType="com.youflex.dto.ChatroomDTO">
         UPDATE chatroom
         SET chatroom_title = #{chatroomTitle},
             chatroom_max_member = #{chatroomMaxMember}
@@ -61,16 +77,23 @@
     </update>
 
     <!-- 채팅방 삭제 -->
-    <delete id="deleteChatroom">
+    <delete id="deleteChatroom" parameterType="int">
         DELETE FROM chatroom
         WHERE chatroom_id = #{chatroomId}
     </delete>
 
-    <!-- 회원이 개설한 채팅방 개수 -->
-    <select id="countChatroomByMemberId" resultType="int">
+    <!-- 특정 회원이 개설한 채팅방 개수 -->
+    <select id="countChatroomByMemberId" parameterType="int" resultType="int">
         SELECT COUNT(*)
         FROM chatroom
         WHERE member_id = #{memberId}
+    </select>
+
+    <!-- 채팅방 아이디로 채팅 연결 가능 여부 체크 (방 존재 여부 카운트) -->
+    <select id="chatChatroomByChatId" parameterType="int" resultType="int">
+        SELECT COUNT(*)
+        FROM chatroom
+        WHERE chatroom_id = #{chatroomId}
     </select>
 
 </mapper>

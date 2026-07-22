@@ -27,6 +27,17 @@ public class NoticeService {
     }
 
     /**
+     * 메인화면 노출용 최신 공지사항 N건 조회
+     * - selectNoticeList()가 notice_created_at DESC로 정렬해 반환하므로 앞에서부터 limit만큼 잘라서 사용
+     * @param limit 가져올 공지사항 개수
+     * @return 최신순 공지사항 리스트 (최대 limit건)
+     */
+    public List<NoticeDTO> getRecentNoticeList(int limit) {
+        List<NoticeDTO> noticeList = noticeMapper.selectNoticeList();
+        return noticeList.size() > limit ? noticeList.subList(0, limit) : noticeList;
+    }
+
+    /**
      * 공지사항 상세 조회 (항상 조회수 증가)
      * @param noticeId 조회할 공지사항 ID
      * @return 공지사항 상세 정보

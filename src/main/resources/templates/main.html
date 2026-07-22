@@ -399,39 +399,24 @@
   -->
       <div class="section-title mt-40">
         <h2>공지사항</h2>
-        <!-- 공지사항 더보기 링크 추가 -나영- -->
-        <a href="./05_notice.html" class="more">더보기 ›</a>
+        <!-- 공지사항 더보기 링크: 공지사항 목록 페이지로 이동 -->
+        <a th:href="@{/notice}" class="more">더보기 ›</a>
       </div>
       <div class="notice-list">
-        <div class="notice-row">
-          <span class="notice-badge">공지</span>
-          <!-- 공지사항 상세보기 추가 -나영- -->
-          <a href="./06_notice_detail.html"
-            ><span>YouFlex 커뮤니티 이용 규칙 및 제재 정책 안내</span></a
-          >
-          <span class="notice-meta">관리자</span>
-          <span class="notice-meta">2026-06-28</span>
-          <span class="notice-meta">👁 1.2K</span>
+        <!-- 등록된 공지사항이 없을 경우 안내 문구 표시 -->
+        <div class="notice-row" th:if="${#lists.isEmpty(noticeList)}">
+          <span class="notice-meta" style="grid-column:1 / -1;text-align:center">등록된 공지사항이 없습니다.</span>
         </div>
-        <div class="notice-row">
+        <!-- 공지사항 최신 3건 반복 출력 (MainController에서 noticeService.getRecentNoticeList(3)로 전달) -->
+        <div class="notice-row" th:each="notice : ${noticeList}">
           <span class="notice-badge">공지</span>
-          <!-- 공지사항 상세보기 추가 -나영- -->
-          <a href="./06_notice_detail.html"
-            ><span>비속어 필터링 시스템 업데이트 안내</span></a
+          <a th:href="@{/notice/{id}(id=${notice.noticeId})}"
+            ><span th:text="${notice.noticeTitle}">제목</span></a
           >
+          <!-- 작성자는 공지사항 특성상 항상 "관리자"로 고정 표기 (notice 테이블에 작성자 컬럼 없음) -->
           <span class="notice-meta">관리자</span>
-          <span class="notice-meta">2026-06-25</span>
-          <span class="notice-meta">👁 892</span>
-        </div>
-        <div class="notice-row">
-          <span class="notice-badge">공지</span>
-          <!-- 공지사항 상세보기 추가 -나영- -->
-          <a href="./06_notice_detail.html"
-            ><span>포인트 시스템 및 등급 정책 변경 안내</span></a
-          >
-          <span class="notice-meta">관리자</span>
-          <span class="notice-meta">2026-06-22</span>
-          <span class="notice-meta">👁 1.1K</span>
+          <span class="notice-meta" th:text="${#temporals.format(notice.noticeCreatedAt, 'yyyy-MM-dd')}">2026-06-28</span>
+          <span class="notice-meta" th:text="'👁 ' + ${notice.noticeHit}">👁 0</span>
         </div>
       </div>
     </main>

@@ -31,4 +31,11 @@
 		WHERE chatroom_id = #{chatroomId}
 		AND member_id = #{memberId}
 	</delete>
+<select id="selectActiveChatroomIdByMemberId" resultType="int">
+    SELECT chatroom_id
+    FROM chat_member
+    WHERE member_id = #{memberId}
+      AND chat_member_status = '참여중'
+    LIMIT 1
+</select>
 </mapper>

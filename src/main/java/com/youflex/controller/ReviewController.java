@@ -31,6 +31,7 @@ import com.youflex.dto.MemberDTO;
 import com.youflex.dto.ReviewDTO;
 import com.youflex.service.CommentService;
 import com.youflex.service.GenreCategoryService;
+import com.youflex.service.ReviewDraftService;
 import com.youflex.service.ReviewService;
 import com.youflex.service.ReviewService.LikeResult;
 
@@ -41,22 +42,20 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequiredArgsConstructor
 public class ReviewController {
-//	중괄호 짝 찾기 : ctrl+shift+p
 	
 	private final GenreCategoryService genreCategoryService;
 	private final ReviewService reviewService;
 	private final CommentService commentService;
+	private final ReviewDraftService reviewDraftService;
 	
-	
-//	application.properties의 youflex.upload.path값을 가져옴
+	// application.properties의 youflex.upload.path값을 가져옴
 	@Value("${youflex.upload.path}")
 	private String uploadPath;
 
-	
-//	1) 작성 폼으로 이동
+	// 1) 작성 폼으로 이동
 	@GetMapping("/review/write")
 	public String writeForm(HttpSession session, Model model) {
-//		세션에 loginMember가 없으면 => 로그인 페이지로 이동
+		// 세션에 loginMember가 없으면 => 로그인 페이지로 이동
 		if(session.getAttribute("loginMember") == null) {
 			return "redirect:/login";
 		}
@@ -67,45 +66,51 @@ public class ReviewController {
 		return "review/write";
 	}
 	
-//	2) 리뷰 글 작성
+	// 2) 리뷰 글 작성
 	@PostMapping("/review/write")
 	public String write(ReviewDTO reviewDTO, HttpSession session,
-			@RequestParam(value="genreCategoryIds", required=false) List<Integer> genreCategoryIds, Model model) throws IOException{	//genreCategoryIds : write.js에서 name과 변수명이 같아야함
-//		로그인 여부 확인
+			@RequestParam(value="genreCategoryIds", required=false) List<Integer> genreCategoryIds, 
+			@RequestParam(value="reviewDraftId", defaultValue="0") int reviewDraftId, 
+			Model model) throws IOException {
+		
+		// 로그인 여부 확인
 		if(session.getAttribute("loginMember") == null) {
 			return "redirect:/login";
 		}
 		
-//		세션에서 로그인 회원 정보 꺼내기(작성자 정보)
+		// 세션에서 로그인 회원 정보 꺼내기(작성자 정보)
 		MemberDTO loginMember = (MemberDTO)session.getAttribute("loginMember");
 		
-//		ReviewDTO에 작성자 번호(memberId) 설정
+		// ReviewDTO에 작성자 번호(memberId) 설정
 		reviewDTO.setMemberId(loginMember.getMemberId());
-//		System.out.println(reviewDTO.getMemberId());
+
 		if(reviewDTO.getImgFile() != null && !reviewDTO.getImgFile().isEmpty()) {
-//			파일 저장 후 DB에 저장할 파일명을 reviewDTO에 세팅
+			// 파일 저장 후 DB에 저장할 파일명을 reviewDTO에 세팅
 			String savedFileName = saveFile(reviewDTO.getImgFile());
 			reviewDTO.setReviewImg(savedFileName);
 		}
 		
-//		게시글 저장
+		// 게시글 저장
 		reviewService.write(reviewDTO, genreCategoryIds);
 		
+		// 게시글 등록 성공 시 관련 임시저장글 자동 삭제
+		if(reviewDraftId > 0) {
+			reviewDraftService.deleteDraft(reviewDraftId);
+		}
 		
-		
-//		저장 완료 후 메인 화면으로 이동
+		// 저장 완료 후 메인 화면으로 이동
 		return "redirect:/";
 	}
 
-//	3) 게시글 상세보기
+	// 3) 게시글 상세보기
 	@GetMapping("/review/{reviewId}")
 	public String detail(@PathVariable("reviewId") int reviewId, Model model, HttpSession session) {
-//		같은 세션에서 이미 조회한 게시글이면 조회수를 다시 올리지 않음 (F5 새로고침 등)
+		// 같은 세션에서 이미 조회한 게시글이면 조회수를 다시 올리지 않음 (F5 새로고침 등)
 		boolean increaseHit = isFirstViewInSession(session, reviewId);
 		ReviewDTO review = reviewService.findById(reviewId, increaseHit);
 		model.addAttribute("review", review);
 
-//		좋아요/북마크 버튼 초기 상태(로그인 상태일 때만 의미가 있음)
+		// 좋아요/북마크 버튼 초기 상태(로그인 상태일 때만 의미가 있음)
 		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
 		boolean liked = loginMember != null && reviewService.isLikedByMember(reviewId, loginMember.getMemberId());
 		boolean bookmarked = loginMember != null && reviewService.isBookmarkedByMember(reviewId, loginMember.getMemberId());
@@ -113,13 +118,13 @@ public class ReviewController {
 		model.addAttribute("bookmarked", bookmarked);
 		model.addAttribute("likeCount", reviewService.getLikeCount(reviewId));
 
-//		댓글/대댓글 목록 (로그인 상태면 좋아요 여부까지 함께 조회)
+		// 댓글/대댓글 목록 (로그인 상태면 좋아요 여부까지 함께 조회)
 		Integer viewerMemberId = loginMember != null ? loginMember.getMemberId() : null;
 		List<CommentDTO> comments = commentService.getComments(reviewId, viewerMemberId);
 		model.addAttribute("comments", comments);
 		model.addAttribute("commentCount", comments.stream().mapToInt(c -> 1 + c.getReplies().size()).sum());
 
-//		베스트 댓글 미리보기(상위 3개, 좋아요 많은 순) - comments 리스트 안에도 그대로 남아있어 전체 댓글에도 같이 보임
+		// 베스트 댓글 미리보기(상위 3개, 좋아요 많은 순)
 		List<CommentDTO> bestComments = comments.stream()
 				.filter(CommentDTO::isBest)
 				.sorted(Comparator.comparingInt(CommentDTO::getLikeCount).reversed())
@@ -128,7 +133,7 @@ public class ReviewController {
 		return "review/detail";
 	}
 
-//	좋아요 토글
+	// 좋아요 토글
 	@PostMapping("/review/{reviewId}/like")
 	@ResponseBody
 	public ResponseEntity<?> toggleLike(@PathVariable("reviewId") int reviewId, HttpSession session) {
@@ -140,7 +145,7 @@ public class ReviewController {
 		return ResponseEntity.ok(Map.of("liked", result.isLiked(), "likeCount", result.getLikeCount()));
 	}
 
-//	북마크 토글
+	// 북마크 토글
 	@PostMapping("/review/{reviewId}/bookmark")
 	@ResponseBody
 	public ResponseEntity<?> toggleBookmark(@PathVariable("reviewId") int reviewId, HttpSession session) {
@@ -152,7 +157,7 @@ public class ReviewController {
 		return ResponseEntity.ok(Map.of("bookmarked", bookmarked));
 	}
 
-//	게시글 신고 등록
+	// 게시글 신고 등록
 	@PostMapping("/review/{reviewId}/report")
 	@ResponseBody
 	public ResponseEntity<?> report(@PathVariable("reviewId") int reviewId,
@@ -165,14 +170,14 @@ public class ReviewController {
 		return ResponseEntity.ok().build();
 	}
 
-//	신고 등록 요청 바디 - { reason, content }
+	// 신고 등록 요청 바디 - { reason, content }
 	@Data
 	static class ReportRequest {
 		private String reason;
 		private String content;
 	}
 
-//	세션에 이 게시글을 조회한 이력이 있는지 확인하고, 없으면 이력에 추가하면서 true(최초 조회) 반환
+	// 세션에 이 게시글을 조회한 이력이 있는지 확인
 	@SuppressWarnings("unchecked")
 	private boolean isFirstViewInSession(HttpSession session, int reviewId) {
 		Set<Integer> viewedReviewIds = (Set<Integer>) session.getAttribute("viewedReviewIds");
@@ -193,35 +198,16 @@ public class ReviewController {
 //		substring(점위치) : 점 포함 이후 문자열 추출 -> ".jpg"
 		String originalName = file.getOriginalFilename();
 		String ext = originalName.substring(originalName.lastIndexOf("."));
-//		ex) "피자.jpg" => ext = ".jpg"
-		
-//		(2) UUID로 고유한 새 파일명 생성
-//		randomUUID() : 겹치지 않는 고유 ID생성
-//		toString() - "5550e8400-e49b..." 형태의 문자열로 반환
 		String savedName = UUID.randomUUID().toString() + ext;
 		
-//		(3) 업로드 폴더가 없으면 자동으로 생성
-//		new File(uploadPath) - "C:/upload/todayeat/" 폴더를 가리키는 객체
 		File uploadDir = new File(uploadPath);
 		if(!uploadDir.exists()) {
-//			폴더가 없다면 폴더 생성
 			uploadDir.mkdirs();
 		}
 		
-//		(4) 파일 실제 저장
-//		Paths.get(uploadPath+savedName) - 저장할 전체 경로 생성
-//		ex) C:/upload/todayeat/550....jpg
-		Path savePath = Paths.get(uploadPath+savedName);
-		
-//		Files.copy(파일데이터, 저장경로)
-//		getInputStream() : MultipartFile에서 실제 파일 데이터를 꺼냄
+		Path savePath = Paths.get(uploadPath + savedName);
 		Files.copy(file.getInputStream(), savePath);
-		
-//		(5) DB에 저장할 파일명 반환(전체 경로가 아닌 이름만)
-//		나중에 <img src="/upload/파일명"> 형태로 사용
 		
 		return savedName;
 	}
-	
-	
 }

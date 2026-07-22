@@ -1,133 +1,135 @@
 package com.youflex.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.youflex.dto.ChatMemberDTO;
 import com.youflex.dto.ChatroomDTO;
-import com.youflex.exception.DuplicateChatroomException;
+import com.youflex.exception.AlreadyInRoomException;
 import com.youflex.mapper.ChatMemberMapper;
 import com.youflex.mapper.ChatroomMapper;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ChatroomService {
 
-    private final ChatroomMapper chatroomMapper;
-    private final ChatMemberMapper chatMemberMapper;
-    private final SimpMessagingTemplate messagingTemplate; // 웹소켓 브로드캐스트용
+    @Autowired
+    private ChatroomMapper chatroomMapper;
 
+    @Autowired
+    private ChatMemberMapper chatMemberMapper;
+
+    /** 회원이 이미 개설한 채팅방이 있는지 여부 */
+    public boolean hasChatroom(Integer memberId) {
+        return chatroomMapper.countChatroomByMemberId(memberId) > 0;
+    }
+
+    /**
+     * 채팅방 생성 후 생성된 chatroomId 반환
+     * - 개설자를 chat_member에 "방장" / "참여중" 상태로 함께 등록한다.
+     */
     public int createChatroom(ChatroomDTO chatroom) {
-        return chatroomMapper.createChatroom(chatroom);
-    }
-
-    /**
-     * 채팅방 개설 + 개설자를 방장으로 자동 입장
-     * - 한 회원당 채팅방 1개만 개설 가능하도록 체크 추가
-     */
-    @Transactional
-    public int createChatroomWithHost(ChatroomDTO chatroom) {
-        int existingCount = chatroomMapper.countChatroomByMemberId(chatroom.getMemberId());
-        if (existingCount > 0) {
-            throw new DuplicateChatroomException("이미 개설한 채팅방이 있습니다. 한 사람당 하나의 채팅방만 개설할 수 있습니다.");
-        }
-
         chatroomMapper.createChatroom(chatroom);
-
-        ChatMemberDTO host = ChatMemberDTO.builder()
-                .memberId(chatroom.getMemberId())
-                .chatroomId(chatroom.getChatroomId())
-                .chatMemberRole("방장")
-                .chatMemberStatus("참여중")
-                .build();
-        chatMemberMapper.insertChatMember(host);
-
-        // 방 개설 후 최신 목록을 구독중인 모든 클라이언트에게 실시간 전송
-        broadcastChatroomList();
-
-        return chatroom.getChatroomId();
+        int chatroomId = chatroom.getChatroomId(); // useGeneratedKeys로 채워진 PK
+        chatMemberMapper.insertChatMember(chatroom.getMemberId(), chatroomId, "방장", "참여중");
+        return chatroomId;
     }
 
-    public ChatroomDTO getChatroom(int chatroomId) {
-        return chatroomMapper.selectChatroomById(chatroomId);
-    }
-
-    /**
-     * 전체 채팅방 목록 조회
-     * @param memberId 로그인한 회원 ID (비로그인 시 null) - 각 방의 joined 여부 판단용
-     */
+    /** 전체 채팅방 목록 조회 */
     public List<ChatroomDTO> getAllChatrooms(Integer memberId) {
         return chatroomMapper.selectAllChatrooms(memberId);
     }
 
+    /** 채팅방 단건 조회 */
+    public ChatroomDTO getChatroom(int chatroomId) {
+        return chatroomMapper.selectChatroomById(chatroomId);
+    }
+
+    /** 채팅방 정보 수정 */
     public int updateChatroom(ChatroomDTO chatroom) {
         return chatroomMapper.updateChatroom(chatroom);
     }
 
     /**
      * 채팅방 삭제
-     * - 삭제 전 참여자(chat_member) 먼저 정리 (FK 제약 대비)
+     * - chat_member는 FK ON DELETE CASCADE로도 정리되지만, 명시적으로 먼저 비워서 안전하게 처리
      */
-    @Transactional
     public int deleteChatroom(int chatroomId) {
         chatMemberMapper.deleteAllChatMembersByChatroomId(chatroomId);
-        int result = chatroomMapper.deleteChatroom(chatroomId);
-        // 삭제 시에도 실시간 반영
-        broadcastChatroomList();
-        return result;
+        return chatroomMapper.deleteChatroom(chatroomId);
     }
 
     /**
-     * 현재 채팅방 목록을 /sub/chatroom-list 구독자 전체에게 전송
-     * - 브로드캐스트는 특정 회원 기준이 아니므로 memberId는 null로 조회
+     * 채팅방 입장
+     * - 방 존재 여부 확인
+     * - 이미 '이 방'에 참여 중이면 그대로 통과 (idempotent)
+     * - 다른 방에 이미 '참여중'인 상태라면 예외 발생 (1인 1방 제한)
+     * - 없으면 새로 등록: 방 개설자 본인이면 "방장", 아니면 "참여자"
      */
-    private void broadcastChatroomList() {
-        List<ChatroomDTO> rooms = chatroomMapper.selectAllChatrooms(null);
-        messagingTemplate.convertAndSend("/sub/chatroom-list", rooms);
-    }
 
-    /**
-     * 일반 사용자 채팅방 입장 처리
-     * - 이미 참여 중인 방에 다시 입장할 때 발생하는 DuplicateKeyException(중복 키 에러) 방어 처리
-     */
-    @Transactional
-    public void enterChatroom(int chatroomId, int memberId) {
-        try {
-            ChatMemberDTO participant = ChatMemberDTO.builder()
-                    .memberId(memberId)
-                    .chatroomId(chatroomId)
-                    .chatMemberRole("참여자")
-                    .chatMemberStatus("참여중")
-                    .build();
-            chatMemberMapper.insertChatMember(participant);
-        } catch (org.springframework.dao.DuplicateKeyException e) {
-            // 이미 입장한 상태라면 에러를 발생시키지 않고 정상 처리(재입장)로 간주
-            System.out.println("이미 해당 채팅방에 입장한 회원입니다. (memberId: " + memberId + ", chatroomId: " + chatroomId + ")");
+    public boolean enterChatroom(int chatroomId, int memberId) {
+        ChatroomDTO chatroom = chatroomMapper.selectChatroomById(chatroomId);
+        if (chatroom == null) {
+            throw new IllegalArgumentException("존재하지 않는 채팅방입니다.");
         }
-    }
 
+        // 1. 이미 '현재 방'에 참여 중인지 확인 (재입장)
+        String existingRole = chatMemberMapper.selectChatMemberRole(chatroomId, memberId);
+        if (existingRole != null) {
+            return false;
+        }
+
+        // 2. 다른 방에 이미 '참여중'인지 확인 (하나의 쿼리로 통일)
+        Integer activeRoomId = chatMemberMapper.selectActiveChatroomIdByMemberId(memberId);
+        if (activeRoomId != null) {
+            ChatroomDTO activeRoom = chatroomMapper.selectChatroomById(activeRoomId);
+            String title = (activeRoom != null) ? activeRoom.getChatroomTitle() : "알 수 없는 방";
+            throw new AlreadyInRoomException(activeRoomId, title);
+        }
+
+        // 3. 신규 입장 처리
+        String role = (chatroom.getMemberId() == memberId) ? "방장" : "참여자";
+        chatMemberMapper.insertChatMember(memberId, chatroomId, role, "참여중");
+        return true;
+    }
     /**
-     * 채팅방 나가기 처리
-     * - 방장이 나가면: 채팅방 자체를 삭제 (참여자 전원도 함께 강제 퇴장)
-     * - 일반 참여자가 나가면: 본인 row만 chat_member에서 삭제
-     * - 어느 경우든 최신 목록(인원 수 또는 방 소멸)을 구독자 전체에게 실시간 반영
+     * 채팅방 나가기
+     * - chat_member 참여 기록을 물리 삭제한다.
      */
-    @Transactional
+    /**
+     * 채팅방 나가기
+     * - 참여자가 나가면: chat_member 기록만 삭제
+     * - 방장이 나가면: 채팅방 자체를 삭제 (모든 참여자 강제 퇴장)
+     */
     public void leaveChatroom(int chatroomId, int memberId) {
+        // 1. 나가려는 사람의 역할 확인
         String role = chatMemberMapper.selectChatMemberRole(chatroomId, memberId);
+        if (role == null) {
+            throw new IllegalArgumentException("참여 중인 채팅방이 아닙니다.");
+        }
 
         if ("방장".equals(role)) {
+            // 방장이 나가는 경우 -> 채팅방 전체 삭제
             chatMemberMapper.deleteAllChatMembersByChatroomId(chatroomId);
             chatroomMapper.deleteChatroom(chatroomId);
         } else {
-            chatMemberMapper.deleteChatMember(chatroomId, memberId);
+            // 일반 참여자가 나가는 경우 -> 본인 기록만 삭제
+            int result = chatMemberMapper.deleteChatMember(chatroomId, memberId);
+            if (result <= 0) {
+                throw new IllegalArgumentException("참여 중인 채팅방이 아닙니다.");
+            }
         }
+    }
 
-        broadcastChatroomList();
+    /**
+     * 특정 채팅방의 이전 메시지 목록 조회
+     * - 아직 메시지 전용 Mapper/테이블이 없다면 500 에러 방지를 위해 빈 리스트를 반환합니다.
+     */
+    public List<?> getMessagesByChatroomId(int chatroomId) {
+        // 추후 메시지 매퍼가 구현되면 아래와 같이 연동할 수 있습니다.
+        // return chatMessageMapper.selectMessagesByChatroomId(chatroomId);
+        
+        return new ArrayList<>();
     }
 }
