@@ -64,11 +64,15 @@ function submitNewComment() {
         alert('로그인 후 이용할 수 있어요.');
         return;
       }
-      if (!res.ok) throw new Error('comment create failed');
+      if (!res.ok) {
+        return res.json().catch(() => null).then((body) => {
+          throw new Error((body && body.message) || '댓글 등록 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+        });
+      }
       location.reload();
     })
-    .catch(() => {
-      alert('댓글 등록 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+    .catch((e) => {
+      alert(e.message);
     });
 }
 
@@ -186,11 +190,15 @@ function submitReplyForm(btn) {
         alert('로그인 후 이용할 수 있어요.');
         return;
       }
-      if (!res.ok) throw new Error('reply create failed');
+      if (!res.ok) {
+        return res.json().catch(() => null).then((body) => {
+          throw new Error((body && body.message) || '답글 등록 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+        });
+      }
       location.reload();
     })
-    .catch(() => {
-      alert('답글 등록 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+    .catch((e) => {
+      alert(e.message);
     });
 }
 
@@ -244,11 +252,15 @@ function editComment(el) {
           alert('로그인 후 이용할 수 있어요.');
           return;
         }
-        if (!res.ok) throw new Error('comment update failed');
+        if (!res.ok) {
+          return res.json().catch(() => null).then((body) => {
+            throw new Error((body && body.message) || '댓글 수정 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+          });
+        }
         location.reload();
       })
-      .catch(() => {
-        alert('댓글 수정 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+      .catch((e) => {
+        alert(e.message);
       });
   });
 

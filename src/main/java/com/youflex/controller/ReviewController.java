@@ -29,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.youflex.dto.CommentDTO;
 import com.youflex.dto.MemberDTO;
 import com.youflex.dto.ReviewDTO;
+import com.youflex.exception.BadWordDetectedException;
+import com.youflex.service.BadWordService;
 import com.youflex.service.CommentService;
 import com.youflex.service.GenreCategoryService;
 import com.youflex.service.ReviewDraftService;
@@ -47,6 +49,7 @@ public class ReviewController {
 	private final ReviewService reviewService;
 	private final CommentService commentService;
 	private final ReviewDraftService reviewDraftService;
+	private final BadWordService badWordService;
 	
 	// application.properties의 youflex.upload.path값을 가져옴
 	@Value("${youflex.upload.path}")
@@ -54,15 +57,21 @@ public class ReviewController {
 
 	// 1) 작성 폼으로 이동
 	@GetMapping("/review/write")
-	public String writeForm(HttpSession session, Model model) {
+	public String writeForm(@RequestParam(value="error", required=false) String error,
+			HttpSession session, Model model) {
 		// 세션에 loginMember가 없으면 => 로그인 페이지로 이동
 		if(session.getAttribute("loginMember") == null) {
 			return "redirect:/login";
 		}
-		
+
 		// 모달에서 선택한 취향을 genre_category 테이블로 넘기기
 		model.addAttribute("genres", genreCategoryService.getAllGenres());
-		
+
+		// 금칙어 포함으로 등록이 막혀 되돌아온 경우 안내 문구 표시
+		if("badword".equals(error)) {
+			model.addAttribute("badWordError", "금칙어가 포함되어 있어 등록할 수 없습니다. 내용을 수정한 후 다시 시도해주세요.");
+		}
+
 		return "review/write";
 	}
 	
@@ -84,20 +93,28 @@ public class ReviewController {
 		// ReviewDTO에 작성자 번호(memberId) 설정
 		reviewDTO.setMemberId(loginMember.getMemberId());
 
+		try {
+			// 금칙어 포함 여부를 파일 저장 전에 먼저 검사해서 불필요한 업로드를 막음
+			badWordService.validateContent(reviewDTO.getReviewContent());
+		} catch (BadWordDetectedException e) {
+			// 글쓰기 폼으로 되돌아가서 안내 문구를 보여줌 (작성 중이던 내용은 유지되지 않음)
+			return "redirect:/review/write?error=badword";
+		}
+
 		if(reviewDTO.getImgFile() != null && !reviewDTO.getImgFile().isEmpty()) {
 			// 파일 저장 후 DB에 저장할 파일명을 reviewDTO에 세팅
 			String savedFileName = saveFile(reviewDTO.getImgFile());
 			reviewDTO.setReviewImg(savedFileName);
 		}
-		
+
 		// 게시글 저장
 		reviewService.write(reviewDTO, genreCategoryIds);
-		
+
 		// 게시글 등록 성공 시 관련 임시저장글 자동 삭제
 		if(reviewDraftId > 0) {
 			reviewDraftService.deleteDraft(reviewDraftId);
 		}
-		
+
 		// 저장 완료 후 메인 화면으로 이동
 		return "redirect:/";
 	}

@@ -395,6 +395,40 @@ document.getElementById("noticeCreateBtn").addEventListener("click", async () =>
 });
 
 // ==========================================================================
+// 관리자 - 금칙어 관리 탭
+// ==========================================================================
+const BADWORD_API_BASE = "/api/badword";
+
+document.getElementById("badWordAddBtn").addEventListener("click", async () => {
+  const input = document.getElementById("bad_word_content");
+  const content = input.value.trim();
+  if (!content) {
+    alert("등록할 단어를 입력해주세요.");
+    return;
+  }
+  try {
+    await adminFetch(BADWORD_API_BASE, {
+      method: "POST",
+      body: JSON.stringify({ badWordContent: content }),
+    });
+    location.href = "/admin?tab=badword";
+  } catch (e) {
+    alert(e.message);
+  }
+});
+
+async function deleteBadWordRow(btn) {
+  const row = btn.closest("tr");
+  if (!confirm("이 단어를 금칙어 목록에서 삭제하시겠습니까?")) return;
+  try {
+    await adminFetch(`${BADWORD_API_BASE}/${row.dataset.badWordId}`, { method: "DELETE" });
+    row.remove();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+// ==========================================================================
 // 관리자 - 신고 처리 탭
 // ==========================================================================
 const REPORT_API_BASE = "/api/admin/reports";

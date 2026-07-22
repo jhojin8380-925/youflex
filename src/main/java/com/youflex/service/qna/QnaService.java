@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import com.youflex.dto.qna.QnaDTO;
 import com.youflex.mapper.qna.QnaMapper;
+import com.youflex.service.BadWordService;
 
 /**
  * Q&A(질문) 관련 비즈니스 로직
@@ -15,6 +16,7 @@ import com.youflex.mapper.qna.QnaMapper;
 public class QnaService {
 
     private final QnaMapper qnaMapper;
+    private final BadWordService badWordService;
 
     /**
      * 전체 질문 목록 조회
@@ -73,6 +75,9 @@ public class QnaService {
      * @param qnaDTO 등록할 질문 정보
      */
     public void createQna(QnaDTO qnaDTO) {
+        // 금칙어가 포함되어 있으면 등록 자체를 막음 (제목/본문 모두 검사)
+        badWordService.validateContent(qnaDTO.getQnaTitle());
+        badWordService.validateContent(qnaDTO.getQnaContent());
         qnaDTO.setQnaIsSecret(normalizeSecret(qnaDTO.getQnaIsSecret()));
         qnaMapper.insertQna(qnaDTO);
     }
@@ -94,6 +99,9 @@ public class QnaService {
         if (existing.getMemberId() != requesterMemberId) {
             throw new IllegalStateException("수정 권한이 없습니다.");
         }
+        // 금칙어가 포함되어 있으면 수정도 막음 (필터 우회 방지, 제목/본문 모두 검사)
+        badWordService.validateContent(qnaDTO.getQnaTitle());
+        badWordService.validateContent(qnaDTO.getQnaContent());
         qnaDTO.setQnaIsSecret(normalizeSecret(qnaDTO.getQnaIsSecret()));
         qnaMapper.updateQna(qnaDTO);
     }

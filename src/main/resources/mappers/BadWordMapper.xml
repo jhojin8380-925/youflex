@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.BadWordMapper">
+
+    <resultMap id="badWordResultMap" type="com.youflex.dto.BadWordDTO">
+        <id property="badWordId" column="bad_word_id" />
+        <result property="badWordContent" column="bad_word_content" />
+    </resultMap>
+
+    <select id="selectBadWordList" resultMap="badWordResultMap">
+        SELECT bad_word_id, bad_word_content
+        FROM bad_word
+        ORDER BY bad_word_id DESC
+    </select>
+
+    <insert id="insertBadWord" parameterType="com.youflex.dto.BadWordDTO" useGeneratedKeys="true" keyProperty="badWordId">
+        INSERT INTO bad_word (bad_word_content)
+        VALUES (#{badWordContent})
+    </insert>
+
+    <delete id="deleteBadWord" parameterType="int">
+        DELETE FROM bad_word
+        WHERE bad_word_id = #{badWordId}
+    </delete>
+
+</mapper>
