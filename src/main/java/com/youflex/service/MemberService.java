@@ -21,7 +21,7 @@ public class MemberService {
 
     private static final int MAX_GENRE_PREFERENCES = 3;
 
-    // 등업 신청 조건 (project-plan.md 문서상 조건 중 "가입 7일 경과"는 팀 협의로 제외하고 이 3가지만 적용)
+    // 등업 신청 조건 (project-plan.md 참고: 게시글 3회 / 유효경고 0회 / 좋아요 총합 100회)
     private static final int GRADE_UPGRADE_MIN_REVIEWS = 3;
     private static final int GRADE_UPGRADE_MAX_WARNINGS = 0;
     private static final int GRADE_UPGRADE_MIN_LIKES = 100;

@@ -176,6 +176,7 @@ create table review_draft (
     review_draft_id        int auto_increment,
     member_id               int not null,
     review_draft_title      varchar(200),
+    review_draft_related   varchar(50) null,
     review_draft_content    text,
     review_draft_saved_at   datetime not null default now(),
     constraint pk_review_draft primary key (review_draft_id),
