@@ -2,21 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youflex.mapper.ReviewDraftMapper">
 
-	<!-- 1. 특정 임시저장 개별 삭제 -->
-	<delete id="deleteDraftById" parameterType="int">
-		DELETE FROM review_draft
-		WHERE review_draft_id = #{reviewDraftId}
-	</delete>
-
-	<!-- 2. 제목, 내용, 저장 시각 INSERT -->
-	<insert id="insertDraft" parameterType="com.youflex.dto.ReviewDraftDTO">
-		INSERT INTO review_draft(
+	<!--[추가된 부분] 회원별 임시저장 개수 조회(5개 제한 체크용)-->
+	<select id="countDraftByMemberId" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+		FROM review_draft
+		WHERE member_id = #{memberId}
+	</select>
+	
+	<!-- 2. 신규 임시저장 (INSERT) - PK(reviewDraftId) 자동 채움 -->
+	<insert id="insertDraft" parameterType="com.youflex.dto.ReviewDraftDTO" useGeneratedKeys="true" keyProperty="reviewDraftId">
+		INSERT INTO review_draft (
 			member_id,
 			review_draft_title,
 			review_draft_content,
 			review_draft_saved_at,
 			review_draft_related
-		) VALUES(
+		) VALUES (
 			#{memberId},
 			#{reviewDraftTitle},
 			#{reviewDraftContent},
@@ -24,8 +25,20 @@
 			#{reviewDraftRelated}
 		)
 	</insert>
+	
+	<!--기존 임시저장 덮어쓰기-->
+	<update id="updateDraft" parameterType="com.youflex.dto.ReviewDraftDTO">
+		UPDATE review_draft
+		SET review_draft_title = #{reviewDraftTitle},
+			review_draft_content = #{reviewDraftContent},
+			review_draft_related = #{reviewDraftRelated},
+			review_draft_saved_at = NOW()
+		WHERE review_draft_id = #{reviewDraftId}
+			AND member_id = #{memberId}
+	</update>
+	
 
-	<!-- [추가된 쿼리] 3-1. 특정 임시저장 단건 상세 조회 -->
+	<!-- 4. 특정 임시저장 단건 상세 조회 -->
 	<select id="selectDraftById" parameterType="int" resultType="com.youflex.dto.ReviewDraftDTO">
 		SELECT 
 			review_draft_id AS reviewDraftId,
@@ -38,7 +51,7 @@
 		WHERE review_draft_id = #{reviewDraftId}
 	</select>
 
-	<!-- 3-2. 특정 회원의 임시저장 목록 전체 조회 -->
+	<!-- 5. 특정 회원의 임시저장 목록 전체 조회 (최신순 정렬 추가) -->
 	<select id="selectDraftListByMemberId" parameterType="int" resultType="com.youflex.dto.ReviewDraftDTO">
 		SELECT 
 			review_draft_id AS reviewDraftId,
@@ -49,13 +62,13 @@
 			review_draft_related AS reviewDraftRelated
 		FROM review_draft
 		WHERE member_id = #{memberId}
+		ORDER BY review_draft_saved_at DESC
 	</select>
 	
-	<!-- 4. 임시저장 개수 조회 -->
-	<select id="countDraftByMemberId" parameterType="int" resultType="int">
-		SELECT COUNT(*)
-		FROM review_draft
-		WHERE member_id = #{memberId}
-	</select>
+	<!--6. 특정 임시저장 개별 삭제-->
+	<delete id="deleteDraftById" parameterType="int">
+		DELETE FROM review_draft
+		WHERE review_draft_id = #{reviewDraftId}
+	</delete>
 
 </mapper>

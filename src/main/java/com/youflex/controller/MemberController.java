@@ -163,17 +163,22 @@ public class MemberController {
         return "redirect:/mypage";
     }
 
-    // 마이페이지 - "등업신청" 버튼이 fetch로 호출하는 AJAX 엔드포인트. 상태만 '신청'으로 바꿔두면
-    // 관리자 등업신청 관리 화면(getGradeUpgradeRequests)에 바로 노출되어 승인/반려할 수 있음.
+    // 마이페이지 - "등업신청" 버튼이 fetch로 호출하는 AJAX 엔드포인트. 조건(게시글 3회/유효경고 0회/좋아요
+    // 총합 100회)을 만족하면 상태를 '신청'으로 바꿔서 관리자 등업신청 관리 화면에 노출시킴.
     @PostMapping("/mypage/grade-upgrade")
     @ResponseBody
-    public ResponseEntity<Void> requestGradeUpgrade(HttpSession session) {
+    public ResponseEntity<?> requestGradeUpgrade(HttpSession session) {
         Object loginMemberObj = session.getAttribute("loginMember");
         if (!(loginMemberObj instanceof MemberDTO loginMember)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        memberService.requestGradeUpgrade(loginMember.getMemberId());
-        return ResponseEntity.ok().build();
+        try {
+            memberService.requestGradeUpgrade(loginMember.getMemberId());
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            // 조건 미달 사유를 그대로 내려줘서 mypage.js가 알림창에 보여줌
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     // 마이페이지 - 취향(관심 장르) 선택 모달의 "완료" 버튼이 fetch로 호출하는 AJAX 엔드포인트.

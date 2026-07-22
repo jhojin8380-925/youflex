@@ -19,4 +19,7 @@ public interface ReviewLikeMapper {
 
     // 게시글의 전체 좋아요 수
     int countLikes(@Param("reviewId") int reviewId);
+
+    // 이 회원이 작성한 게시글들이 받은 좋아요 총합 (등업 신청 조건 검증용)
+    int countTotalLikesByAuthor(@Param("memberId") int memberId);
 }

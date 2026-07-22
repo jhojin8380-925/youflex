@@ -15,12 +15,15 @@ public interface ReviewDraftMapper {
 	// 2. 신규 임시저장 INSERT
 	void insertDraft(ReviewDraftDTO draftDTO);
 	
-	// 3. 회원의 임시저장 목록 조회
+	// 3. 임시저장글 수정(업데이트)
+	void updateDraft(ReviewDraftDTO draftDTO);
+	
+	// 4. 회원의 임시저장 목록 조회
 	List<ReviewDraftDTO> selectDraftListByMemberId(int memberId);
 	
-	// 4. 특정 임시저장 단건 상세 조회(불러오기용)
+	// 5. 특정 임시저장 단건 상세 조회(불러오기용)
 	ReviewDraftDTO selectDraftById(int reviewDraftId);
 	
-	// 5. 특정 임시저장 개별 삭제
-	void deleteDraftById(int reviewDraftId);
+	// 6. 특정 임시저장 개별 삭제
+	int deleteDraftById(int reviewDraftId);
 }

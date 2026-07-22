@@ -22,11 +22,17 @@ profileFileInput.addEventListener('change', (event) => {
 });
 
 // 등업신청 - 클릭하면 실제로 서버에 신청 상태를 남겨서 관리자 등업신청 관리 화면에 노출시킴
+// (게시글 3회 / 유효경고 0회 / 좋아요 총합 100회 조건 미달이면 서버가 400과 함께 구체적인 사유를 내려줌)
 document.getElementById('rankUpBtn').addEventListener('click', () => {
   fetch('/mypage/grade-upgrade', { method: 'POST' })
     .then((res) => {
-      if (!res.ok) throw new Error('grade upgrade request failed');
-      alert('등업 신청이 접수되었습니다. 관리자 확인 후 등급이 변경됩니다.');
+      if (res.ok) {
+        alert('등업 신청이 접수되었습니다. 관리자 확인 후 등급이 변경됩니다.');
+        return;
+      }
+      return res.text().then((message) => {
+        alert(message || '등업 신청 중 오류가 발생했습니다.');
+      });
     })
     .catch(() => {
       alert('등업 신청 중 오류가 발생했습니다.');

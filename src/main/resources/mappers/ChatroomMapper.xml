@@ -68,7 +68,6 @@
     ORDER BY c.chatroom_created_at DESC
 </select>
 
-
     <!-- 채팅방 정보 수정 -->
     <update id="updateChatroom" parameterType="com.youflex.dto.ChatroomDTO">
         UPDATE chatroom

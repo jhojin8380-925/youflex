@@ -2,66 +2,50 @@ package com.youflex.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.youflex.dto.ReviewDraftDTO;
 import com.youflex.mapper.ReviewDraftMapper;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ReviewDraftService {
+
+	@Autowired
+	private ReviewDraftMapper reviewDraftMapper;
+
+	@Transactional
+	public String saveOrUpdateDraft(ReviewDraftDTO draftDTO) {
+		// 신규 임시저장(id가 0)일 때만 최대 5개 개수 제한 검사
+		if (draftDTO.getReviewDraftId() == 0) {
+			int currentCount = reviewDraftMapper.countDraftByMemberId(draftDTO.getMemberId());
+			if (currentCount >= 5) {
+				return "MAX_LIMIT_EXCEEDED";
+			}
+			// 신규 저장 (INSERT)
+			reviewDraftMapper.insertDraft(draftDTO);
+		} else {
+			// 2. 이미 등록된 임시저장글 수정 시 UPDATE 처리
+			reviewDraftMapper.updateDraft(draftDTO);
+		}
+		return String.valueOf(draftDTO.getReviewDraftId());
+	}
 	
-	private final ReviewDraftMapper draftMapper;
-	
-	// 1. 회원당 현재 임시저장 개수 조회(5개 제한 체크용)
-	@Transactional(readOnly = true)
+	// 필요 시 컨트롤러에서 임시저장 개수만 따로 조회할 수 있도록 하는 메서드
 	public int countDraftByMemberId(int memberId) {
-		return draftMapper.countDraftByMemberId(memberId);
+		return reviewDraftMapper.countDraftByMemberId(memberId);
 	}
-	
-	// 2. 임시저장 신규 생성(기존 건 삭제 없이 누적 저장)
-	@Transactional
-	public void saveDraft(ReviewDraftDTO draftDTO) {
-		draftMapper.insertDraft(draftDTO);
-	}
-	
-	// 3. 회원별 임시저장 전체 목록 조회(최신순 5개까지)
-	@Transactional(readOnly = true)
-	public List<ReviewDraftDTO> getDraftListByMemberId(int memberId){
-		return draftMapper.selectDraftListByMemberId(memberId);
-	}
-	
-	// 4. 특정 임시저장 단건 상세 조회(불러오기용)
-	@Transactional(readOnly = true)
-	public ReviewDraftDTO getDraftById(int reviewDraftId) {
-		return draftMapper.selectDraftById(reviewDraftId);
-	}
-	
-	// 5. 특정 임시저장 개별 삭제
-	@Transactional
-	public void deleteDraftById(int reviewDraftId) {
-		draftMapper.deleteDraftById(reviewDraftId);
-	}
-	
-//	// 1. 임시저장 (기존 임시저장 삭제 후 신규 저장)
-//	@Transactional
-//	public void saveDraft(ReviewDraftDTO draftDTO) {
-//		draftMapper.deleteDraftByMemberId(draftDTO.getMemberId());
-//		draftMapper.insertDraft(draftDTO);
-//	}
-//
-//	// 2. 임시저장 조회
-//	@Transactional(readOnly = true)
-//	public ReviewDraftDTO getDraftByMemberId(int memberId) {
-//		return draftMapper.selectDraftByMemberId(memberId);
-//	}
-//
-//	// 3. 임시저장 삭제
-//	@Transactional
-//	public void deleteDraftByMemberId(int memberId) {
-//		draftMapper.deleteDraftByMemberId(memberId);
-//	}
+
+	public List<ReviewDraftDTO> getDraftList(int memberId) {
+        return reviewDraftMapper.selectDraftListByMemberId(memberId);
+    }
+
+	public ReviewDraftDTO getDraftDetail(int reviewDraftId) {
+        return reviewDraftMapper.selectDraftById(reviewDraftId);
+    }
+
+	public boolean deleteDraft(int reviewDraftId) {
+        return reviewDraftMapper.deleteDraftById(reviewDraftId) > 0;
+    }
 }

@@ -9,6 +9,9 @@ import com.youflex.dto.MemberDTO;
 import com.youflex.dto.PageInfo;
 import com.youflex.mapper.MemberMapper;
 import com.youflex.mapper.MemberMappingMapper;
+import com.youflex.mapper.ReviewLikeMapper;
+import com.youflex.mapper.ReviewMapper;
+import com.youflex.mapper.admin.WarningMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,8 +21,16 @@ public class MemberService {
 
     private static final int MAX_GENRE_PREFERENCES = 3;
 
+    // 등업 신청 조건 (project-plan.md 문서상 조건 중 "가입 7일 경과"는 팀 협의로 제외하고 이 3가지만 적용)
+    private static final int GRADE_UPGRADE_MIN_REVIEWS = 3;
+    private static final int GRADE_UPGRADE_MAX_WARNINGS = 0;
+    private static final int GRADE_UPGRADE_MIN_LIKES = 100;
+
     private final MemberMapper memberMapper;
     private final MemberMappingMapper preferenceMappingMapper;
+    private final ReviewMapper reviewMapper;
+    private final ReviewLikeMapper reviewLikeMapper;
+    private final WarningMapper warningMapper;
 
     // 회원가입 아이디 중복확인(/join/check-id)과 가입 처리(join) 양쪽에서 사용
     public boolean isLoginIdTaken(String memberLoginid) {
@@ -78,8 +89,23 @@ public class MemberService {
         return preferenceMappingMapper.selectGenreCategoryIdsByMemberId(memberId);
     }
 
-    // 마이페이지 - 등업신청 버튼. 조건 검증 없이 접수만 하고, 승인/반려는 관리자가 수동으로 처리(등업신청 관리 화면).
+    // 마이페이지 - 등업신청 버튼. 게시글 3회 이상 / 유효경고 0회 / 본인 게시글 좋아요 총합 100회 이상을
+    // 모두 만족해야 접수되며, 승인/반려는 관리자가 수동으로 처리(등업신청 관리 화면).
     public void requestGradeUpgrade(int memberId) {
+        int reviewCount = reviewMapper.countByMemberId(memberId);
+        if (reviewCount < GRADE_UPGRADE_MIN_REVIEWS) {
+            throw new IllegalStateException(
+                    "게시글을 " + GRADE_UPGRADE_MIN_REVIEWS + "회 이상 작성해야 등업 신청이 가능합니다. (현재 " + reviewCount + "회)");
+        }
+        int warningCount = warningMapper.countActiveWarnings(memberId);
+        if (warningCount > GRADE_UPGRADE_MAX_WARNINGS) {
+            throw new IllegalStateException("유효한 경고가 없어야 등업 신청이 가능합니다. (현재 " + warningCount + "회)");
+        }
+        int likeCount = reviewLikeMapper.countTotalLikesByAuthor(memberId);
+        if (likeCount < GRADE_UPGRADE_MIN_LIKES) {
+            throw new IllegalStateException(
+                    "본인 게시글이 받은 좋아요가 총 " + GRADE_UPGRADE_MIN_LIKES + "회 이상이어야 등업 신청이 가능합니다. (현재 " + likeCount + "회)");
+        }
         memberMapper.requestGradeUpgrade(memberId);
     }
 
