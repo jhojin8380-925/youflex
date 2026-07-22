@@ -68,6 +68,16 @@ if (applySearchBtn) {
   });
 }
 
+const searchForm = document.getElementById('searchForm');
+if (searchForm) {
+  searchForm.addEventListener('submit', () => {
+    const keyword = document.getElementById('searchKeyword').value.trim();
+    const period = document.getElementById('searchPeriod') ? document.getElementById('searchPeriod').value : 'all';
+
+    goToFilteredList({ keyword, period, genres: selectedListGenres });
+  });
+}
+
 // ===== 공통: 현재 정렬/검색 조건을 쿼리 파라미터로 만들어 목록 페이지 재요청 =====
 function goToFilteredList(overrides = {}) {
   const params = new URLSearchParams(window.location.search);

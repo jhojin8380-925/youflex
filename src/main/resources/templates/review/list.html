@@ -22,8 +22,12 @@
 
 		<!-- 상단 고정 공지사항 -->
 		<div class="post-row-list mt-16">
+<<<<<<< HEAD
+			<a class="post-row" th:href="@{/notice}" href="/notice" style="background:var(--bg-2)">
+=======
 			<a class="post-row" th:href="@{/notice/detail(id=1)}" href="06_notice_detail.html"
 				style="background:var(--bg-2)">
+>>>>>>> main
 				<div class="post-row-thumb"
 					style="width:50px; height:50px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
 					<span class="badge badge-admin">공지</span>
@@ -43,11 +47,24 @@
 	    	<button th:classappend="${sort == 'highlight'} ? ' active' : ''" data-sort="highlight">하이라이트</button>
 	    	<button th:classappend="${sort == 'views'} ? ' active' : ''" data-sort="views">조회수순</button>
 			</div>
+<<<<<<< HEAD
+			<div class="write-btn-wrap" th:if="${session.loginMember != null}" style="margin-top:0">
+				<a th:href="@{/review/write}" class="btn btn-primary">✎ 글쓰기</a>
+			</div>
+			<div class="write-btn-wrap" th:if="${session.loginMember == null}" style="margin-top:0">
+				<button class="btn" onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎ 글쓰기</button>
+			</div>
+			<!--<button class="btn"
+				onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎
+				글쓰기</button>-->
+		</div>
+=======
 			<div class="write-btn-wrap" data-role-visible="guest" style="margin-top:0">
 				<button class="btn"
 					onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='02_login.html'">✎
 					글쓰기</button>
 			</div>
+>>>>>>> main
 		</div>
 
 		<!-- 
@@ -69,17 +86,16 @@
 			        style="width: 60px; height: 60px; flex-shrink: 0; overflow: hidden; border-radius: 6px;">
 			        <!-- 이미지가 있는 경우 -->
 			        <img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
-			            th:src="@{${post.reviewImg}}" th:alt="${post.reviewTitle}"
-			            style="width: 100%; height: 100%; object-fit: cover;" />
+			         th:src="@{'/upload/' + ${post.reviewImg}}"
+			         th:alt="${post.reviewTitle}"
+			         style="width:100%; height:100%; object-fit:cover;" />
 
-			        <!-- 이미지가 없는 경우 (대체 레이아웃) -->
-			        <div th:unless="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
-			            style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-2, #2a2a32); color: var(--text-2, #aaa); font-size: 11px;">
-			            No Image
-			        </div>
+			    <!-- 이미지가 없는 경우 (대체 레이아웃) -->
+			    <div th:unless="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+			        style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-2, #2a2a32); color: var(--text-2, #aaa); font-size: 11px;">
+			        No Image
 			    </div>
-
-<!-- 2. [가운데] 게시글 제목 및 메타 -->
+			</div>
                 <div style="flex: 1; padding: 0 16px; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
                     <div class="post-row-title" th:text="${post.reviewTitle}"
                         style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -106,10 +122,10 @@
 		<!-- 검색 바 -->
 		<div class="list-toolbar mt-24" style="justify-content:center">
 			<div class="flex gap-8" style="max-width:450px;">
-				<div class="search-bar" style="margin:0;max-width:none;padding:12px 20px;">
-				    <span class="icon">🔍</span>
-				    <input type="text" id="searchKeyword" placeholder="제목, 작성자로 검색" style="font-size:15px" />
-				</div>
+				<form id="searchForm" class="search-bar" style="margin:0;max-width:none;padding:12px 20px;display:flex;align-items:center;" onsubmit="return false;">
+				    <button type="submit" id="searchSubmitBtn" class="icon" style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer;">🔍</button>
+				    <input type="text" id="searchKeyword" name="keyword" placeholder="제목, 작성자로 검색" style="font-size:15px;border:none;background:transparent;flex:1;color:inherit;outline:none;" />
+				</form>
 				<div class="adv-search-toggle">
 				    <button class="btn" id="advToggleBtn">상세검색 ▾</button>
 				    <div class="adv-search-panel" id="advPanel">
