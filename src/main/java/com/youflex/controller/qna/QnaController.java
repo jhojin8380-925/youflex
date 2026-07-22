@@ -1,6 +1,7 @@
 package com.youflex.controller.qna;
 
 import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import com.youflex.dto.qna.QnaCommentDTO;
 import com.youflex.dto.QnaReportDTO;
 import com.youflex.dto.QnaCommentReportDTO;
 import com.youflex.dto.MemberDTO;
+import com.youflex.exception.BadWordDetectedException;
 import com.youflex.service.qna.QnaService;
 import com.youflex.service.qna.QnaCommentService;
 import com.youflex.service.QnaReportService;
@@ -68,14 +70,18 @@ public class QnaController {
      * @return 등록 성공 시 201 Created, 미로그인 시 401 Unauthorized
      */
     @PostMapping
-    public ResponseEntity<Void> createQna(@RequestBody QnaDTO qnaDTO, HttpSession session) {
+    public ResponseEntity<?> createQna(@RequestBody QnaDTO qnaDTO, HttpSession session) {
         MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
         if (loginMember == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         qnaDTO.setMemberId(loginMember.getMemberId());
-        qnaService.createQna(qnaDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        try {
+            qnaService.createQna(qnaDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (BadWordDetectedException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     /**
@@ -87,7 +93,7 @@ public class QnaController {
      * @return 수정 성공 시 200 OK, 미로그인 시 401, 존재하지 않으면 404, 본인이 아니면 403
      */
     @PutMapping("/{qnaId}")
-    public ResponseEntity<Void> updateQna(@PathVariable("qnaId") int qnaId, @RequestBody QnaDTO qnaDTO,
+    public ResponseEntity<?> updateQna(@PathVariable("qnaId") int qnaId, @RequestBody QnaDTO qnaDTO,
                                            HttpSession session) {
         MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
         if (loginMember == null) {
@@ -102,6 +108,8 @@ public class QnaController {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (BadWordDetectedException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
@@ -144,7 +152,7 @@ public class QnaController {
      * @return 등록 성공 시 201 Created, 미로그인 시 401 Unauthorized
      */
     @PostMapping("/{qnaId}/comments")
-    public ResponseEntity<Void> addComment(@PathVariable("qnaId") int qnaId, @RequestBody QnaCommentDTO commentDTO,
+    public ResponseEntity<?> addComment(@PathVariable("qnaId") int qnaId, @RequestBody QnaCommentDTO commentDTO,
                                             HttpSession session) {
         MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
         if (loginMember == null) {
@@ -154,8 +162,12 @@ public class QnaController {
         commentDTO.setQnaId(qnaId);
         // 클라이언트가 보낸 memberId는 무시하고 세션의 로그인 정보로 강제 세팅 (FK 오류 및 위변조 방지)
         commentDTO.setMemberId(loginMember.getMemberId());
-        qnaCommentService.addComment(commentDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        try {
+            qnaCommentService.addComment(commentDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (BadWordDetectedException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     /**
@@ -167,7 +179,7 @@ public class QnaController {
      * @return 수정 성공 시 200 OK, 미로그인 시 401, 존재하지 않으면 404, 본인이 아니면 403
      */
     @PutMapping("/comments/{qnaCommentId}")
-    public ResponseEntity<Void> updateComment(@PathVariable("qnaCommentId") int qnaCommentId,
+    public ResponseEntity<?> updateComment(@PathVariable("qnaCommentId") int qnaCommentId,
                                                @RequestBody QnaCommentDTO commentDTO,
                                                HttpSession session) {
         MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
@@ -181,6 +193,8 @@ public class QnaController {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (BadWordDetectedException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 

@@ -35,6 +35,7 @@ public class CommentService {
     private final CommentLikeMapper commentLikeMapper;
     private final CommentReportMapper commentReportMapper;
     private final PointService pointService;
+    private final BadWordService badWordService;
 
     /**
      * 특정 게시글의 댓글/대댓글 목록 조회
@@ -74,6 +75,8 @@ public class CommentService {
      * @param commentDTO 등록할 댓글 정보(reviewId, memberId, parentId, commentContent 포함)
      */
     public void addComment(CommentDTO commentDTO) {
+        // 금칙어가 포함되어 있으면 등록 자체를 막음
+        badWordService.validateContent(commentDTO.getCommentContent());
         commentMapper.insertComment(commentDTO);
     }
 
@@ -94,6 +97,8 @@ public class CommentService {
         if ("삭제".equals(comment.getCommentDeleteStatus())) {
             throw new IllegalStateException("삭제된 댓글은 수정할 수 없습니다.");
         }
+        // 금칙어가 포함되어 있으면 수정도 막음 (필터 우회 방지)
+        badWordService.validateContent(newContent);
         comment.setCommentContent(newContent);
         commentMapper.updateComment(comment);
     }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.youflex.dto.CommentDTO;
 import com.youflex.dto.CommentReportDTO;
 import com.youflex.dto.MemberDTO;
+import com.youflex.exception.BadWordDetectedException;
 import com.youflex.service.CommentService;
 import com.youflex.service.CommentService.LikeResult;
 
@@ -44,7 +45,7 @@ public class CommentController {
 
     // 댓글/대댓글 등록 - parentId를 0보다 크게 보내면 대댓글로 등록됨
     @PostMapping("/{reviewId}/comments")
-    public ResponseEntity<Void> addComment(@PathVariable("reviewId") int reviewId,
+    public ResponseEntity<?> addComment(@PathVariable("reviewId") int reviewId,
                                             @RequestBody CommentDTO commentDTO, HttpSession session) {
         MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
         if (loginMember == null) {
@@ -53,13 +54,17 @@ public class CommentController {
         commentDTO.setReviewId(reviewId);
         // 클라이언트가 보낸 memberId는 무시하고 세션의 로그인 정보로 강제 세팅(위변조 방지)
         commentDTO.setMemberId(loginMember.getMemberId());
-        commentService.addComment(commentDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        try {
+            commentService.addComment(commentDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (BadWordDetectedException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     // 댓글 수정 - 작성자 본인 여부는 CommentService에서 검증
     @PutMapping("/comments/{commentId}")
-    public ResponseEntity<Void> updateComment(@PathVariable("commentId") int commentId,
+    public ResponseEntity<?> updateComment(@PathVariable("commentId") int commentId,
                                                @RequestBody CommentDTO commentDTO, HttpSession session) {
         MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
         if (loginMember == null) {
@@ -72,6 +77,8 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (BadWordDetectedException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 

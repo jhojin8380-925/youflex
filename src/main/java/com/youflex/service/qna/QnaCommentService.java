@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import com.youflex.dto.qna.QnaCommentDTO;
 import com.youflex.mapper.qna.QnaCommentMapper;
+import com.youflex.service.BadWordService;
 
 /**
  * Q&A 댓글(QnaComment) 관련 비즈니스 로직
@@ -16,6 +17,7 @@ import com.youflex.mapper.qna.QnaCommentMapper;
 public class QnaCommentService {
 
     private final QnaCommentMapper qnaCommentMapper;
+    private final BadWordService badWordService;
 
     /**
      * 특정 질문(qnaId)에 달린 댓글 목록 조회
@@ -31,6 +33,8 @@ public class QnaCommentService {
      * @param commentDTO 등록할 댓글 정보 (qnaId, memberId, 내용 등 포함)
      */
     public void addComment(QnaCommentDTO commentDTO) {
+        // 금칙어가 포함되어 있으면 등록 자체를 막음
+        badWordService.validateContent(commentDTO.getQnaCommentContent());
         qnaCommentMapper.insertComment(commentDTO);
     }
 
@@ -51,6 +55,8 @@ public class QnaCommentService {
         if (comment.getMemberId() != requesterMemberId) {
             throw new IllegalStateException("수정 권한이 없습니다.");
         }
+        // 금칙어가 포함되어 있으면 수정도 막음 (필터 우회 방지)
+        badWordService.validateContent(newContent);
         comment.setQnaCommentContent(newContent);
         qnaCommentMapper.updateComment(comment);
     }

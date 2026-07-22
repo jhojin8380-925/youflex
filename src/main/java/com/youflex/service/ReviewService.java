@@ -37,10 +37,15 @@ public class ReviewService {
 	private final ReviewReportMapper reviewReportMapper;
 	private final ReviewDraftMapper reviewDraftMapper;
 	private final PointService pointService;
-	
+	private final BadWordService badWordService;
+
 //	1) 게시글 저장
 	@Transactional
 	public void write(ReviewDTO reviewDTO, List<Integer> genreCategoryIds) {
+		// 금칙어가 포함되어 있으면 등록 자체를 막음 (제목/본문 모두 검사)
+		badWordService.validateContent(reviewDTO.getReviewTitle());
+		badWordService.validateContent(reviewDTO.getReviewContent());
+
 		// 1. 게시글 데이터 저장
 		reviewMapper.write(reviewDTO);
 		
@@ -83,6 +88,9 @@ public class ReviewService {
 	
 //	4) 게시글 수정
 	public void update(ReviewDTO reviewDTO) {
+		// 금칙어가 포함되어 있으면 수정 등록도 막음 (필터 우회 방지, 제목/본문 모두 검사)
+		badWordService.validateContent(reviewDTO.getReviewTitle());
+		badWordService.validateContent(reviewDTO.getReviewContent());
 		reviewMapper.update(reviewDTO);
 	}
 

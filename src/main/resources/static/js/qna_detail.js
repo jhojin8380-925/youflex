@@ -121,7 +121,12 @@ function saveUpdateComment(btn, commentId) {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ qnaCommentContent: content })
-  }).then(res => { if (res.ok) location.reload(); else alert('수정에 실패했습니다.'); });
+  }).then(res => {
+    if (res.ok) { location.reload(); return; }
+    res.json().catch(() => null).then(body => {
+      alert((body && body.message) || '수정에 실패했습니다.');
+    });
+  });
 }
 
 // ---- 댓글 등록 버튼 이벤트 바인딩 ----
@@ -139,6 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ qnaCommentContent: content })
-    }).then(res => { if (res.ok) location.reload(); });
+    }).then(res => {
+      if (res.ok) { location.reload(); return; }
+      res.json().catch(() => null).then(body => {
+        alert((body && body.message) || '댓글 등록에 실패했습니다.');
+      });
+    });
   });
 });

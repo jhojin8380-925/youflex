@@ -27,7 +27,9 @@ document.getElementById('qnaSaveBtn').addEventListener('click', () => {
     } else if (res.status === 404) {
       alert('존재하지 않는 질문입니다.');
     } else {
-      alert('수정에 실패했습니다.');
+      res.json().catch(() => null).then(body => {
+        alert((body && body.message) || '수정에 실패했습니다.');
+      });
     }
   });
 });

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.youflex.dto.MemberDTO;
 import com.youflex.dto.ReportDTO;
+import com.youflex.service.BadWordService;
 import com.youflex.service.BannerService;
 import com.youflex.service.admin.AdminReportService;
 import com.youflex.service.admin.AdminStatsService;
@@ -32,6 +33,7 @@ public class AdminViewController {
         private final QnaService qnaService;
         private final AdminStatsService adminStatsService;
         private final BannerService bannerService;
+        private final BadWordService badWordService;
 
         @GetMapping
         public String adminPage(HttpSession session, Model model) {
@@ -63,6 +65,9 @@ public class AdminViewController {
 
                 // 배너 설정 탭
                 model.addAttribute("bannerList", bannerService.getBannerList());
+
+                // 금칙어 관리 탭
+                model.addAttribute("badWordList", badWordService.getBadWordList());
 
                 // 상단 KPI 카드 - 오늘/이번주 가입자 수, 탈퇴 신청자 수, 누적 탈퇴자수, 신고 접수(미처리)
                 model.addAttribute("todayJoinCount", adminStatsService.getTodayJoinCount());
