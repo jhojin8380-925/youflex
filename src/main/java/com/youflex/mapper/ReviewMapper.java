@@ -49,7 +49,10 @@ public interface ReviewMapper {
 	
 	// 게시글 수정 - 취향선택, 장르, 플랫폼, 제목, 별점, 본문내용, 관련작품
 	void update(ReviewDTO reviewDTO);
-	
+
+	// 게시글 수정 시 장르를 다시 선택하므로, 기존 장르 매핑을 전체 삭제하고 재삽입하기 위한 삭제
+	void deleteReviewGenres(@Param("reviewId") int reviewId);
+
 	// 게시글 삭제
 	void delete(int reviewId);
 }

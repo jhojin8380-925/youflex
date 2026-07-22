@@ -39,11 +39,12 @@ public class CommentService {
 
     /**
      * 특정 게시글의 댓글/대댓글 목록 조회
-     * - 대댓글(parentId != 0)은 부모 댓글의 replies에 묶어서 반환
+     * - 대댓글(parentId != 0)은 부모 댓글의 replies에 묶어서 반환하며, 대댓글에 달린 답글(대대댓글)도
+     *   같은 방식으로 재귀적으로 연결되어 트리 구조로 내려감(깊이 제한 없음)
      * - 좋아요 1개 이상인 최상위 댓글 중 상위 3개를 베스트 댓글로 표시(동점이면 먼저 작성된 순)
      * @param reviewId 게시글 ID
      * @param viewerMemberId 조회하는 회원 ID(비로그인이면 null - likedByMe는 항상 false로 내려감)
-     * @return 최상위 댓글 리스트(각 댓글에 replies가 채워진 상태)
+     * @return 최상위 댓글 리스트(각 댓글에 replies가 트리 형태로 채워진 상태)
      */
     public List<CommentDTO> getComments(int reviewId, Integer viewerMemberId) {
         List<CommentDTO> all = commentMapper.findByReviewId(reviewId, viewerMemberId);
@@ -57,7 +58,9 @@ public class CommentService {
                 repliesByParent.computeIfAbsent(c.getParentId(), k -> new ArrayList<>()).add(c);
             }
         }
-        for (CommentDTO c : topLevel) {
+        // 최상위 댓글뿐 아니라 모든 댓글(대댓글 포함)에 자신의 하위 답글을 연결해야
+        // 대댓글의 대댓글(대대댓글)까지 트리로 이어짐
+        for (CommentDTO c : all) {
             c.setReplies(repliesByParent.getOrDefault(c.getCommentId(), List.of()));
         }
 

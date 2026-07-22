@@ -80,4 +80,27 @@
 		SET review_hit = review_hit + 1
 		WHERE review_id = #{reviewId}
 	</update>
+
+	<!-- 게시글 수정 - 작성자 본인 확인은 ReviewService에서, 장르는 review_mapping을 별도로 재삽입 -->
+	<update id="update" parameterType="com.youflex.dto.ReviewDTO">
+		UPDATE review
+		SET review_platform = #{reviewPlatform},
+			review_related = #{reviewRelated},
+			review_title = #{reviewTitle},
+			review_content = #{reviewContent},
+			review_img = #{reviewImg},
+			review_rating = #{reviewRating},
+			review_updated_at = NOW()
+		WHERE review_id = #{reviewId}
+	</update>
+
+	<!-- 게시글 수정 시 기존 장르 매핑 전체 삭제(재삽입 전 초기화용) -->
+	<delete id="deleteReviewGenres">
+		DELETE FROM review_mapping WHERE review_id = #{reviewId}
+	</delete>
+
+	<!-- 게시글 삭제 - FK ON DELETE CASCADE로 댓글/좋아요/북마크/장르매핑까지 함께 삭제됨 -->
+	<delete id="delete" parameterType="int">
+		DELETE FROM review WHERE review_id = #{reviewId}
+	</delete>
 </mapper>

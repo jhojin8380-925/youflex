@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,9 +28,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.youflex.dto.CommentDTO;
+import com.youflex.dto.GenreCategoryDTO;
 import com.youflex.dto.MemberDTO;
 import com.youflex.dto.ReviewDTO;
 import com.youflex.exception.BadWordDetectedException;
+import com.youflex.exception.ReviewNotFoundException;
 import com.youflex.service.BadWordService;
 import com.youflex.service.CommentService;
 import com.youflex.service.GenreCategoryService;
@@ -139,7 +142,8 @@ public class ReviewController {
 		Integer viewerMemberId = loginMember != null ? loginMember.getMemberId() : null;
 		List<CommentDTO> comments = commentService.getComments(reviewId, viewerMemberId);
 		model.addAttribute("comments", comments);
-		model.addAttribute("commentCount", comments.stream().mapToInt(c -> 1 + c.getReplies().size()).sum());
+		// 대댓글의 대댓글까지 트리로 내려오므로 개수도 재귀적으로 집계
+		model.addAttribute("commentCount", countComments(comments));
 
 		// 베스트 댓글 미리보기(상위 3개, 좋아요 많은 순)
 		List<CommentDTO> bestComments = comments.stream()
@@ -148,6 +152,82 @@ public class ReviewController {
 				.collect(Collectors.toList());
 		model.addAttribute("bestComments", bestComments);
 		return "review/detail";
+	}
+
+	// 4) 게시글 수정 폼으로 이동 - 작성자 본인만 접근 가능
+	@GetMapping("/review/{reviewId}/update")
+	public String updateForm(@PathVariable("reviewId") int reviewId,
+			@RequestParam(value="error", required=false) String error,
+			Model model, HttpSession session) {
+		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+		if (loginMember == null) {
+			return "redirect:/login";
+		}
+
+		// 수정 폼 진입은 실제 조회가 아니므로 조회수를 올리지 않음
+		ReviewDTO review = reviewService.findById(reviewId, false);
+		if (review.getMemberId() != loginMember.getMemberId()) {
+			return "redirect:/review/" + reviewId;
+		}
+		model.addAttribute("review", review);
+		model.addAttribute("genres", genreCategoryService.getAllGenres());
+		model.addAttribute("likeCount", reviewService.getLikeCount(reviewId));
+		model.addAttribute("commentCount", countComments(commentService.getComments(reviewId, null)));
+		// 장르 칩 모달에서 이미 선택돼있던 장르를 미리 체크 표시하기 위한 id 집합
+		model.addAttribute("selectedGenreIds", review.getGenreList().stream()
+				.map(GenreCategoryDTO::getGenreCategoryId)
+				.collect(Collectors.toSet()));
+
+		// 금칙어 포함으로 수정이 막혀 되돌아온 경우 안내 문구 표시
+		if ("badword".equals(error)) {
+			model.addAttribute("badWordError", "금칙어가 포함되어 있어 수정할 수 없습니다. 내용을 수정한 후 다시 시도해주세요.");
+		}
+
+		return "review/update";
+	}
+
+	// 5) 게시글 수정 처리 - 작성자 본인만 가능 (검증은 ReviewService에서)
+	@PostMapping("/review/{reviewId}/update")
+	public String update(@PathVariable("reviewId") int reviewId, ReviewDTO reviewDTO, HttpSession session,
+			@RequestParam(value="genreCategoryIds", required=false) List<Integer> genreCategoryIds) throws IOException {
+		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+		if (loginMember == null) {
+			return "redirect:/login";
+		}
+		reviewDTO.setReviewId(reviewId);
+
+		if (reviewDTO.getImgFile() != null && !reviewDTO.getImgFile().isEmpty()) {
+			// 새 이미지를 첨부한 경우에만 저장하고 교체 (미첨부 시 ReviewService에서 기존 이미지 유지)
+			reviewDTO.setReviewImg(saveFile(reviewDTO.getImgFile()));
+		}
+
+		try {
+			reviewService.update(reviewDTO, genreCategoryIds, loginMember.getMemberId());
+		} catch (BadWordDetectedException e) {
+			return "redirect:/review/" + reviewId + "/update?error=badword";
+		} catch (IllegalStateException e) {
+			return "redirect:/review/" + reviewId;
+		}
+
+		return "redirect:/review/" + reviewId;
+	}
+
+	// 6) 게시글 삭제 - 작성자 본인만 가능 (하드 삭제)
+	@DeleteMapping("/review/{reviewId}")
+	@ResponseBody
+	public ResponseEntity<Void> delete(@PathVariable("reviewId") int reviewId, HttpSession session) {
+		MemberDTO loginMember = (MemberDTO) session.getAttribute("loginMember");
+		if (loginMember == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		try {
+			reviewService.delete(reviewId, loginMember.getMemberId());
+			return ResponseEntity.noContent().build();
+		} catch (ReviewNotFoundException e) {
+			return ResponseEntity.notFound().build();
+		} catch (IllegalStateException e) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
 	}
 
 	// 좋아요 토글
@@ -192,6 +272,15 @@ public class ReviewController {
 	static class ReportRequest {
 		private String reason;
 		private String content;
+	}
+
+	// 댓글 트리(대댓글의 대댓글 포함) 전체 개수를 재귀적으로 집계
+	private int countComments(List<CommentDTO> comments) {
+		int count = 0;
+		for (CommentDTO c : comments) {
+			count += 1 + countComments(c.getReplies());
+		}
+		return count;
 	}
 
 	// 세션에 이 게시글을 조회한 이력이 있는지 확인

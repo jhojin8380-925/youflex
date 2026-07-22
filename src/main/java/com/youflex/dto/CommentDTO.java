@@ -31,5 +31,5 @@ public class CommentDTO {
     // 댓글 목록 조회 시 CommentService가 채워주는 값 (DB 컬럼 아님)
     private boolean best; // 좋아요 상위 3개(1개 이상) 안에 들면 true - 베스트 댓글로 표시
     @Builder.Default
-    private List<CommentDTO> replies = List.of(); // 이 댓글에 달린 대댓글(1단계만 지원)
+    private List<CommentDTO> replies = List.of(); // 이 댓글에 달린 답글(대댓글의 대댓글도 재귀적으로 연결되는 트리 구조, 깊이 제한 없음)
 }

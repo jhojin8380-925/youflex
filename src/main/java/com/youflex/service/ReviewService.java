@@ -86,15 +86,45 @@ public class ReviewService {
 		return review;
 	}
 	
-//	4) 게시글 수정
-	public void update(ReviewDTO reviewDTO) {
-		// 금칙어가 포함되어 있으면 수정 등록도 막음 (필터 우회 방지, 제목/본문 모두 검사)
+//	4) 게시글 수정 - 작성자 본인만 가능, 새 이미지 미첨부 시 기존 이미지 유지, 장르는 전체 삭제 후 재삽입
+	@Transactional
+	public void update(ReviewDTO reviewDTO, List<Integer> genreCategoryIds, int requesterMemberId) {
+		ReviewDTO existing = reviewMapper.findById(reviewDTO.getReviewId());
+		if (existing == null) {
+			throw new ReviewNotFoundException("존재하지 않는 게시글입니다. reviewId=" + reviewDTO.getReviewId());
+		}
+		if (existing.getMemberId() != requesterMemberId) {
+			throw new IllegalStateException("수정 권한이 없습니다.");
+		}
+		// 금칙어가 포함되어 있으면 수정도 막음 (필터 우회 방지, 제목/본문 모두 검사)
 		badWordService.validateContent(reviewDTO.getReviewTitle());
 		badWordService.validateContent(reviewDTO.getReviewContent());
+
+		// 새 이미지를 첨부하지 않았으면 기존 이미지를 그대로 유지
+		if (reviewDTO.getReviewImg() == null) {
+			reviewDTO.setReviewImg(existing.getReviewImg());
+		}
 		reviewMapper.update(reviewDTO);
+
+		// 장르는 전체 삭제 후, 이번에 새로 선택한 장르만 다시 저장
+		reviewMapper.deleteReviewGenres(reviewDTO.getReviewId());
+		if (genreCategoryIds != null && !genreCategoryIds.isEmpty()) {
+			reviewMapper.insertReviewGenres(reviewDTO.getReviewId(), genreCategoryIds);
+		}
 	}
 
-//	5) 게시글 삭제
+//	5) 게시글 삭제 - 작성자 본인만 가능 (하드 삭제, FK CASCADE로 댓글/좋아요/북마크/장르매핑까지 함께 삭제됨)
+	public void delete(int reviewId, int requesterMemberId) {
+		ReviewDTO existing = reviewMapper.findById(reviewId);
+		if (existing == null) {
+			throw new ReviewNotFoundException("존재하지 않는 게시글입니다. reviewId=" + reviewId);
+		}
+		if (existing.getMemberId() != requesterMemberId) {
+			throw new IllegalStateException("삭제 권한이 없습니다.");
+		}
+		reviewMapper.delete(reviewId);
+	}
+
 
 //	마이페이지 - 내 글 탭(5개씩 페이징). page는 1부터 시작.
 	public List<ReviewDTO> getMyReviews(int memberId, int page) {
