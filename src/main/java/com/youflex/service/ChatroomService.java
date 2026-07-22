@@ -216,6 +216,13 @@ public class ChatroomService {
     }
 
     /**
+     * ★ 추가: 특정 채팅방의 현재 실시간 참여자 목록 조회 (방장이 상단에 위치하도록 정렬)
+     */
+    public List<com.youflex.dto.ChatMemberDTO> getChatroomMembers(int chatroomId) {
+        return chatMemberMapper.selectMembersByChatroomId(chatroomId);
+    }
+
+    /**
      * ★ 추가: 특정 메시지에 경고 부여
      * - 방장만 가능
      * - 경고 누적 MAX_WARNING_COUNT(3)회 이상이면 해당 회원 강제퇴장

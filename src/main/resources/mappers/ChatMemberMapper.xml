@@ -47,6 +47,22 @@
           AND chat_member_status = '참여중'
     </select>
 
+    <!-- 특정 채팅방의 현재 참여자 목록 조회 (방장이 상단 고정) -->
+    <select id="selectMembersByChatroomId" resultType="com.youflex.dto.ChatMemberDTO">
+        SELECT cm.chat_member_id AS chatMemberId,
+               cm.member_id AS memberId,
+               cm.chatroom_id AS chatroomId,
+               cm.chat_member_role AS chatMemberRole,
+               cm.chat_member_status AS chatMemberStatus,
+               m.member_name AS memberName
+        FROM chat_member cm
+        JOIN member m ON cm.member_id = m.member_id
+        WHERE cm.chatroom_id = #{chatroomId}
+          AND cm.chat_member_status = '참여중'
+        ORDER BY CASE WHEN cm.chat_member_role = '방장' THEN 0 ELSE 1 END,
+                 m.member_name ASC
+    </select>
+
     <!-- ★ 추가: 강퇴 처리 — 참여 상태를 '강퇴'로 변경 (물리 삭제 대신 소프트 처리) -->
     <update id="updateStatusToKicked">
         UPDATE chat_member

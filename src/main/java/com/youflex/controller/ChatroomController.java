@@ -215,6 +215,18 @@ public class ChatroomController {
     }
 
     /**
+     * 특정 채팅방의 현재 실시간 참여자 목록 조회 (방장 상단 고정)
+     */
+    @GetMapping("/{chatroomId}/members")
+    public ResponseEntity<?> getChatroomMembers(@PathVariable("chatroomId") int chatroomId, HttpSession session) {
+        Integer memberId = getLoginMemberId(session);
+        if (memberId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        return ResponseEntity.ok(chatroomService.getChatroomMembers(chatroomId));
+    }
+
+    /**
      * 특정 메시지에 경고 부여 (방장 전용)
      * - 경고 누적 3회 이상 시 서버에서 자동으로 해당 회원을 강제퇴장 처리
      * - 대상 회원에게만 개인 채널로 즉시 안내 전송

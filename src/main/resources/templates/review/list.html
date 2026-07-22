@@ -211,40 +211,7 @@
 	</div>
 
 	<div class="overlay-backdrop" id="notificationBackdrop"></div>
-	<aside class="slide-panel" id="notificationPanel">
-		<div class="panel-header">
-			<h3>🔔 알림</h3>
-			<button class="panel-close" id="notificationClose">✕</button>
-		</div>
-		<div class="panel-body">
-			<div class="notification-clear-row"><button class="notification-clear-all" type="button">모두 삭제</button>
-			</div>
-			<div class="notification-item">
-				<span class="notification-icon">⚠</span>
-				<div>
-					<div class="notification-text">비속어 사용으로 경고 1회가 부여되었습니다.</div>
-					<div class="notification-time">10분 전</div>
-				</div>
-				<button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
-			</div>
-			<div class="notification-item">
-				<span class="notification-icon">💬</span>
-				<div>
-					<div class="notification-text">작성하신 질문 "디즈니+ 로그인 오류에 어떻게 대처하나요?"에 관리자 답변이 등록되었습니다.</div>
-					<div class="notification-time">2시간 전</div>
-				</div>
-				<button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
-			</div>
-			<div class="notification-item">
-				<span class="notification-icon">💬</span>
-				<div>
-					<div class="notification-text">내 게시글 "「오징어게임 3」, 이대로 끝내도 되는가"에 새 댓글이 달렸습니다.</div>
-					<div class="notification-time">어제</div>
-				</div>
-				<button class="notification-delete" type="button" aria-label="알림 삭제">✕</button>
-			</div>
-		</div>
-	</aside>
+	<aside class="slide-panel" th:replace="~{fragments/layout :: notification}"></aside>
 
 	<button class="fab" id="chatbotFab" title="챗봇 실행">💬</button>
 	<div class="overlay-backdrop" id="chatbotBackdrop"></div>

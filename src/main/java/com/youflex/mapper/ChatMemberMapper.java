@@ -1,7 +1,9 @@
 package com.youflex.mapper;
 
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import com.youflex.dto.ChatMemberDTO;
 
 @Mapper
 public interface ChatMemberMapper {
@@ -51,4 +53,9 @@ public interface ChatMemberMapper {
      */
     int isKickedFromChatroom(@Param("chatroomId") int chatroomId,
                               @Param("memberId") int memberId);
+
+    /**
+     * 특정 채팅방의 현재 참여자 목록 조회 (방장이 상단에 위치하도록 정렬)
+     */
+    List<ChatMemberDTO> selectMembersByChatroomId(int chatroomId);
 }

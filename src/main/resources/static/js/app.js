@@ -15,9 +15,197 @@ let currentChatroomId = null;
 let currentChatroomRole = null;
 
 
-// ! STOMP 클라이언트 및 개별 방 구독 객체 전역 관리 변수 추가 !
 let currentStompClient = null;
 let currentChatroomSubscription = null;
+
+// ★ 추가: 읽지 않은 실시간 채팅/알림 카운트 뱃지 변수 및 함수
+let unreadChatCount = 0;
+
+function updateChatUnreadBadge() {
+    const badgeEl = document.getElementById("chatUnreadBadge") || document.querySelector("#chatroomTrigger .badge");
+    if (!badgeEl) return;
+    if (unreadChatCount > 0) {
+        badgeEl.textContent = unreadChatCount > 99 ? "99+" : unreadChatCount;
+        badgeEl.style.display = "inline-flex";
+    } else {
+        badgeEl.style.display = "none";
+    }
+}
+
+function resetChatUnreadBadge() {
+    unreadChatCount = 0;
+    updateChatUnreadBadge();
+}
+
+function incrementChatUnreadBadge() {
+    unreadChatCount++;
+    updateChatUnreadBadge();
+}
+
+/** 알림 시각 포맷팅 - occurredAt(서버가 내려준 실제 발생 시각)이 있으면 그걸 쓰고,
+ *  없으면(경고/강퇴처럼 실시간 푸시만 있고 별도 시각 필드가 없는 경우) 현재 시각 사용 */
+function formatNotifTime(occurredAt) {
+    const d = occurredAt ? new Date(occurredAt) : new Date();
+    return d.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+}
+
+// ==========================================================================
+// ★ 헤더 🔔 알림 패널 관리 (헤더 전용)
+// ==========================================================================
+let notificationList = []; // 헤더 알림 목록 배열
+
+/** 헤더 🔔 버튼 위 알림 뱃지 갱신 */
+function updateNotifBadge() {
+    const el = document.getElementById("notifUnreadBadge");
+    if (!el) return;
+    const unread = notificationList.filter(n => !n.read).length;
+    if (unread > 0) {
+        el.textContent = unread > 99 ? "99+" : unread;
+        el.style.display = "inline-flex";
+    } else {
+        el.style.display = "none";
+    }
+}
+
+/** 헤더 알림 패널 목록 렌더링 */
+function renderNotificationList() {
+    const listEl = document.getElementById("notificationList");
+    const emptyEl = document.getElementById("notifEmptyMsg");
+    if (!listEl) return;
+    listEl.querySelectorAll(".notification-item").forEach(el => el.remove());
+    if (notificationList.length === 0) {
+        if (emptyEl) emptyEl.style.display = "block";
+        return;
+    }
+    if (emptyEl) emptyEl.style.display = "none";
+    [...notificationList].reverse().forEach(notif => {
+        const item = document.createElement("div");
+        item.className = "notification-item" + (notif.read ? "" : " unread");
+        item.innerHTML = `
+            <span class="notification-icon">${notif.icon}</span>
+            <div style="flex:1; min-width:0;">
+                <div class="notification-text">${notif.text}</div>
+                <div class="notification-time">${notif.time}</div>
+            </div>
+        `;
+        listEl.insertBefore(item, listEl.firstChild);
+    });
+}
+
+/** 헤더 알림 패널에 새 알림 추가 (occurredAt: 서버가 내려준 실제 발생 시각, 생략 시 현재 시각) */
+function addNotification(icon, text, occurredAt) {
+    const timeStr = formatNotifTime(occurredAt);
+    notificationList.push({ icon, text, time: timeStr, read: false });
+    if (notificationList.length > 50) notificationList.shift();
+    updateNotifBadge();
+    const panel = document.getElementById("notificationPanel");
+    if (panel && panel.classList.contains("open")) {
+        renderNotificationList();
+    }
+}
+
+/** 헤더 알림 패널 열기 – 모두 읽음 처리 */
+function openNotificationPanel() {
+    notificationList.forEach(n => n.read = true);
+    updateNotifBadge();
+    renderNotificationList();
+}
+
+
+// ==========================================================================
+// ★ 채팅방 전용 🔔 알림 팝업 관리 (채팅 패널 내부 전용, 헤더와 완전 별개)
+// ==========================================================================
+let chatRoomNotifList = []; // 채팅방 전용 알림 목록
+let chatRoomNotifIdSeq = 1; // 알림 항목별 개별 삭제를 위한 고유 id 발급 카운터
+
+/** 채팅방 🔔 버튼 위 뱃지 갱신 */
+function updateChatRoomNotifBadge() {
+    const btn = document.getElementById("openNotifPanelBtn");
+    if (!btn) return;
+    let badge = btn.querySelector(".cr-notif-badge");
+    const unread = chatRoomNotifList.filter(n => !n.read).length;
+    if (unread > 0) {
+        if (!badge) {
+            badge = document.createElement("span");
+            badge.className = "cr-notif-badge";
+            badge.style.cssText = "position:absolute;top:-4px;right:-4px;background:var(--accent);color:#fff;border-radius:50%;font-size:10px;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;padding:0 3px;line-height:1;";
+            btn.style.position = "relative";
+            btn.appendChild(badge);
+        }
+        badge.textContent = unread > 99 ? "99+" : unread;
+    } else {
+        if (badge) badge.remove();
+    }
+}
+
+/** 채팅방 전용 알림 목록 렌더링 (#chatRoomNotifPanel 안의 #chatRoomNotifList) */
+function renderChatRoomNotifList() {
+    const listEl = document.getElementById("chatRoomNotifList");
+    const emptyEl = document.getElementById("chatRoomNotifEmptyMsg");
+    if (!listEl) return;
+    listEl.querySelectorAll(".notification-item").forEach(el => el.remove());
+    if (chatRoomNotifList.length === 0) {
+        if (emptyEl) emptyEl.style.display = "block";
+        return;
+    }
+    if (emptyEl) emptyEl.style.display = "none";
+    [...chatRoomNotifList].reverse().forEach(notif => {
+        const item = document.createElement("div");
+        item.className = "notification-item" + (notif.read ? "" : " unread");
+        item.innerHTML = `
+            <span class="notification-icon">${notif.icon}</span>
+            <div style="flex:1; min-width:0;">
+                <div class="notification-text">${notif.text}</div>
+                <div class="notification-time">${notif.time}</div>
+            </div>
+            <button type="button" class="notification-delete" aria-label="알림 삭제" data-notif-id="${notif.id}">✕</button>
+        `;
+        listEl.insertBefore(item, listEl.firstChild);
+    });
+}
+
+/** 채팅방 전용 알림 목록에서 개별 항목 삭제 (개별 삭제(✕) 버튼 클릭 시 호출) */
+function removeChatRoomNotif(notifId) {
+    chatRoomNotifList = chatRoomNotifList.filter(n => n.id !== notifId);
+    updateChatRoomNotifBadge();
+    renderChatRoomNotifList();
+}
+
+/** 채팅방 전용 알림 슬라이드 패널 열기 – 모두 읽음 처리 */
+function openChatRoomNotifPanel() {
+    const panel = document.getElementById("chatRoomNotifPanel");
+    if (!panel) return;
+    chatRoomNotifList.forEach(n => n.read = true);
+    updateChatRoomNotifBadge();
+    renderChatRoomNotifList();
+    panel.classList.add("open");
+}
+
+/** 채팅방 전용 알림 슬라이드 패널 닫기 */
+function closeChatRoomNotifPanel() {
+    const panel = document.getElementById("chatRoomNotifPanel");
+    if (panel) panel.classList.remove("open");
+}
+
+/** 채팅방 전용 알림 슬라이드 패널 토글 (openNotifPanelBtn 클릭 시 호출) */
+function toggleChatRoomNotifPanel() {
+    const panel = document.getElementById("chatRoomNotifPanel");
+    if (!panel) return;
+    if (panel.classList.contains("open")) closeChatRoomNotifPanel();
+    else openChatRoomNotifPanel();
+}
+
+/** 채팅방 전용 알림 추가 (occurredAt: 서버가 내려준 실제 발생 시각, 생략 시 현재 시각) */
+function addChatRoomNotif(icon, text, occurredAt) {
+    const timeStr = formatNotifTime(occurredAt);
+    chatRoomNotifList.push({ id: chatRoomNotifIdSeq++, icon, text, time: timeStr, read: false });
+    if (chatRoomNotifList.length > 100) chatRoomNotifList.shift();
+    updateChatRoomNotifBadge();
+    const panel = document.getElementById("chatRoomNotifPanel");
+    if (panel && panel.classList.contains("open")) {
+        renderChatRoomNotifList();
+    }
+}
 
 
 // ==========================================================================
@@ -350,7 +538,7 @@ function renderChatroomList(rooms) {
     <section class="room-section">
       <div class="section-title">
         <span>내가 참여 중인 방</span>
-        <span class="count">${joinedRooms.length}</span>
+        <button type="button" id="openNotifPanelBtn" title="알림 열기" style="background:none; border:none; cursor:pointer; font-size:16px; padding:2px 4px; line-height:1; color:inherit;">🔔</button>
       </div>
   `;
 
@@ -559,9 +747,22 @@ function initChatroomSocket() {
         if (currentMemberId > 0) {
             currentStompClient.subscribe(`/sub/member/${currentMemberId}/notice`, (message) => {
                 const notice = JSON.parse(message.body);
+
+                // 알림 도착 시 채팅 패널이 닫혀있으면 💬 뱃지 +1
+                const chatPanel = document.getElementById("chatroomPanel");
+                if (!chatPanel || !chatPanel.classList.contains("open")) {
+                    incrementChatUnreadBadge();
+                }
+
                 if (notice.type === "WARNING") {
+                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 경고 알림 추가
+                    addChatRoomNotif("⚠️", notice.message);
+                    addNotification("⚠️", notice.message);
                     alert(`[경고 알림]\n${notice.message}`);
                 } else if (notice.type === "KICKED") {
+                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 강퇴 알림 추가
+                    addChatRoomNotif("🚫", notice.message);
+                    addNotification("🚫", notice.message);
                     alert(`[강제퇴장 알림]\n${notice.message}`);
                     // 현재 해당 채팅방에 입장해 있다면 즉시 세션 해제 및 목록으로 이동
                     if (currentChatroomId && currentChatroomId == notice.chatroomId) {
@@ -618,9 +819,22 @@ function connectChatroom(chatroomId) {
         if (currentMemberId > 0) {
             currentStompClient.subscribe(`/sub/member/${currentMemberId}/notice`, (message) => {
                 const notice = JSON.parse(message.body);
+
+                // 알림 도착 시 채팅 패널이 닫혀있으면 💬 뱃지 +1
+                const chatPanel = document.getElementById("chatroomPanel");
+                if (!chatPanel || !chatPanel.classList.contains("open")) {
+                    incrementChatUnreadBadge();
+                }
+
                 if (notice.type === "WARNING") {
+                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 경고 알림 추가
+                    addChatRoomNotif("⚠️", notice.message);
+                    addNotification("⚠️", notice.message);
                     alert(`[경고 알림]\n${notice.message}`);
                 } else if (notice.type === "KICKED") {
+                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 강퇴 알림 추가
+                    addChatRoomNotif("🚫", notice.message);
+                    addNotification("🚫", notice.message);
                     alert(`[강제퇴장 알림]\n${notice.message}`);
                     // 현재 해당 채팅방에 입장해 있다면 즉시 세션 해제 및 목록으로 이동
                     if (currentChatroomId && currentChatroomId == notice.chatroomId) {
@@ -668,15 +882,15 @@ function appendChatMessage(msgDTO) {
     const messagesBox = document.getElementById("chatroomMessages");
     if (!messagesBox) return;
 
-    // ★ 수정: 이름(memberName) 대신 회원 고유 ID(memberId)로 내 메시지인지 비교
-    const memberIdInput = document.getElementById("currentMemberId");
-    const currentMemberId = memberIdInput ? Number(memberIdInput.value) : 0;
+    // ★ 0. 중복 메시지 렌더링 차단 (ID 기반 중복 검사)
+    if (msgDTO.chatMessageId) {
+        const existingMsg = messagesBox.querySelector(`[data-message-id="${msgDTO.chatMessageId}"]`);
+        if (existingMsg) return;
+    }
 
-    // 받아온 메시지의 작성자 ID와 내 ID가 같으면 'me' 클래스 추가 (우측 빨간색)
-    const isMe = (msgDTO.memberId === currentMemberId);
+    const content = msgDTO.chatMessageContent || "";
 
     // ★ 시스템 메시지 여부 판단 (memberName이 SYSTEM이거나, 입/퇴장/강퇴/경고 안내 멘트인 경우)
-    const content = msgDTO.chatMessageContent || "";
     const isWarnMsg = content.includes("경고를 받았습니다") || content.includes("⚠️") || content.includes("강제퇴장");
     const isSystemMsg = msgDTO.memberName === "SYSTEM" ||
         !msgDTO.memberId ||
@@ -684,7 +898,25 @@ function appendChatMessage(msgDTO) {
         content.includes("퇴장했습니다") ||
         isWarnMsg;
 
+    // ★ 시스템 메시지 텍스트 중복 방지 (바로 직전 메시지와 텍스트가 일치하는 경우 중복 렌더링 방지)
+    if (isSystemMsg && messagesBox.lastElementChild) {
+        const lastText = messagesBox.lastElementChild.textContent || "";
+        if (lastText.trim() === content.trim()) {
+            return;
+        }
+    }
+
+    // ★ 수정: 이름(memberName) 대신 회원 고유 ID(memberId)로 내 메시지인지 비교
+    const memberIdInput = document.getElementById("currentMemberId");
+    const currentMemberId = memberIdInput ? Number(memberIdInput.value) : 0;
+
+    // 받아온 메시지의 작성자 ID와 내 ID가 같으면 'me' 클래스 추가 (우측 빨간색)
+    const isMe = (msgDTO.memberId === currentMemberId);
+
     const msgDiv = document.createElement("div");
+    if (msgDTO.chatMessageId) {
+        msgDiv.dataset.messageId = msgDTO.chatMessageId;
+    }
 
     if (isSystemMsg) {
         msgDiv.className = isWarnMsg ? "chat-msg system warning" : "chat-msg system";
@@ -713,7 +945,25 @@ function appendChatMessage(msgDTO) {
 
     messagesBox.appendChild(msgDiv);
 
-    // 스크롤 맨 아래로 (앞의 ! 제거)
+    // ★ 시스템 메시지(입장/퇴장/경고/강퇴)는 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에도 추가
+    if (isSystemMsg) {
+        let notifIcon = "💬";
+        if (content.includes("입장했습니다")) notifIcon = "🚪";
+        else if (content.includes("퇴장했습니다")) notifIcon = "👋";
+        else if (content.includes("강제퇴장") || content.includes("🚫")) notifIcon = "🚫";
+        else if (content.includes("경고") || content.includes("⚠")) notifIcon = "⚠️";
+        const notifText = content.split("\n")[0];
+        addChatRoomNotif(notifIcon, notifText, msgDTO.chatMessageCreatedAt); // 채팅방 전용 🔔 팝업에 추가
+        addNotification(notifIcon, notifText, msgDTO.chatMessageCreatedAt); // 헤더 🔔 알림 패널에 추가
+    } else if (!isMe) {
+        // 일반 채팅 메시지 → 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 추가
+        incrementChatUnreadBadge();
+        const chatNotifText = `${msgDTO.memberName}: ${content.length > 30 ? content.substring(0, 30) + "..." : content}`;
+        addChatRoomNotif("💬", chatNotifText, msgDTO.chatMessageCreatedAt);
+        addNotification("💬", chatNotifText, msgDTO.chatMessageCreatedAt);
+    }
+
+    // 스크롤 맨 아래로
     scrollToBottom(messagesBox);
 }
 
@@ -754,6 +1004,11 @@ async function switchToChatroom(chatroomId, chatroomTitle) {
         if (response.ok) {
             const messageList = await response.json();
             messageList.forEach(msg => appendChatMessage(msg));
+            requestAnimationFrame(() => {
+                if (messagesBox) {
+                    scrollToBottom(messagesBox);
+                }
+            });
         }
     } catch (error) {
         console.error("채팅 메시지 내역 로드 실패:", error);
@@ -786,6 +1041,11 @@ async function switchToChatroom(chatroomId, chatroomTitle) {
     const chatTab = document.querySelector('[data-tab-target="chat"]');
     if (chatTab) {
         chatTab.click();
+        requestAnimationFrame(() => {
+            if (messagesBox) {
+                scrollToBottom(messagesBox);
+            }
+        });
     }
 }
 // ==========================================================================
@@ -978,12 +1238,70 @@ function initChatroomChat() {
 
     const chatroomTrigger = document.getElementById("chatroomTrigger");
     if (chatroomTrigger) {
-        chatroomTrigger.addEventListener("click", loadChatroomList);
+        chatroomTrigger.addEventListener("click", () => {
+            resetChatUnreadBadge();
+            loadChatroomList(true);
+        });
     }
+
+    // ★ 🔔 알림 아이콘 클릭 → 알림 패널 열기 & 읽음 처리
+    const notificationTrigger = document.getElementById("notificationTrigger");
+    if (notificationTrigger) {
+        notificationTrigger.addEventListener("click", () => {
+            openNotificationPanel();
+        });
+    }
+
+    // ★ 알림 전체 삭제 버튼
+    const notificationClearBtn = document.getElementById("notificationClearBtn");
+    if (notificationClearBtn) {
+        notificationClearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            notificationList = [];
+            updateNotifBadge();
+            renderNotificationList();
+        });
+    }
+
+    // ★ 채팅방 전용 🔔 알림 슬라이드 패널: 닫기 / 전체 삭제 버튼
+    const chatRoomNotifClose = document.getElementById("chatRoomNotifClose");
+    if (chatRoomNotifClose) {
+        chatRoomNotifClose.addEventListener("click", closeChatRoomNotifPanel);
+    }
+    const chatRoomNotifClearBtn = document.getElementById("chatRoomNotifClearBtn");
+    if (chatRoomNotifClearBtn) {
+        chatRoomNotifClearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            chatRoomNotifList = [];
+            updateChatRoomNotifBadge();
+            renderChatRoomNotifList();
+        });
+    }
+    // ★ 채팅방 알림 개별 삭제(✕) 버튼: 목록이 매번 다시 그려지므로 위임 방식으로 처리
+    const chatRoomNotifListEl = document.getElementById("chatRoomNotifList");
+    if (chatRoomNotifListEl) {
+        chatRoomNotifListEl.addEventListener("click", (e) => {
+            const delBtn = e.target.closest(".notification-delete");
+            if (!delBtn) return;
+            e.stopPropagation();
+            removeChatRoomNotif(Number(delBtn.dataset.notifId));
+        });
+    }
+    // 채팅방 패널이 닫히면 옆에 나란히 떠있던 채팅방 알림 패널도 같이 닫음
+    ["chatroomClose", "chatroomBackdrop"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", closeChatRoomNotifPanel);
+    });
 
     const chatroomListContainer = document.getElementById("chatroomListContainer");
     if (chatroomListContainer) {
         chatroomListContainer.addEventListener("click", (e) => {
+            // 🔔 알림 버튼 클릭 → 채팅방 전용 알림 슬라이드 패널 토글 (헤더 알림 패널과 별개)
+            if (e.target.closest("#openNotifPanelBtn")) {
+                toggleChatRoomNotifPanel();
+                return;
+            }
+
             const btn = e.target.closest("button[data-room-id]");
             if (!btn) return;
             const chatroomId = btn.dataset.roomId;
@@ -1055,38 +1373,109 @@ function initChatroomChat() {
 	    } // ← if문을 닫는 괄호
 	} // ← 이 전체를 감싸고 있던 상위 함수/블록을 닫는 괄호 (필요에 따라 확인)
 
+/**
+ * 실시간 참여자 목록 팝업 조회 및 모달 열기 (방장 상단 고정)
+ */
+async function openChatroomMembersModal() {
+    if (!currentChatroomId) return;
+
+    const modal = document.getElementById("chatroomMembersModal");
+    const listEl = document.getElementById("chatroomMembersList");
+    const titleEl = document.getElementById("membersModalTitle");
+    if (!modal || !listEl) return;
+
+    try {
+        const response = await fetch(`/api/chatroom/${currentChatroomId}/members`);
+        if (!response.ok) return;
+        const members = await response.json();
+
+        if (titleEl) {
+            titleEl.textContent = `👥 실시간 참여자 (${members.length}명)`;
+        }
+
+        listEl.innerHTML = "";
+        members.forEach(m => {
+            const isOwner = m.chatMemberRole === "방장";
+            const li = document.createElement("li");
+            li.className = isOwner ? "members-modal-item owner" : "members-modal-item";
+
+            li.innerHTML = `
+                <span class="member-name-text">
+                    👤 ${m.memberName}
+                </span>
+                ${isOwner ? '<span class="owner-badge">방장</span>' : '<span style="color:var(--text-2); font-size:11px;">참여자</span>'}
+            `;
+            listEl.appendChild(li);
+        });
+
+        modal.classList.add("open");
+    } catch (error) {
+        console.error("참여자 목록 로딩 실패:", error);
+    }
+}
+
 /**==================================================================================
- * 채팅방 상단 케밥(⋮) 메뉴 제어 함수 (경고 부여 & 방 나가기)
+ * 채팅방 상단 케밥(⋮) 메뉴 & 참여자 목록 팝업 제어 함수
  ===================================================================================*/
 
-// 1. 케밥 메뉴 클릭 & 방 나가기 & 외부 클릭 통합 감지 (이벤트 위임)
+// 1. 케밥 메뉴 & 방 제목 클릭(참여자 목록) & 방 나가기 & 외부 클릭 통합 감지
 document.addEventListener('click', (e) => {
     const dropdown = document.getElementById('chatroomDropdown');
+    const membersModal = document.getElementById('chatroomMembersModal');
 
     // ① 케밥 버튼(⋮) 클릭 시 드롭다운 토글
     const menuBtn = e.target.closest('#chatroomMenuBtn');
     if (menuBtn) {
         e.stopPropagation();
+        if (membersModal) membersModal.classList.remove('open');
         if (dropdown) {
             dropdown.classList.toggle('open');
         }
         return;
     }
 
-    // ② 채팅방 나가기 버튼 클릭 시
+    // ② 채팅방 제목 클릭 시 실시간 참여자 목록 팝업 모달 토글 (방장 상단 고정)
+    const titleClickTarget = e.target.closest('#chatroomTitleText');
+    if (titleClickTarget) {
+        e.stopPropagation();
+        if (dropdown) dropdown.classList.remove('open');
+        if (membersModal) {
+            if (membersModal.classList.contains('open')) {
+                membersModal.classList.remove('open');
+            } else {
+                openChatroomMembersModal();
+            }
+        }
+        return;
+    }
+
+    // ③ 참여자 목록 닫기 버튼 클릭 시
+    const membersCloseBtn = e.target.closest('#chatroomMembersCloseBtn');
+    if (membersCloseBtn && membersModal) {
+        membersModal.classList.remove('open');
+        return;
+    }
+
+    // ④ 채팅방 나가기 버튼 클릭 시
     const leaveBtn = e.target.closest('#chatroomLeaveBtn');
     if (leaveBtn) {
         if (dropdown) dropdown.classList.remove('open');
+        if (membersModal) membersModal.classList.remove('open');
         if (typeof leaveChatroom === 'function') {
             leaveChatroom(); // 채팅방 나가기 기존 함수 실행
         }
         return;
     }
 
-    // ③ 드롭다운 메뉴 바깥 영역 클릭 시 메뉴 닫기
+    // ⑤ 드롭다운 및 참여자 모달 바깥 영역 클릭 시 닫기
     if (dropdown && dropdown.classList.contains('open')) {
         if (!dropdown.contains(e.target)) {
             dropdown.classList.remove('open');
+        }
+    }
+    if (membersModal && membersModal.classList.contains('open')) {
+        if (!membersModal.contains(e.target)) {
+            membersModal.classList.remove('open');
         }
     }
 });
@@ -1107,9 +1496,13 @@ function resetChatView() {
         messagesEl.innerHTML = '<div class="chat-empty-state">선택하신 채팅방이 존재하지 않습니다.</div>';
     }
 
-    // 열려있던 드롭다운 닫기
+    // 열려있던 드롭다운 및 참여자 모달 닫기
     if (dropdownEl) {
         dropdownEl.classList.remove('open');
+    }
+    const membersModal = document.getElementById('chatroomMembersModal');
+    if (membersModal) {
+        membersModal.classList.remove('open');
     }
 }
 // ---- 취향/장르 선택 칩 (클릭 시 선택 표시 토글) ----

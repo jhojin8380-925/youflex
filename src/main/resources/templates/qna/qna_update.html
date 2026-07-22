@@ -67,12 +67,9 @@
   </div>
 </main>
 
-<!-- 알림 슬라이드 패널: 내용은 app.js가 /api/notifications 호출로 채움 -->
+<!-- 알림 슬라이드 패널 -->
 <div class="overlay-backdrop" id="notificationBackdrop"></div>
-<aside class="slide-panel" id="notificationPanel">
-  <div class="panel-header"><h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button></div>
-  <div class="panel-body" id="notificationBody"></div>
-</aside>
+<aside class="slide-panel" th:replace="~{fragments/layout :: notification}"></aside>
 
 <!-- 퀴즈 실행 플로팅 버튼(FAB) 및 퀴즈 패널 (이 페이지에는 퀴즈 진행 기능 없이 기본 채팅 UI만 존재) -->
 <button class="fab" id="quizFab" title="퀴즈 실행">💡</button>

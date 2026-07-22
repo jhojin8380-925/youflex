@@ -128,14 +128,7 @@
 	<!-- 알림 패널 열림 시 배경을 어둡게 처리하는 오버레이 -->
 	<div class="overlay-backdrop" id="notificationBackdrop"></div>
 	<!-- 알림 슬라이드 패널 -->
-	<aside class="slide-panel" id="notificationPanel">
-		<div class="panel-header">
-			<h3>🔔 알림</h3><button class="panel-close" id="notificationClose">✕</button>
-		</div>
-		<div class="panel-body" id="notificationBody">
-			<!-- app.js가 fetch('/api/notifications') 결과로 이 안을 채움 -->
-		</div>
-	</aside>
+	<aside class="slide-panel" th:replace="~{fragments/layout :: notification}"></aside>
 
 	<!-- 퀴즈 실행 플로팅 버튼 (FAB) -->
 	<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
@@ -162,6 +155,8 @@
 	<div class="overlay-backdrop" id="chatroomBackdrop"></div>
 	<!-- layout.html의 채팅방 영역 공용 프래그먼트 재사용 (main.html과 동일) -->
 	<aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
+	<!-- 채팅방 전용 알림 슬라이드 패널 (채팅 패널 옆에 나란히 열림) -->
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chatNotif}"></aside>
 
 	<!-- 공통 푸터 -->
 

@@ -371,7 +371,43 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
 .chatroom-title {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--text-0); flex-shrink: 0;
+  position: relative;
 }
+#chatroomTitleText {
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: color 0.2s, transform 0.1s; user-select: none;
+}
+#chatroomTitleText:hover { color: var(--accent); }
+#chatroomTitleText:active { transform: scale(0.98); }
+
+/* 실시간 참여자 목록 팝업 모달 */
+.chatroom-members-modal {
+  display: none; position: absolute; top: 100%; left: 16px; right: 16px; z-index: 100;
+  background: var(--bg-1, #1e1e24); border: 1px solid var(--border, #333);
+  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); padding: 12px; margin-top: 6px;
+}
+.chatroom-members-modal.open { display: block; }
+.members-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--border, #333);
+  font-size: 12px; font-weight: 700; color: var(--text-0);
+}
+.members-close-btn { background: none; border: none; color: var(--text-2); font-size: 16px; cursor: pointer; padding: 0 4px; }
+.members-close-btn:hover { color: var(--text-0); }
+.members-modal-list {
+  list-style: none; margin: 0; padding: 0; max-height: 180px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.members-modal-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px; border-radius: 6px; font-size: 12px; color: var(--text-1, #ccc);
+  background: var(--bg-2, #26262e);
+}
+.members-modal-item.owner {
+  font-weight: bold;
+}
+.members-modal-item .owner-badge { color: var(--accent, #e50914); font-size: 11px; font-weight: 700; }
+.members-modal-item .member-name-text { display: flex; align-items: center; gap: 6px; }
 
 /* 실제 채팅 메시지들이 쌓이는 스크롤 영역 */
 .chatroom-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -421,9 +457,11 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
 .participant-list li { font-size: 12px; color: var(--text-1); padding: 4px 0; }
 
 /* 알림 패널 안에 뜨는 알림 한 줄 (경고/답변완료/댓글 알림 등) */
-.notification-item { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-.notification-icon { font-size: 18px; flex-shrink: 0; }
-.notification-text { font-size: 13px; color: var(--text-1); line-height: 1.5; }
+.notification-item { display: flex; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: flex-start; transition: background 0.15s; }
+.notification-item:hover { background: var(--bg-2); }
+.notification-item.unread { background: rgba(var(--accent-rgb, 220,38,38), 0.07); border-left: 3px solid var(--accent); padding-left: 13px; }
+.notification-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.notification-text { font-size: 13px; color: var(--text-1); line-height: 1.5; word-break: break-all; }
 .notification-time { font-size: 11px; color: var(--text-2); margin-top: 4px; }
 .notification-delete {
   margin-left: auto; flex-shrink: 0; align-self: flex-start;
@@ -1187,4 +1225,59 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
     background: transparent;   /* ★ 배경색은 변하지 않게 유지 */
     color: #d9534f;            /* ★ 글자 및 아이콘 색상을 빨간색으로 */
     opacity: 1;                /* ★ 마우스 올렸을 때 선명하게 보이도록 */
+}
+/* ==========================================================================
+   채팅 패널 스크롤바 숨김 처리
+   ========================================================================== */
+.chat-messages,
+#chatroomListContainer,
+#chatroomPanel .panel-body {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* 구버전 Edge/IE */
+}
+
+.chat-messages::-webkit-scrollbar,
+#chatroomListContainer::-webkit-scrollbar,
+#chatroomPanel .panel-body::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari, 최신 Edge */
+}
+
+/* ==========================================================================
+   채팅방 전용 알림 슬라이드 패널 (#chatRoomNotifPanel)
+   채팅 패널(#chatroomPanel, width 380px)이 열려있을 때 그 왼쪽(right:380px)에
+   나란히 뜨는 별도 패널. 배경 어둡게 처리(backdrop)는 채팅 패널 것을 공유하므로
+   이 패널 전용 backdrop은 두지 않음.
+   ========================================================================== */
+#chatRoomNotifPanel.slide-panel {
+  position: fixed;
+  top: 0;
+  right: 380px;
+  height: 100vh;
+  width: 320px;
+  max-width: 80vw;
+  background: var(--bg-1, #14171c);
+  border-left: 1px solid var(--border, #2c313a);
+  z-index: 301;
+  transform: translateX(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+#chatRoomNotifPanel.slide-panel.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 채팅방 알림 목록 스크롤바 숨김 처리 (스크롤 자체는 유지, 스크롤바 UI만 안 보이게) */
+#chatRoomNotifList {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* 구버전 Edge/IE */
+}
+#chatRoomNotifList::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari, 최신 Edge */
 }
