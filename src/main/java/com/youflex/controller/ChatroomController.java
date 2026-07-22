@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.youflex.dto.ChatroomDTO;
 import com.youflex.dto.MemberDTO;
+import com.youflex.exception.AlreadyInRoomException;
 import com.youflex.service.ChatroomService;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/chatroom")
 public class ChatroomController {
@@ -86,17 +86,28 @@ public class ChatroomController {
     @PostMapping("/{chatroomId}/enter")
     public ResponseEntity<?> enterChatroom(@PathVariable("chatroomId") int chatroomId, HttpSession session) {
         Integer memberId = getLoginMemberId(session);
+        System.out.println(">>> [디버깅] 현재 로그인한 회원 ID: " + memberId);
+
         if (memberId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
         try {
-            chatroomService.enterChatroom(chatroomId, memberId);
-            return ResponseEntity.ok().build();
+            boolean isNew = chatroomService.enterChatroom(chatroomId, memberId);
+            return ResponseEntity.ok(Map.of("isNew", isNew));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (AlreadyInRoomException e) {   // ★ 이 블록 추가
+            Map<String, Object> body = Map.of(
+                "error", "ALREADY_IN_ROOM",
+                "message", e.getMessage(),
+                "existingRoomId", e.getExistingRoomId(),
+                "existingRoomTitle", e.getExistingRoomTitle()
+            );
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
-
 
     /** 채팅방 나가기 (POST /api/chatroom/{chatroomId}/leave) */
     @PostMapping("/{chatroomId}/leave")

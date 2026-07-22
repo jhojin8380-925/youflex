@@ -29,4 +29,10 @@ public interface ChatMemberMapper {
     /** 특정 회원의 참여 기록 삭제 (나가기) */
     int deleteChatMember(@Param("chatroomId") int chatroomId,
                           @Param("memberId") int memberId);
+
+ // int 타입으로 변경
+    int countActiveChatMemberByMemberId(int memberId);
+    
+ // ChatMemberMapper.java (인터페이스)
+    Integer selectActiveChatroomIdByMemberId(int memberId); // Integer로 변경
 }

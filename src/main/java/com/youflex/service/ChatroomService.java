@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.youflex.dto.ChatroomDTO;
+import com.youflex.exception.AlreadyInRoomException;
 import com.youflex.mapper.ChatMemberMapper;
 import com.youflex.mapper.ChatroomMapper;
 
@@ -62,32 +63,62 @@ public class ChatroomService {
     /**
      * 채팅방 입장
      * - 방 존재 여부 확인
-     * - 이미 참여 기록이 있으면 중복 입장하지 않고 그냥 통과 (idempotent)
+     * - 이미 '이 방'에 참여 중이면 그대로 통과 (idempotent)
+     * - 다른 방에 이미 '참여중'인 상태라면 예외 발생 (1인 1방 제한)
      * - 없으면 새로 등록: 방 개설자 본인이면 "방장", 아니면 "참여자"
      */
-    public void enterChatroom(int chatroomId, int memberId) {
+
+    public boolean enterChatroom(int chatroomId, int memberId) {
         ChatroomDTO chatroom = chatroomMapper.selectChatroomById(chatroomId);
         if (chatroom == null) {
             throw new IllegalArgumentException("존재하지 않는 채팅방입니다.");
         }
 
+        // 1. 이미 '현재 방'에 참여 중인지 확인 (재입장)
         String existingRole = chatMemberMapper.selectChatMemberRole(chatroomId, memberId);
         if (existingRole != null) {
-            return; // 이미 참여 중인 회원 -> 아무것도 하지 않음
+            return false;
         }
 
+        // 2. 다른 방에 이미 '참여중'인지 확인 (하나의 쿼리로 통일)
+        Integer activeRoomId = chatMemberMapper.selectActiveChatroomIdByMemberId(memberId);
+        if (activeRoomId != null) {
+            ChatroomDTO activeRoom = chatroomMapper.selectChatroomById(activeRoomId);
+            String title = (activeRoom != null) ? activeRoom.getChatroomTitle() : "알 수 없는 방";
+            throw new AlreadyInRoomException(activeRoomId, title);
+        }
+
+        // 3. 신규 입장 처리
         String role = (chatroom.getMemberId() == memberId) ? "방장" : "참여자";
         chatMemberMapper.insertChatMember(memberId, chatroomId, role, "참여중");
+        return true;
     }
-
     /**
      * 채팅방 나가기
      * - chat_member 참여 기록을 물리 삭제한다.
      */
+    /**
+     * 채팅방 나가기
+     * - 참여자가 나가면: chat_member 기록만 삭제
+     * - 방장이 나가면: 채팅방 자체를 삭제 (모든 참여자 강제 퇴장)
+     */
     public void leaveChatroom(int chatroomId, int memberId) {
-        int result = chatMemberMapper.deleteChatMember(chatroomId, memberId);
-        if (result <= 0) {
+        // 1. 나가려는 사람의 역할 확인
+        String role = chatMemberMapper.selectChatMemberRole(chatroomId, memberId);
+        if (role == null) {
             throw new IllegalArgumentException("참여 중인 채팅방이 아닙니다.");
+        }
+
+        if ("방장".equals(role)) {
+            // 방장이 나가는 경우 -> 채팅방 전체 삭제
+            chatMemberMapper.deleteAllChatMembersByChatroomId(chatroomId);
+            chatroomMapper.deleteChatroom(chatroomId);
+        } else {
+            // 일반 참여자가 나가는 경우 -> 본인 기록만 삭제
+            int result = chatMemberMapper.deleteChatMember(chatroomId, memberId);
+            if (result <= 0) {
+                throw new IllegalArgumentException("참여 중인 채팅방이 아닙니다.");
+            }
         }
     }
 

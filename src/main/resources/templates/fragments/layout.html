@@ -166,81 +166,106 @@
         </div>
       </div>
     </aside>
-	<!-- =================================
-	       채팅방 영역
-	       ================================= -->
+		   <!-- =================================
+		          채팅방 영역
+		          ================================= -->
 		   <aside class="slide-panel" id="chatroomPanel" th:fragment="chat">
-		     <!-- ★ currentMemberId 태그 추가 ★ -->
+		     <!-- ★ currentMemberId 태그 ★ -->
 		     <input type="hidden" id="currentMemberId" th:value="${session.loginMember != null ? session.loginMember.memberId : 0}" />
 		     <input type="hidden" id="currentMemberName" th:value="${session.loginMember != null ? session.loginMember.memberName : '회원'}" />
-	    <div class="panel-header">
-	      <h3>💬 커뮤니티 채팅</h3>
-	      <button class="panel-close" id="chatroomClose">✕</button>
-	    </div>
-	    
-	    <div class="panel-tabs" data-tab-panels>
-	      <button class="active" data-tab-target="list">목록</button>
-	      <button data-tab-target="chat">채팅</button>
-	      <button data-tab-target="create"
-	              th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
-	        개설
-	      </button>
-	    </div>
-	    
-	    <!-- 목록 탭 (JS 렌더링 영역에 맞춰 비워둠) -->
-	    <div class="panel-body" data-tab-panel="list">
-	      <div id="chatroomListContainer"></div>
-	    </div>
-	    
-	    <!-- 채팅 탭 -->
-	    <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
-	      <div class="chatroom-title">
-	        <span id="chatroomTitleText">💬 </span>
+		     
+		     <!-- 헤더 -->
+		     <div class="panel-header">
+		       <h3>💬 커뮤니티 채팅</h3>
+		       <button class="panel-close" id="chatroomClose">✕</button>
+		     </div>
+		     
+		     <!-- 탭 버튼 -->
+		     <div class="panel-tabs" data-tab-panels>
+		       <button class="active" data-tab-target="list">목록</button>
+		       <button data-tab-target="chat">채팅</button>
+		       <button data-tab-target="create"
+		               th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+		         개설
+		       </button>
+		     </div>
 
-	        <div class="chatroom-title-actions">
-	          <button class="btn btn-sm btn-danger" onclick="giveChatWarning()"
-	                  th:if="${session.loginMember != null and (session.loginMember.memberGrade == '평론가' or session.loginMember.memberGrade == '관리자')}">⚠ 경고 부여</button>
+		     <!-- 1. [목록 탭 패널] -->
+		     <div class="panel-body active" data-tab-panel="list">
+		       <div id="chatroomListContainer">
+		         
+				<!-- [섹션 1] 내가 참여 중인 방 -->
+						         <section class="room-section">
+						           <div class="section-title">
+						             <span>내가 참여 중인 방</span>
+						             <span class="count" id="joinedRoomCount">0</span>
+						           </div>
+				                   <!-- 자바스크립트가 이 안을 동적으로 채우도록 비워둡니다 -->
+						           <div id="joinedRoomContainer"></div>
+						         </section>
 
-	          <button class="chatroom-menu-btn" id="chatroomMenuBtn" title="더보기">⋮</button>
+						         <div class="divider"></div>
 
-	          <div class="chatroom-dropdown" id="chatroomDropdown">
-	            <div class="chatroom-dropdown-item toggle-item">
-	              <span><span class="icon">🔔</span> 알림</span>
-	              <label class="switch">
-	                <input type="checkbox" id="chatroomNotifyToggle" checked />
-	                <span class="slider round"></span>
-	              </label>
-	            </div>
+						         <!-- [섹션 2] 참여 가능한 방 -->
+						         <section class="room-section">
+						           <div class="section-title">
+						             <span>🌐 참여 가능한 방</span>
+						             <span class="count" id="availableRoomCount">0</span>
+						           </div>
+				                   <!-- 자바스크립트가 이 안을 동적으로 채우도록 비워둡니다 -->
+						           <div id="availableRoomContainer"></div>
+						         </section>
 
-	            <div class="chatroom-dropdown-divider"></div>
+		       </div>
+		     </div>
 
-	            <button class="chatroom-dropdown-item danger" id="chatroomLeaveBtn">
-	              <span class="icon">🚪</span> 채팅방 나가기
-	            </button>
-	          </div>
-	        </div>
-	      </div>
-	      
-	      <div class="chatroom-messages" id="chatroomMessages"></div>
-	      
-	      <div class="panel-input-row">
-	        <input type="text" id="chat_message_content" name="chat_message_content" placeholder="메시지를 입력하세요" />
-	        <button class="btn btn-primary" id="chatroomSendBtn" type="button">전송</button>
-	      </div>
-	    </div>
+		     <!-- 2. [채팅 탭 패널] -->
+		     <div class="panel-body" data-tab-panel="chat">
+		       <div class="chat-room-view">
+		         
+		         <!-- ★ 케밥 헤더 영역 ★ -->
+		         <div class="chatroom-title">
+		           <span id="chatroomTitleText">💬 방 선택 없음</span>
+		           
+		           <div class="chatroom-title-actions">
+		             <button type="button" class="chatroom-menu-btn" id="chatroomMenuBtn" title="메뉴">⋮</button>
+		             
+		             <!-- 드롭다운 메뉴 (경고 부여 / 방 나가기) -->
+		             <div class="kebab-dropdown" id="chatroomDropdown">
+		               <button type="button" onclick="giveChatWarning()">⚠️ 경고 부여</button>
+		               <button type="button" class="danger" id="chatroomLeaveBtn">🚪 방 나가기</button>
+		             </div>
+		           </div>
+		         </div>
 
-	    <!-- 개설 탭 -->
-	    <div class="panel-body" data-tab-panel="create" style="display:none;"
-	         th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
-	      <label class="text-muted" style="font-size:13px">방 이름</label>
-	      <input type="text" id="chatroom_title" name="chatroom_title" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box;margin-bottom:12px" />
-	      <label class="text-muted" style="font-size:13px">최대 인원</label>
-	      <input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box" />
-	      <div class="text-muted" style="font-size:12px; margin-top:8px; color:#888;">* 최소 인원은 2명부터 최대 30명까지 입니다.</div>
-	      <button class="btn btn-primary mt-24" id="chatroomCreateBtn" style="width:100%">채팅방 개설</button>
-	    </div>
-	  </aside>
+		         <!-- 실제 메시지 대화 목록 영역 (기본 중앙 안내 문구 추가) -->
+		         <div id="chatroomMessages" class="chat-messages">
+		           <div class="chat-empty-state">선택하신 채팅방이 존재하지 않습니다.</div>
+		         </div>
 
+		         <!-- 하단 메시지 입력폼 -->
+		         <div class="chat-input-container">
+		           <input type="text" id="chat_message_content" class="chat-input" placeholder="메시지를 입력하세요" />
+		           <button type="button" id="chatroomSendBtn" class="btn btn-primary btn-send">전송</button>
+		         </div>
+
+		       </div>
+		     </div>
+
+		     <!-- 3. [개설 탭 패널] -->
+		     <div class="panel-body" data-tab-panel="create"
+		          th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+		       <label class="text-muted" style="font-size:13px">방 이름</label>
+		       <input type="text" id="chatroom_title" name="chatroom_title" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box;margin-bottom:12px" />
+		       
+		       <label class="text-muted" style="font-size:13px">최대 인원</label>
+		       <input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10" style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box" />
+		       
+		       <div class="text-muted" style="font-size:12px; margin-top:8px; color:#888;">* 최소 인원은 2명부터 최대 30명까지 입니다.</div>
+		       <button class="btn btn-primary mt-24" id="chatroomCreateBtn" style="width:100%">채팅방 개설</button>
+		     </div>
+
+		   </aside>
 
 </body>   
 </html>
