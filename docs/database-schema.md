@@ -285,12 +285,14 @@ create table chat_member (
     chat_member_id       int auto_increment,
     member_id              int not null,
     chatroom_id             int not null,
+    active_member_id int GENERATED ALWAYS AS (IF(chat_member_status = '참여중', member_id, NULL)) virtual,
     chat_member_role        enum('방장','참여자') not null default '참여자',
     chat_member_status      enum('참여중','퇴장','강퇴') not null default '참여중', -- [수정3] 강퇴/자진퇴장 구분
     constraint pk_chat_member primary key (chat_member_id),
     constraint fk_chatmember_member foreign key (member_id) references member(member_id) on delete cascade,
     constraint fk_chatmember_chatroom foreign key (chatroom_id) references chatroom(chatroom_id) on delete cascade,
-    constraint uq_chatmember unique (member_id, chatroom_id)
+    constraint uq_chatmember unique (member_id, chatroom_id),
+    constraint uq_active_chat_member UNIQUE (active_member_id)
 );
 
 -- 15

@@ -23,21 +23,25 @@ profileFileInput.addEventListener('change', (event) => {
 
 // 등업신청 - 클릭하면 실제로 서버에 신청 상태를 남겨서 관리자 등업신청 관리 화면에 노출시킴
 // (게시글 3회 / 유효경고 0회 / 좋아요 총합 100회 조건 미달이면 서버가 400과 함께 구체적인 사유를 내려줌)
-document.getElementById('rankUpBtn').addEventListener('click', () => {
-  fetch('/mypage/grade-upgrade', { method: 'POST' })
-    .then((res) => {
-      if (res.ok) {
-        alert('등업 신청이 접수되었습니다. 관리자 확인 후 등급이 변경됩니다.');
-        return;
-      }
-      return res.text().then((message) => {
-        alert(message || '등업 신청 중 오류가 발생했습니다.');
+// 시청자 등급에게만 보이는 버튼이라(평론가/관리자는 th:if로 아예 안 그려짐) null 체크 후 등록
+const rankUpBtn = document.getElementById('rankUpBtn');
+if (rankUpBtn) {
+  rankUpBtn.addEventListener('click', () => {
+    fetch('/mypage/grade-upgrade', { method: 'POST' })
+      .then((res) => {
+        if (res.ok) {
+          alert('등업 신청이 접수되었습니다. 관리자 확인 후 등급이 변경됩니다.');
+          return;
+        }
+        return res.text().then((message) => {
+          alert(message || '등업 신청 중 오류가 발생했습니다.');
+        });
+      })
+      .catch(() => {
+        alert('등업 신청 중 오류가 발생했습니다.');
       });
-    })
-    .catch(() => {
-      alert('등업 신청 중 오류가 발생했습니다.');
-    });
-});
+  });
+}
 
 // 취향(관심 장르) 선택 - 서버가 th:classappend로 미리 체크해둔 상태(selected)를 기준으로
 // 최대 3개까지 토글하고, "완료" 클릭 시 실제 선택 상태로 DB를 교체 저장(join.js의 방식과 동일)

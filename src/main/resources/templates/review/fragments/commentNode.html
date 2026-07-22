@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head><title>comment node fragment</title></head>
+<body>
+
+<!--
+  댓글 한 건(최상위 댓글 또는 대댓글/대대댓글...)을 렌더링하는 재귀 프래그먼트.
+  comment.replies를 대상으로 자기 자신을 다시 호출해서 답글 깊이 제한 없이 트리로 표시함.
+  isTopLevel=true(최상위 댓글)일 때만 좋아요 버튼을 노출하고, 그 아래 대댓글부터는
+  좋아요 대신 "답글달기"만 제공해서 대댓글에도 답글(대대댓글)을 달 수 있게 함.
+-->
+<div th:fragment="commentNode(comment, isTopLevel)"
+     th:class="${isTopLevel} ? 'comment-item' : 'reply-item'"
+     th:attr="data-comment-id=${comment.commentId}">
+
+  <th:block th:if="${comment.commentDeleteStatus == '삭제'}">
+    <div class="c-head">
+      <span class="c-author text-muted">알 수 없음</span>
+      <span class="c-date" th:text="${#temporals.format(comment.commentCreatedAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+    </div>
+    <div class="c-body text-muted" style="font-style:italic">삭제된 댓글입니다.</div>
+  </th:block>
+
+  <th:block th:unless="${comment.commentDeleteStatus == '삭제'}">
+    <div class="c-head">
+      <span class="c-author" th:text="${comment.memberName}">작성자</span>
+      <span class="c-date" th:text="${#temporals.format(comment.commentCreatedAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+    </div>
+    <div class="c-body" th:text="${comment.commentContent}">내용</div>
+    <div class="comment-actions">
+      <span class="reply-toggle" th:if="${session.loginMember != null}" onclick="toggleReplyForm(this)">답글달기</span>
+      <span class="comment-like" th:if="${isTopLevel}" th:classappend="${comment.likedByMe} ? 'liked' : ''"
+            th:text="|♥ 좋아요 ${comment.likeCount}|" onclick="toggleCommentLike(this)">♥ 좋아요 0</span>
+      <span onclick="openReportModal('comment', this)" style="cursor:pointer" th:if="${session.loginMember != null}">신고</span>
+      <th:block th:if="${session.loginMember != null and session.loginMember.memberId == comment.memberId}">
+        <span onclick="editComment(this)" style="cursor:pointer">수정</span>
+        <span onclick="deleteComment(this)" style="cursor:pointer">삭제</span>
+      </th:block>
+    </div>
+  </th:block>
+
+  <div class="reply-list" th:if="${!#lists.isEmpty(comment.replies)}">
+    <th:block th:each="reply : ${comment.replies}">
+      <div th:replace="~{review/fragments/commentNode :: commentNode(${reply}, false)}"></div>
+    </th:block>
+  </div>
+
+  <form class="reply-form" style="display:none" th:if="${session.loginMember != null}" onsubmit="return false">
+    <input type="text" placeholder="답글을 입력하세요" />
+    <button type="button" class="btn btn-primary btn-sm" onclick="submitReplyForm(this)">등록</button>
+  </form>
+</div>
+
+</body>
+</html>
