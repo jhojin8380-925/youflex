@@ -188,8 +188,14 @@ public class ReviewController {
 		return viewedReviewIds.add(reviewId);
 	}
 
-	// ----- 파일 저장 메서드 -----
-	private String saveFile(MultipartFile file) throws IOException {
+//	----- 파일 저장 메서드 -----
+//	반환값 : DB에 저장할 새 파일명(UUID기반)
+	private String saveFile(MultipartFile file) throws IOException{
+//		(1) 원본 파일명에서 확장자 추출
+//		getOriginalFilename() : 사용자 PC에서 원본 파일명을 반환
+//					ex) "pizza.jpg"
+//		lastIndexOf(".") : 마지막 점(.) 위치 찾기
+//		substring(점위치) : 점 포함 이후 문자열 추출 -> ".jpg"
 		String originalName = file.getOriginalFilename();
 		String ext = originalName.substring(originalName.lastIndexOf("."));
 		String savedName = UUID.randomUUID().toString() + ext;
