@@ -37,16 +37,18 @@
 		<!-- 정렬 및 글쓰기 툴바 -->
 		<div class="list-toolbar mt-16">
 			<div class="sort-group">
-		    	<button th:classappend="${sort == null or sort == 'latest'} ? ' active' : ''" data-sort="latest">최신순</button>
-		    	<button th:classappend="${sort == 'likes'} ? ' active' : ''" data-sort="likes">좋아요순</button>
-	    	<button th:classappend="${sort == 'highlight'} ? ' active' : ''" data-sort="highlight">하이라이트</button>
-	    	<button th:classappend="${sort == 'views'} ? ' active' : ''" data-sort="views">조회수순</button>
+				<button th:classappend="${sort == null or sort == 'latest'} ? ' active' : ''"
+					data-sort="latest">최신순</button>
+				<button th:classappend="${sort == 'likes'} ? ' active' : ''" data-sort="likes">좋아요순</button>
+				<!--<button th:classappend="${sort == 'highlight'} ? ' active' : ''" data-sort="highlight">하이라이트</button>-->
+				<button th:classappend="${sort == 'views'} ? ' active' : ''" data-sort="views">조회수순</button>
 			</div>
 			<div class="write-btn-wrap" th:if="${session.loginMember != null}" style="margin-top:0">
 				<a th:href="@{/review/write}" class="btn btn-primary">✎ 글쓰기</a>
 			</div>
 			<div class="write-btn-wrap" th:if="${session.loginMember == null}" style="margin-top:0">
-				<button class="btn" onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎ 글쓰기</button>
+				<button class="btn" onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎
+					글쓰기</button>
 			</div>
 			<!--<button class="btn"
 				onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎
@@ -56,46 +58,48 @@
 
 		<!-- 
 	    ===================================================================
-	    [게시글 목록 영역]
+	    [게시글 목록 영역 - 일반 정렬 (최신순/좋아요순/조회수순)]
 	    - 왼쪽: 작성 시 등록한 썸네일 이미지
 	    - 가운데: 게시글 제목
 	    - 오른쪽: 작성자 이름 & 작성일자
 	    ===================================================================
 	  -->
-		<div class="post-row-list mt-16">
+		<div class="post-row-list mt-16" th:if="${sort != 'highlight'}">
 
 			<!-- Thymeleaf 반복문 (Spring Controller에서 Pageable size=10 설정 시 한 페이지 10개 출력) -->
 			<a class="post-row" th:each="post : ${postList}" th:href="@{/review/{id}(id=${post.reviewId})}"
-			    href="13_detail.html">
+				href="13_detail.html">
 
-			    <!-- 1. [가장 왼쪽] 작성 시 등록한 썸네일 이미지 -->
-			    <div class="post-row-thumb"
-			        style="width: 60px; height: 60px; flex-shrink: 0; overflow: hidden; border-radius: 6px;">
-			        <!-- 이미지가 있는 경우 -->
-			        <img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
-			         th:src="@{'/upload/' + ${post.reviewImg}}"
-			         th:alt="${post.reviewTitle}"
-			         style="width:100%; height:100%; object-fit:cover;" />
+				<!-- 1. [가장 왼쪽] 작성 시 등록한 썸네일 이미지 -->
+				<div class="post-row-thumb"
+					style="width: 60px; height: 60px; flex-shrink: 0; overflow: hidden; border-radius: 6px;">
+					<!-- 이미지가 있는 경우 -->
+					<img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+						th:src="@{'/upload/' + ${post.reviewImg}}" th:alt="${post.reviewTitle}"
+						style="width:100%; height:100%; object-fit:cover;" />
 
-			    <!-- 이미지가 없는 경우 (대체 레이아웃) -->
-			    <div th:unless="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
-			        style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-2, #2a2a32); color: var(--text-2, #aaa); font-size: 11px;">
-			        No Image
-			    </div>
-			</div>
-                <div style="flex: 1; padding: 0 16px; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
-                    <div class="post-row-title" th:text="${post.reviewTitle}"
-                        style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        「오징어게임 3」, 이대로 끝내도 되는가
-                    </div>
-                    <div class="post-row-meta" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 8px; color: var(--text-2, #888); font-size: 12px;">
-                        <span class="post-row-author" th:text="${post.memberName}">리뷰왕</span>
-                        <span class="post-row-date" th:text="${post.reviewCreatedAt.toLocalDate().equals(T(java.time.LocalDate).now()) ? #temporals.format(post.reviewCreatedAt, 'HH:mm') : #temporals.format(post.reviewCreatedAt, 'yyyy-MM-dd')}">14:22</span>
-                        <span class="post-row-hit" th:text="${'👁 조회 ' + post.reviewHit}">👁 조회 123</span>
-                        <span class="post-row-likes" th:text="${'❤️ 좋아요 ' + post.likeCount}">❤️ 좋아요 45</span>
-                        <span class="post-row-comments" th:text="${'💬 댓글 ' + post.commentCount}">💬 댓글 6</span>
-                    </div>
-			    </div>
+					<!-- 이미지가 없는 경우 (대체 레이아웃) -->
+					<div th:unless="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+						style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-2, #2a2a32); color: var(--text-2, #aaa); font-size: 11px;">
+						No Image
+					</div>
+				</div>
+				<div
+					style="flex: 1; padding: 0 16px; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
+					<div class="post-row-title" th:text="${post.reviewTitle}"
+						style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+						「오징어게임 3」, 이대로 끝내도 되는가
+					</div>
+					<div class="post-row-meta"
+						style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 8px; color: var(--text-2, #888); font-size: 12px;">
+						<span class="post-row-author" th:text="${post.memberName}">리뷰왕</span>
+						<span class="post-row-date"
+							th:text="${post.reviewCreatedAt.toLocalDate().equals(T(java.time.LocalDate).now()) ? #temporals.format(post.reviewCreatedAt, 'HH:mm') : #temporals.format(post.reviewCreatedAt, 'yyyy-MM-dd')}">14:22</span>
+						<span class="post-row-hit" th:text="${'👁 조회 ' + post.reviewHit}">👁 조회 123</span>
+						<span class="post-row-likes" th:text="${'❤️ 좋아요 ' + post.likeCount}">❤️ 좋아요 45</span>
+						<span class="post-row-comments" th:text="${'💬 댓글 ' + post.commentCount}">💬 댓글 6</span>
+					</div>
+				</div>
 			</a>
 
 			<!-- 등록된 게시글이 없는 경우 예외 처리 -->
@@ -106,40 +110,73 @@
 
 		</div>
 
+		<!-- 
+	    ===================================================================
+	    [게시글 목록 영역 - 하이라이트 정렬 전용]
+	    - 격자(그리드) 카드형: 썸네일 + 제목 + 작성자/작성일
+	    - '하이라이트' 버튼을 눌렀을 때만 이 레이아웃으로 표시
+	    ===================================================================
+	  -->
+		<div class="highlight-grid mt-16" th:if="${sort == 'highlight'}">
+			<a class="highlight-card" th:each="post : ${postList}" th:href="@{/review/{id}(id=${post.reviewId})}">
+				<div class="highlight-thumb">
+					<img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+						th:src="@{'/upload/' + ${post.reviewImg}}" th:alt="${post.reviewTitle}" />
+					<div class="highlight-thumb-empty"
+						th:unless="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}">No Image</div>
+				</div>
+				<div class="highlight-content">
+					<div class="highlight-title" th:text="${post.reviewTitle}">게시글 제목</div>
+					<div class="highlight-meta">
+						<span th:text="${post.memberName}">리뷰왕</span>
+						<span
+							th:text="${post.reviewCreatedAt.toLocalDate().equals(T(java.time.LocalDate).now()) ? #temporals.format(post.reviewCreatedAt, 'HH:mm') : #temporals.format(post.reviewCreatedAt, 'yyyy-MM-dd')}">14:22</span>
+					</div>
+				</div>
+			</a>
+			<div class="highlight-empty" th:if="${#lists.isEmpty(postList)}">등록된 게시글이 없습니다.</div>
+		</div>
+
 		<!-- 검색 바 -->
 		<div class="list-toolbar mt-24" style="justify-content:center">
 			<div class="flex gap-8" style="max-width:450px;">
-				<form id="searchForm" class="search-bar" style="margin:0;max-width:none;padding:12px 20px;display:flex;align-items:center;" onsubmit="return false;">
-				    <button type="submit" id="searchSubmitBtn" class="icon" style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer;">🔍</button>
-				    <input type="text" id="searchKeyword" name="keyword" placeholder="제목, 작성자로 검색" style="font-size:15px;border:none;background:transparent;flex:1;color:inherit;outline:none;" />
+				<form id="searchForm" class="search-bar"
+					style="margin:0;max-width:none;padding:12px 20px;display:flex;align-items:center;"
+					onsubmit="return false;">
+					<button type="submit" id="searchSubmitBtn" class="icon"
+						style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer;">🔍</button>
+					<input type="text" id="searchKeyword" name="keyword" placeholder="제목, 작성자로 검색"
+						style="font-size:15px;border:none;background:transparent;flex:1;color:inherit;outline:none;" />
 				</form>
 				<div class="adv-search-toggle">
-				    <button class="btn" id="advToggleBtn">상세검색 ▾</button>
-				    <div class="adv-search-panel" id="advPanel">
-				        <label>기간</label>
-				        <select id="searchPeriod">
-				            <option value="all">전체</option>
-				            <option value="1w">최근 1주일</option>
-				            <option value="1m">최근 1개월</option>
-				            <option value="3m">최근 3개월</option>
-				        </select>
-				        <label>취향선택</label>
-				        <button type="button" class="btn btn-block" id="listTasteBtn">취향 선택</button>
-				        <button class="btn btn-primary btn-block mt-16" id="applySearchBtn">검색 적용</button>
-				    </div>
+					<button class="btn" id="advToggleBtn">상세검색 ▾</button>
+					<div class="adv-search-panel" id="advPanel">
+						<label>기간</label>
+						<select id="searchPeriod">
+							<option value="all">전체</option>
+							<option value="1w">최근 1주일</option>
+							<option value="1m">최근 1개월</option>
+							<option value="3m">최근 3개월</option>
+						</select>
+						<label>취향선택</label>
+						<button type="button" class="btn btn-block" id="listTasteBtn">취향 선택</button>
+						<button class="btn btn-primary btn-block mt-16" id="applySearchBtn">검색 적용</button>
+					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- 페이지네이션 (페이지 당 10개 기준) -->
-		<div class="pagination mt-16" th:if="${totalPages != null and totalPages > 0}" th:attr="data-total-pages=${totalPages}">
+		<div class="pagination mt-16" th:if="${totalPages != null and totalPages > 0}"
+			th:attr="data-total-pages=${totalPages}">
 			<button type="button" class="page-btn prev" aria-label="이전 페이지" th:disabled="${currentPage <= 1}">‹</button>
 
 			<button type="button" th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
 				th:class="${pageNumber == currentPage} ? 'page-btn active' : 'page-btn'"
 				th:text="${pageNumber}">1</button>
 
-			<button type="button" class="page-btn next" aria-label="다음 페이지" th:disabled="${currentPage >= totalPages}">›</button>
+			<button type="button" class="page-btn next" aria-label="다음 페이지"
+				th:disabled="${currentPage >= totalPages}">›</button>
 		</div>
 
 	</main>
@@ -148,52 +185,23 @@
 	<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 	<!-- 취향(관심 장르) 선택 -->
-	<div class="genre-modal-backdrop" id="listGenreModalBackdrop">
+	<!-- 취향(관심 장르) 선택 -->
+	<div class="genre-modal-backdrop" id="genreModalBackdrop">
 		<div class="genre-modal-card">
-			<h2 class="genre-title">취향 선택</h2>
-			<p class="genre-sub">관심 있는 장르를 선택해주세요 (복수 선택 가능)</p>
-			<div class="genre-grid">
-				<button type="button" class="genre-chip" data-genre="액션"><span>액션</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="모험"><span>모험</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="애니메이션"><span>애니메이션</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="코미디"><span>코미디</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="범죄"><span>범죄</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="다큐멘터리"><span>다큐멘터리</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="드라마"><span>드라마</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="가족"><span>가족</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="판타지"><span>판타지</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="역사"><span>역사</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="공포"><span>공포</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="뮤지컬"><span>뮤지컬</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="미스터리"><span>미스터리</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="로맨스"><span>로맨스</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="SF"><span>SF</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="스릴러"><span>스릴러</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="서부극"><span>서부극</span><span
-						class="chip-check">✓</span></button>
-				<button type="button" class="genre-chip" data-genre="예능"><span>예능</span><span
-						class="chip-check">✓</span></button>
+			<h2 gnere-title>취향 선택</h2>
+			<p class="genre-sub">관심 있는 장르를 선택해주세요 (최대 3개)</p>
+			<div class="genre-grid" id="genreGrid">
+				<button type="button" class="genre-chip" th:each="genre : ${genres}"
+					th:attr="data-genre-id=${genre.genreCategoryId}">
+					<span th:text="${genre.genreCategoryName}"></span> <span class="chip-check">✓</span>
+				</button>
 			</div>
-			<div class="genre-modal-actions">
-				<button type="button" class="btn" id="listGenreCancelBtn">취소</button>
-				<button type="button" class="btn btn-primary" id="listGenreApplyBtn">적용</button>
-			</div>
+			<button type="button" class="genre-skip" id="genreSkipBtn">
+				취소
+			</button>
+			<button type="button" class="btn btn-primary btn-block" id="genreDoneBtn">
+				저장
+			</button>
 		</div>
 	</div>
 

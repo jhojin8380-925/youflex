@@ -45,11 +45,11 @@
             </if>
         </where>
         <choose>
-            <when test="sort == 'likes'">ORDER BY likeCount ASC</when>
+            <when test="sort == 'likes'">ORDER BY likeCount DESC</when>
             <when test="sort == 'highlight'">ORDER BY CASE WHEN r.review_highlighted = 'Y' THEN 1 ELSE 0 END DESC, COALESCE(r.review_highlight_started_at, r.review_created_at) ASC</when>
-            <when test="sort == 'rating'">ORDER BY r.review_rating ASC</when>
-            <when test="sort == 'views'">ORDER BY r.review_hit ASC</when>
-            <otherwise>ORDER BY r.review_created_at ASC</otherwise>
+            <when test="sort == 'rating'">ORDER BY r.review_rating DESC</when>
+            <when test="sort == 'views'">ORDER BY r.review_hit DESC</when>
+            <otherwise>ORDER BY r.review_created_at DESC</otherwise>
         </choose>
         LIMIT #{offset}, #{size}
     </select>

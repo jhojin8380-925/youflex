@@ -2,292 +2,301 @@
 <html lang="ko" xmlns="http://www.thymeleaf.org">
 
 <head>
-  <meta charset="UTF-8">
-  <title>YouFlex</title>
+	<meta charset="UTF-8">
+	<title>YouFlex</title>
 
 </head>
 
 <body>
 
-  <!--  
+	<!--  
      ==================================
      공통 헤더바  
      ==================================
      -->
-  <header class="site-header" th:fragment="header">
-    <div class="container">
-      <a th:href="@{/}" class="logo"><img th:src="@{/img/logo.png}" alt="YouFlex" /></a>
-      <form class="search-bar" th:action="@{/review/list}" method="get">
-        <button type="submit" class="icon" style="background:none; border:none; padding:0; cursor:pointer; font-size:inherit; line-height:1;">🔍</button>
-        <input type="text" name="keyword" placeholder="콘텐츠, 게시글 통합 검색" />
-      </form>
+	<header class="site-header" th:fragment="header">
+		<div class="container">
+			<a th:href="@{/}" class="logo"><img th:src="@{/img/logo.png}" alt="YouFlex" /></a>
+			<form class="search-bar" th:action="@{/review/list}" method="get">
+				<button type="submit" class="icon"
+					style="background:none; border:none; padding:0; cursor:pointer; font-size:inherit; line-height:1;">🔍</button>
+				<input type="text" name="keyword" placeholder="콘텐츠, 게시글 통합 검색" />
+			</form>
 
-      <!-- 비 로그인 시(비회원) -->
-      <div class="header-actions" th:if="${session.loginMember == null}">
-        <a th:href="@{/login}" class="btn btn-ghost">로그인</a>
-      </div>
+			<!-- 비 로그인 시(비회원) -->
+			<div class="header-actions" th:if="${session.loginMember == null}">
+				<a th:href="@{/login}" class="btn btn-ghost">로그인</a>
+			</div>
 
-      <!-- 로그인 시(회원) -->
-      <div class="header-actions" th:unless="${session.loginMember == null}">
-        <!-- 관리자만 뜸 -->
-        <a th:href="@{/admin}" th:if="${session.loginMember.memberGrade == '관리자'}" class="btn btn-ghost"
-          style="color:var(--danger)">⚙ 관리자 페이지</a>
-        <a th:href="@{/mypage}" class="btn btn-ghost">마이페이지</a>
-        <a th:href="@{/logout}" class="btn btn-ghost">로그아웃</a>
-        <button class="icon-btn" id="notificationTrigger">🔔<span class="badge" id="notifUnreadBadge" style="display:none;">0</span></button>
-        <button class="icon-btn" id="chatroomTrigger" title="커뮤니티 채팅">💬<span class="badge" id="chatUnreadBadge"
-            style="display:none;">0</span></button>
-      </div>
-    </div>
-  </header>
+			<!-- 로그인 시(회원) -->
+			<div class="header-actions" th:unless="${session.loginMember == null}">
+				<!-- 관리자만 뜸 -->
+				<a th:href="@{/admin}" th:if="${session.loginMember.memberGrade == '관리자'}" class="btn btn-ghost"
+					style="color:var(--danger)">⚙ 관리자 페이지</a>
+				<a th:href="@{/mypage}" class="btn btn-ghost">마이페이지</a>
+				<a th:href="@{/logout}" class="btn btn-ghost">로그아웃</a>
+				<button class="icon-btn" id="notificationTrigger">🔔<span class="badge" id="notifUnreadBadge"
+						style="display:none;">0</span></button>
+				<button class="icon-btn" id="chatroomTrigger" title="커뮤니티 채팅">💬<span class="badge" id="chatUnreadBadge"
+						style="display:none;">0</span></button>
+			</div>
+		</div>
+	</header>
 
 
-  <!-- 
+	<!-- 
   ==================================
   공통 네비게이션 바 -- 호진
   ==================================
   -->
-  <nav class="category-nav" th:fragment="nav">
-    <div class="container">
-      <ul>
-        <li><a th:href="@{/review/list}" data-nav="all">전체</a></li>
-        <li><a th:href="@{/review/list(platform='netflix')}" data-nav="netflix">넷플릭스</a></li>
-        <li><a th:href="@{/review/list(platform='tving')}" data-nav="tving">티빙</a></li>
-        <li><a th:href="@{/review/list(platform='disney')}" data-nav="disney">디즈니플러스</a></li>
-        <li><a th:href="@{/review/list(platform='etc')}" data-nav="etc">기타</a></li>
-        <li style="margin-left:auto"><a th:href="@{/notice}" data-nav="notice">공지사항</a></li>
-        <li><a th:href="@{/notice#qna}" data-nav="qna">Q&A</a></li>
-      </ul>
-    </div>
-  </nav>
+	<nav class="category-nav" th:fragment="nav">
+		<div class="container">
+			<ul>
+				<li><a th:href="@{/review/list}" data-nav="all">전체</a></li>
+				<li><a th:href="@{/review/list(platform='netflix')}" data-nav="netflix">넷플릭스</a></li>
+				<li><a th:href="@{/review/list(platform='tving')}" data-nav="tving">티빙</a></li>
+				<li><a th:href="@{/review/list(platform='disney')}" data-nav="disney">디즈니플러스</a></li>
+				<li><a th:href="@{/review/list(platform='etc')}" data-nav="etc">기타</a></li>
+				<!-- [추가] 하이라이트 버튼: '기타' 버튼 옆으로 이동, 동일한 <li><a> 구조라 스타일 자동 동일 적용 -->
+				<li><a th:href="@{/review/list(sort='highlight')}" data-nav="highlight">하이라이트</a></li>
+				<li style="margin-left:auto"><a th:href="@{/notice}" data-nav="notice">공지사항</a></li>
+				<li><a th:href="@{/notice#qna}" data-nav="qna">Q&A</a></li>
+			</ul>
+		</div>
+	</nav>
 
-  <!-- 
+	<!-- 
   ==================================
   푸터 영역 
   ==================================
   -->
-  <footer class="site-footer main-footer" th:fragment="footer">
-    <div class="container main-footer-inner">
-      <div class="main-footer-brand">
-        <span class="logo"><img th:src="@{/img/logo.png}" alt="YouFlex" />
-        </span>
-        <p>
-          당신의 콘텐츠 취향을 연결하는<br />OTT 리뷰 &amp; 커뮤니티 플랫폼
-        </p>
-      </div>
-      <div class="main-footer-info">
-        <p>
-          (주)YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;대표:
-          YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;사업자등록번호: 000-00-00000
-        </p>
-        <p>개인정보관리책임자: YouFlex</p>
-        <p>
-          이메일: youflex@youflex.com&nbsp;&nbsp;|&nbsp;&nbsp;고객센터:
-          00-000-0000
-        </p>
-      </div>
-      <div class="main-footer-meta">
-        <p>&copy; 2026 YouFlex. All rights reserved.</p>
-      </div>
-      <button class="main-footer-top" id="footerTopBtn" title="맨 위로">
-        ↑
-      </button>
-    </div>
-  </footer>
+	<footer class="site-footer main-footer" th:fragment="footer">
+		<div class="container main-footer-inner">
+			<div class="main-footer-brand">
+				<span class="logo"><img th:src="@{/img/logo.png}" alt="YouFlex" />
+				</span>
+				<p>
+					당신의 콘텐츠 취향을 연결하는<br />OTT 리뷰 &amp; 커뮤니티 플랫폼
+				</p>
+			</div>
+			<div class="main-footer-info">
+				<p>
+					(주)YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;대표:
+					YouFlex&nbsp;&nbsp;|&nbsp;&nbsp;사업자등록번호: 000-00-00000
+				</p>
+				<p>개인정보관리책임자: YouFlex</p>
+				<p>
+					이메일: youflex@youflex.com&nbsp;&nbsp;|&nbsp;&nbsp;고객센터:
+					00-000-0000
+				</p>
+			</div>
+			<div class="main-footer-meta">
+				<p>&copy; 2026 YouFlex. All rights reserved.</p>
+			</div>
+			<button class="main-footer-top" id="footerTopBtn" title="맨 위로">
+				↑
+			</button>
+		</div>
+	</footer>
 
-  <!-- 
+	<!-- 
   ================================
   오버레이 영역
   ================================
   -->
-  <div class="overlay-backdrop" id="notificationBackdrop"></div>
+	<div class="overlay-backdrop" id="notificationBackdrop"></div>
 
-  <!-- 
+	<!-- 
   ================================
   알림 영역
   ================================
   -->
-  <aside class="slide-panel" id="notificationPanel" th:fragment="notification">
-    <div class="panel-header">
-      <h3>🔔 알림</h3>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button class="btn btn-ghost" id="notificationClearBtn" style="font-size:11px; padding:2px 8px; opacity:0.7;">전체 삭제</button>
-        <button class="panel-close" id="notificationClose">✕</button>
-      </div>
-    </div>
-    <div class="panel-body" id="notificationList">
-      <div class="notif-empty" id="notifEmptyMsg" style="padding:40px 16px; text-align:center; opacity:0.45; font-size:13px;">
-        새로운 알림이 없습니다.
-      </div>
-    </div>
-  </aside>
+	<aside class="slide-panel" id="notificationPanel" th:fragment="notification">
+		<div class="panel-header">
+			<h3>🔔 알림</h3>
+			<div style="display:flex; align-items:center; gap:8px;">
+				<button class="btn btn-ghost" id="notificationClearBtn"
+					style="font-size:11px; padding:2px 8px; opacity:0.7;">전체 삭제</button>
+				<button class="panel-close" id="notificationClose">✕</button>
+			</div>
+		</div>
+		<div class="panel-body" id="notificationList">
+			<div class="notif-empty" id="notifEmptyMsg"
+				style="padding:40px 16px; text-align:center; opacity:0.45; font-size:13px;">
+				새로운 알림이 없습니다.
+			</div>
+		</div>
+	</aside>
 
-  <!--
+	<!--
   ================================
   퀴즈 영역
   ================================
   -->
 
-  <aside class="slide-panel" id="quizPanel" th:fragment="quiz">
-    <div class="panel-header">
-      <h3>💡 YouFlex 퀴즈</h3>
-      <button class="panel-close" id="quizClose">✕</button>
-    </div>
-    <div class="panel-body">
-      <div class="quiz-box" id="qnaQuizBox">
-        <p class="quiz-intro">
-          객관식/OX 문제를 하루 3번(합산)까지 풀 수 있어요. 퀴즈를 시작하고
-          정답 버튼을 선택해보세요!
-        </p>
-        <div class="quiz-count" id="qnaQuizCount">
-          🎯 오늘 남은 퀴즈 횟수: 3/3
-        </div>
-        <button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">
-          퀴즈 시작
-        </button>
-        <!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
-        <div id="qnaQuizPlay" style="display:none">
-          <div class="quiz-question" id="qnaQuizQuestion"></div>
-          <div class="quiz-options" id="qnaQuizOptions"></div>
-        </div>
-        <div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
-      </div>
-    </div>
-  </aside>
-  <!-- =================================
+	<aside class="slide-panel" id="quizPanel" th:fragment="quiz">
+		<div class="panel-header">
+			<h3>💡 YouFlex 퀴즈</h3>
+			<button class="panel-close" id="quizClose">✕</button>
+		</div>
+		<div class="panel-body">
+			<div class="quiz-box" id="qnaQuizBox">
+				<p class="quiz-intro">
+					객관식/OX 문제를 하루 3번(합산)까지 풀 수 있어요. 퀴즈를 시작하고
+					정답 버튼을 선택해보세요!
+				</p>
+				<div class="quiz-count" id="qnaQuizCount">
+					🎯 오늘 남은 퀴즈 횟수: 3/3
+				</div>
+				<button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">
+					퀴즈 시작
+				</button>
+				<!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
+				<div id="qnaQuizPlay" style="display:none">
+					<div class="quiz-question" id="qnaQuizQuestion"></div>
+					<div class="quiz-options" id="qnaQuizOptions"></div>
+				</div>
+				<div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
+			</div>
+		</div>
+	</aside>
+	<!-- =================================
 		          채팅방 영역
 		          ================================= -->
-  <aside class="slide-panel" id="chatroomPanel" th:fragment="chat">
-    <!-- ★ currentMemberId 태그 ★ -->
-    <input type="hidden" id="currentMemberId"
-      th:value="${session.loginMember != null ? session.loginMember.memberId : 0}" />
-    <input type="hidden" id="currentMemberName"
-      th:value="${session.loginMember != null ? session.loginMember.memberName : '회원'}" />
+	<aside class="slide-panel" id="chatroomPanel" th:fragment="chat">
+		<!-- ★ currentMemberId 태그 ★ -->
+		<input type="hidden" id="currentMemberId"
+			th:value="${session.loginMember != null ? session.loginMember.memberId : 0}" />
+		<input type="hidden" id="currentMemberName"
+			th:value="${session.loginMember != null ? session.loginMember.memberName : '회원'}" />
 
-    <!-- 헤더 -->
-    <div class="panel-header">
-      <h3>💬 커뮤니티 채팅</h3>
-      <button class="panel-close" id="chatroomClose">✕</button>
-    </div>
+		<!-- 헤더 -->
+		<div class="panel-header">
+			<h3>💬 커뮤니티 채팅</h3>
+			<button class="panel-close" id="chatroomClose">✕</button>
+		</div>
 
-    <!-- 탭 버튼 -->
-    <div class="panel-tabs" data-tab-panels>
-      <button class="active" data-tab-target="list">목록</button>
-      <button data-tab-target="chat">채팅</button>
-      <button data-tab-target="create"
-        th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
-        개설
-      </button>
-    </div>
+		<!-- 탭 버튼 -->
+		<div class="panel-tabs" data-tab-panels>
+			<button class="active" data-tab-target="list">목록</button>
+			<button data-tab-target="chat">채팅</button>
+			<button data-tab-target="create"
+				th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+				개설
+			</button>
+		</div>
 
-    <!-- 1. [목록 탭 패널] -->
-    <div class="panel-body active" data-tab-panel="list">
-      <div id="chatroomListContainer">
+		<!-- 1. [목록 탭 패널] -->
+		<div class="panel-body active" data-tab-panel="list">
+			<div id="chatroomListContainer">
 
-        <!-- [섹션 1] 내가 참여 중인 방 -->
-        <section class="room-section">
-          <div class="section-title">
-            <span>내가 참여 중인 방</span>
-            <span class="count" id="joinedRoomCount">0</span>
-          </div>
-          <!-- 자바스크립트가 이 안을 동적으로 채우도록 비워둡니다 -->
-          <div id="joinedRoomContainer"></div>
-        </section>
+				<!-- [섹션 1] 내가 참여 중인 방 -->
+				<section class="room-section">
+					<div class="section-title">
+						<span>내가 참여 중인 방</span>
+						<span class="count" id="joinedRoomCount">0</span>
+					</div>
+					<!-- 자바스크립트가 이 안을 동적으로 채우도록 비워둡니다 -->
+					<div id="joinedRoomContainer"></div>
+				</section>
 
-        <div class="divider"></div>
+				<div class="divider"></div>
 
-        <!-- [섹션 2] 참여 가능한 방 -->
-        <section class="room-section">
-          <div class="section-title">
-            <span>🌐 참여 가능한 방</span>
-            <span class="count" id="availableRoomCount">0</span>
-          </div>
-          <!-- 자바스크립트가 이 안을 동적으로 채우도록 비워둡니다 -->
-          <div id="availableRoomContainer"></div>
-        </section>
+				<!-- [섹션 2] 참여 가능한 방 -->
+				<section class="room-section">
+					<div class="section-title">
+						<span>🌐 참여 가능한 방</span>
+						<span class="count" id="availableRoomCount">0</span>
+					</div>
+					<!-- 자바스크립트가 이 안을 동적으로 채우도록 비워둡니다 -->
+					<div id="availableRoomContainer"></div>
+				</section>
 
-      </div>
-    </div>
+			</div>
+		</div>
 
-    <!-- 2. [채팅 탭 패널] -->
-    <div class="panel-body" data-tab-panel="chat">
-      <div class="chat-room-view">
+		<!-- 2. [채팅 탭 패널] -->
+		<div class="panel-body" data-tab-panel="chat">
+			<div class="chat-room-view">
 
-        <!-- ★ 케밥 헤더 영역 ★ -->
-        <div class="chatroom-title">
-          <span id="chatroomTitleText">💬 방 선택 없음</span>
+				<!-- ★ 케밥 헤더 영역 ★ -->
+				<div class="chatroom-title">
+					<span id="chatroomTitleText">💬 방 선택 없음</span>
 
-          <div class="chatroom-title-actions">
-            <button type="button" class="chatroom-menu-btn" id="chatroomMenuBtn" title="메뉴">⋮</button>
+					<div class="chatroom-title-actions">
+						<button type="button" class="chatroom-menu-btn" id="chatroomMenuBtn" title="메뉴">⋮</button>
 
-            <!-- 드롭다운 메뉴 (경고 부여 / 방 나가기 / 운영자 전용 강제삭제) -->
-            <div class="kebab-dropdown" id="chatroomDropdown">
-              <button type="button" class="danger" id="chatroomLeaveBtn">🚪 방 나가기</button>
-              <button type="button" class="danger" id="chatroomForceDeleteBtn"
-                th:if="${session.loginMember?.memberGrade?.toString() == '관리자'}">🗑 강제삭제</button>
-            </div>
-          </div>
-        </div>
+						<!-- 드롭다운 메뉴 (경고 부여 / 방 나가기 / 운영자 전용 강제삭제) -->
+						<div class="kebab-dropdown" id="chatroomDropdown">
+							<button type="button" class="danger" id="chatroomLeaveBtn">🚪 방 나가기</button>
+							<button type="button" class="danger" id="chatroomForceDeleteBtn"
+								th:if="${session.loginMember?.memberGrade?.toString() == '관리자'}">🗑 강제삭제</button>
+						</div>
+					</div>
+				</div>
 
-        <!-- 실시간 참여자 목록 - 클릭 없이 항상 표시 (3명 분량 고정 높이, 그 이상은 스크롤) -->
-        <div class="chatroom-members-bar" id="chatroomMembersModal">
-          <div class="members-modal-header">
-            <span id="membersModalTitle">👥 실시간 참여자</span>
-          </div>
-          <ul class="members-modal-list" id="chatroomMembersList">
-            <!-- JS 동적 생성 -->
-          </ul>
-        </div>
+				<!-- 실시간 참여자 목록 - 클릭 없이 항상 표시 (3명 분량 고정 높이, 그 이상은 스크롤) -->
+				<div class="chatroom-members-bar" id="chatroomMembersModal">
+					<div class="members-modal-header">
+						<span id="membersModalTitle">👥 실시간 참여자</span>
+					</div>
+					<ul class="members-modal-list" id="chatroomMembersList">
+						<!-- JS 동적 생성 -->
+					</ul>
+				</div>
 
-        <!-- 실제 메시지 대화 목록 영역 (기본 중앙 안내 문구 추가) -->
-        <div id="chatroomMessages" class="chat-messages">
-          <div class="chat-empty-state">선택하신 채팅방이 존재하지 않습니다.</div>
-        </div>
+				<!-- 실제 메시지 대화 목록 영역 (기본 중앙 안내 문구 추가) -->
+				<div id="chatroomMessages" class="chat-messages">
+					<div class="chat-empty-state">선택하신 채팅방이 존재하지 않습니다.</div>
+				</div>
 
-        <!-- 하단 메시지 입력폼 -->
-        <div class="chat-input-container">
-          <input type="text" id="chat_message_content" class="chat-input" placeholder="메시지를 입력하세요" />
-          <button type="button" id="chatroomSendBtn" class="btn btn-primary btn-send">전송</button>
-        </div>
+				<!-- 하단 메시지 입력폼 -->
+				<div class="chat-input-container">
+					<input type="text" id="chat_message_content" class="chat-input" placeholder="메시지를 입력하세요" />
+					<button type="button" id="chatroomSendBtn" class="btn btn-primary btn-send">전송</button>
+				</div>
 
-      </div>
-    </div>
+			</div>
+		</div>
 
-    <!-- 3. [개설 탭 패널] -->
-    <div class="panel-body" data-tab-panel="create"
-      th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
-      <label class="text-muted" style="font-size:13px">방 이름</label>
-      <input type="text" id="chatroom_title" name="chatroom_title"
-        style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box;margin-bottom:12px" />
+		<!-- 3. [개설 탭 패널] -->
+		<div class="panel-body" data-tab-panel="create"
+			th:if="${session.loginMember?.memberGrade?.toString() == '평론가' or session.loginMember?.memberGrade?.toString() == '관리자'}">
+			<label class="text-muted" style="font-size:13px">방 이름</label>
+			<input type="text" id="chatroom_title" name="chatroom_title"
+				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box;margin-bottom:12px" />
 
-      <label class="text-muted" style="font-size:13px">최대 인원</label>
-      <input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10"
-        style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box" />
+			<label class="text-muted" style="font-size:13px">최대 인원</label>
+			<input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10"
+				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff;width:100%;box-sizing:border-box" />
 
-      <div class="text-muted" style="font-size:12px; margin-top:8px; color:#888;">* 최소 인원은 2명부터 최대 30명까지 입니다.</div>
-      <button class="btn btn-primary mt-24" id="chatroomCreateBtn" style="width:100%">채팅방 개설</button>
-    </div>
+			<div class="text-muted" style="font-size:12px; margin-top:8px; color:#888;">* 최소 인원은 2명부터 최대 30명까지 입니다.
+			</div>
+			<button class="btn btn-primary mt-24" id="chatroomCreateBtn" style="width:100%">채팅방 개설</button>
+		</div>
 
-  </aside>
+	</aside>
 
-  <!-- =================================
+	<!-- =================================
           채팅방 전용 알림 슬라이드 패널
           (채팅 패널이 열려있을 때 그 왼쪽에 나란히 열림, 별도 backdrop 없음)
           ================================= -->
-  <aside class="slide-panel" id="chatRoomNotifPanel" th:fragment="chatNotif">
-    <div class="panel-header">
-      <h3>🔔 채팅방 알림</h3>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button class="btn btn-ghost" id="chatRoomNotifClearBtn" style="font-size:11px; padding:2px 8px; opacity:0.7;">전체 삭제</button>
-        <button class="panel-close" id="chatRoomNotifClose">✕</button>
-      </div>
-    </div>
-    <div class="panel-body" id="chatRoomNotifList">
-      <div class="notif-empty" id="chatRoomNotifEmptyMsg" style="padding:40px 16px; text-align:center; opacity:0.45; font-size:13px;">
-        새로운 채팅 알림이 없습니다.
-      </div>
-    </div>
-  </aside>
+	<aside class="slide-panel" id="chatRoomNotifPanel" th:fragment="chatNotif">
+		<div class="panel-header">
+			<h3>🔔 채팅방 알림</h3>
+			<div style="display:flex; align-items:center; gap:8px;">
+				<button class="btn btn-ghost" id="chatRoomNotifClearBtn"
+					style="font-size:11px; padding:2px 8px; opacity:0.7;">전체 삭제</button>
+				<button class="panel-close" id="chatRoomNotifClose">✕</button>
+			</div>
+		</div>
+		<div class="panel-body" id="chatRoomNotifList">
+			<div class="notif-empty" id="chatRoomNotifEmptyMsg"
+				style="padding:40px 16px; text-align:center; opacity:0.45; font-size:13px;">
+				새로운 채팅 알림이 없습니다.
+			</div>
+		</div>
+	</aside>
 
 </body>
 
