@@ -22,12 +22,7 @@
 
 		<!-- 상단 고정 공지사항 -->
 		<div class="post-row-list mt-16">
-<<<<<<< HEAD
 			<a class="post-row" th:href="@{/notice}" href="/notice" style="background:var(--bg-2)">
-=======
-			<a class="post-row" th:href="@{/notice/detail(id=1)}" href="06_notice_detail.html"
-				style="background:var(--bg-2)">
->>>>>>> main
 				<div class="post-row-thumb"
 					style="width:50px; height:50px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
 					<span class="badge badge-admin">공지</span>
@@ -47,7 +42,6 @@
 	    	<button th:classappend="${sort == 'highlight'} ? ' active' : ''" data-sort="highlight">하이라이트</button>
 	    	<button th:classappend="${sort == 'views'} ? ' active' : ''" data-sort="views">조회수순</button>
 			</div>
-<<<<<<< HEAD
 			<div class="write-btn-wrap" th:if="${session.loginMember != null}" style="margin-top:0">
 				<a th:href="@{/review/write}" class="btn btn-primary">✎ 글쓰기</a>
 			</div>
@@ -58,13 +52,6 @@
 				onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎
 				글쓰기</button>-->
 		</div>
-=======
-			<div class="write-btn-wrap" data-role-visible="guest" style="margin-top:0">
-				<button class="btn"
-					onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='02_login.html'">✎
-					글쓰기</button>
-			</div>
->>>>>>> main
 		</div>
 
 		<!-- 
