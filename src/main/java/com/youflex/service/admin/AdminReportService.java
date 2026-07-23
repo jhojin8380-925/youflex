@@ -22,6 +22,7 @@ import com.youflex.mapper.ReviewMapper;
 import com.youflex.mapper.ReviewReportMapper;
 import com.youflex.mapper.qna.QnaCommentMapper;
 import com.youflex.mapper.qna.QnaMapper;
+import com.youflex.service.NotificationsService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,6 +48,9 @@ public class AdminReportService {
     private final CommentMapper commentMapper;
     private final QnaMapper qnaMapper;
     private final QnaCommentMapper qnaCommentMapper;
+
+    // 신고 처리 완료 시 헤더 🔔 알림으로 신고자에게 통보하기 위해 사용
+    private final NotificationsService notificationsService;
 
     // 미처리(접수/처리중) 신고를 위로, 그 안에서는 최신순으로 정렬해서 반환
     public List<ReportDTO> getAllReports() {
@@ -142,6 +146,7 @@ public class AdminReportService {
             case "QNA_COMMENT" -> qnaCommentReportMapper.updateCommentReportStatus(reportId, STATUS_DONE);
             default -> throw new IllegalArgumentException("알 수 없는 신고 유형: " + reportType);
         }
+        notifyReporterOfResolution(reportType, reportId, "검토 결과 별도 조치 없이 처리 완료되었습니다.");
     }
 
     // 신고를 "삭제" 처리 - 신고된 원본 콘텐츠 자체를 지우고, 신고 상태도 "처리완료"로 전환.
@@ -165,6 +170,38 @@ public class AdminReportService {
                 qnaCommentMapper.deleteComment(targetId);
                 qnaCommentReportMapper.updateCommentReportStatus(reportId, STATUS_DONE);
             }
+            default -> throw new IllegalArgumentException("알 수 없는 신고 유형: " + reportType);
+        }
+        notifyReporterOfResolution(reportType, reportId, "신고하신 내용이 확인되어 해당 콘텐츠가 삭제 처리되었습니다.");
+    }
+
+    /**
+     * 신고 처리 완료 시 신고자에게 헤더 🔔 알림 발송 (project-plan.md 3-6 알림 시스템 - 신고 처리 결과 통보).
+     * 신고 테이블에 대한 별도 "id로 단건 조회" 매퍼가 없어, 기존 목록 조회 결과에서 방금 처리한 건을 찾아 재사용한다.
+     * (원본 콘텐츠가 삭제되어도 신고 테이블의 FK는 ON DELETE SET NULL이라 신고 행 자체와 memberId는 남아있음)
+     */
+    private void notifyReporterOfResolution(String reportType, int reportId, String resultText) {
+        switch (reportType) {
+            case "REVIEW" -> reviewReportMapper.selectReviewReportList().stream()
+                    .filter(r -> r.getReviewReportId() == reportId)
+                    .findFirst()
+                    .ifPresent(r -> notificationsService.notify(r.getMemberId(), "신고처리완료",
+                            "신고하신 게시글 신고가 " + resultText, "report"));
+            case "COMMENT" -> commentReportMapper.selectCommentReportList().stream()
+                    .filter(r -> r.getCommentReportId() == reportId)
+                    .findFirst()
+                    .ifPresent(r -> notificationsService.notify(r.getMemberId(), "신고처리완료",
+                            "신고하신 댓글 신고가 " + resultText, "report"));
+            case "QNA" -> qnaReportMapper.selectQnaReportList().stream()
+                    .filter(r -> r.getQnaReportId() == reportId)
+                    .findFirst()
+                    .ifPresent(r -> notificationsService.notify(r.getMemberId(), "신고처리완료",
+                            "신고하신 QNA 신고가 " + resultText, "report"));
+            case "QNA_COMMENT" -> qnaCommentReportMapper.selectCommentReportList().stream()
+                    .filter(r -> r.getQnaCommentReportId() == reportId)
+                    .findFirst()
+                    .ifPresent(r -> notificationsService.notify(r.getMemberId(), "신고처리완료",
+                            "신고하신 QNA 댓글 신고가 " + resultText, "report"));
             default -> throw new IllegalArgumentException("알 수 없는 신고 유형: " + reportType);
         }
     }
