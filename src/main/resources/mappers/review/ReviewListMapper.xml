@@ -100,4 +100,28 @@
         FROM genre_category
         ORDER BY genre_category_id
     </select>
+
+    <!-- 메인 화면 인기 리뷰글(플랫폼별 top N) - project-plan.md 기준 "좋아요·점수 자동 선정":
+         좋아요 수 내림차순이 우선, 동률이면 별점 높은 순, 그마저 같으면 최신순으로 정렬 -->
+    <select id="findPopular" resultType="com.youflex.dto.ReviewDTO">
+        SELECT r.*,
+            m.member_name AS memberName,
+            m.member_profile_img AS memberProfileImg,
+            m.member_grade AS memberGrade,
+            (SELECT COUNT(*) FROM review_like rl WHERE rl.review_id = r.review_id) AS likeCount,
+            (SELECT COUNT(*) FROM comment c WHERE c.review_id = r.review_id AND c.comment_delete_status != '삭제') AS commentCount
+        FROM review r
+        JOIN member m ON m.member_id = r.member_id
+        <if test="platform != null and platform != '' and platform != 'all'">
+            <choose>
+                <when test="platform == 'netflix'">WHERE r.review_platform = '넷플릭스'</when>
+                <when test="platform == 'tving'">WHERE r.review_platform = '티빙'</when>
+                <when test="platform == 'disney'">WHERE r.review_platform = '디즈니+'</when>
+                <when test="platform == 'etc'">WHERE r.review_platform = '기타'</when>
+                <otherwise>WHERE r.review_platform = #{platform}</otherwise>
+            </choose>
+        </if>
+        ORDER BY likeCount DESC, r.review_rating DESC, r.review_created_at DESC
+        LIMIT #{limit}
+    </select>
 </mapper>

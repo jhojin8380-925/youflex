@@ -75,63 +75,23 @@
     ==================================
     -->
       <div class="rank-grid" data-tab-panel="all">
-        <a class="rank-card" href="13_detail.html">
+        <a class="rank-card" th:each="post, stat : ${popularReviews['all']}"
+           th:href="@{/review/{id}(id=${post.reviewId})}">
           <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
+            <img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+                 th:src="@{'/upload/' + ${post.reviewImg}}" class="list-img" />
           </div>
-          <span class="rank-number">1</span>
-          <span class="rank-rating">★ 4.8</span>
+          <span class="rank-number" th:text="${stat.count}">1</span>
+          <span class="rank-rating" th:text="'★ ' + ${post.reviewRating}">★ 4.8</span>
           <div class="rank-body">
-            <div class="rank-title">「오징어게임 3」, 이대로 끝내도 되는가</div>
-            <div class="rank-meta">리뷰왕 · ❤ 1,204</div>
+            <div class="rank-title" th:text="${post.reviewTitle}">제목</div>
+            <div class="rank-meta" th:text="${post.memberName} + ' · ❤ ' + ${post.likeCount}">작성자 · ❤ 0</div>
           </div>
         </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">2</span>
-          <span class="rank-rating">★ 4.7</span>
-          <div class="rank-body">
-            <div class="rank-title">
-              「더 글로리」 재감상 후기 - 복수극의 정석
-            </div>
-            <div class="rank-meta">김리뷰 · ❤ 892</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">3</span>
-          <span class="rank-rating">★ 4.6</span>
-          <div class="rank-body">
-            <div class="rank-title">「살인자ㅇ난감」 결말 완전분석</div>
-            <div class="rank-meta">스릴러광 · ❤ 754</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">4</span>
-          <span class="rank-rating">★ 4.5</span>
-          <div class="rank-body">
-            <div class="rank-title">「기생수: 더 그레이」 원작과 비교 리뷰</div>
-            <div class="rank-meta">무비홀릭 · ❤ 610</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">5</span>
-          <span class="rank-rating">★ 4.3</span>
-          <div class="rank-body">
-            <div class="rank-title">「지금 우리 학교는」 시즌2 기대평</div>
-            <div class="rank-meta">좀비덕후 · ❤ 480</div>
-          </div>
-        </a>
+        <div class="text-muted" th:if="${#lists.isEmpty(popularReviews['all'])}"
+             style="grid-column:1 / -1;text-align:center;padding:24px 0">
+          아직 등록된 리뷰가 없습니다.
+        </div>
       </div>
 
       <!-- 
@@ -140,63 +100,23 @@
     ==================================
     -->
       <div class="rank-grid" data-tab-panel="netflix" style="display: none">
-        <a class="rank-card" href="13_detail.html">
+        <a class="rank-card" th:each="post, stat : ${popularReviews['netflix']}"
+           th:href="@{/review/{id}(id=${post.reviewId})}">
           <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
+            <img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+                 th:src="@{'/upload/' + ${post.reviewImg}}" class="list-img" />
           </div>
-          <span class="rank-number">1</span>
-          <span class="rank-rating">★ 4.8</span>
+          <span class="rank-number" th:text="${stat.count}">1</span>
+          <span class="rank-rating" th:text="'★ ' + ${post.reviewRating}">★ 4.8</span>
           <div class="rank-body">
-            <div class="rank-title">「오징어게임 3」, 이대로 끝내도 되는가</div>
-            <div class="rank-meta">리뷰왕 · ❤ 1,204</div>
+            <div class="rank-title" th:text="${post.reviewTitle}">제목</div>
+            <div class="rank-meta" th:text="${post.memberName} + ' · ❤ ' + ${post.likeCount}">작성자 · ❤ 0</div>
           </div>
         </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">2</span>
-          <span class="rank-rating">★ 4.7</span>
-          <div class="rank-body">
-            <div class="rank-title">
-              「더 글로리」 재감상 후기 - 복수극의 정석
-            </div>
-            <div class="rank-meta">김리뷰 · ❤ 892</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">3</span>
-          <span class="rank-rating">★ 4.6</span>
-          <div class="rank-body">
-            <div class="rank-title">「살인자ㅇ난감」 결말 완전분석</div>
-            <div class="rank-meta">스릴러광 · ❤ 754</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">4</span>
-          <span class="rank-rating">★ 4.5</span>
-          <div class="rank-body">
-            <div class="rank-title">「기생수: 더 그레이」 원작과 비교 리뷰</div>
-            <div class="rank-meta">무비홀릭 · ❤ 610</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">5</span>
-          <span class="rank-rating">★ 4.3</span>
-          <div class="rank-body">
-            <div class="rank-title">「지금 우리 학교는」 시즌2 기대평</div>
-            <div class="rank-meta">좀비덕후 · ❤ 480</div>
-          </div>
-        </a>
+        <div class="text-muted" th:if="${#lists.isEmpty(popularReviews['netflix'])}"
+             style="grid-column:1 / -1;text-align:center;padding:24px 0">
+          아직 등록된 리뷰가 없습니다.
+        </div>
       </div>
 
       <!-- 
@@ -205,64 +125,23 @@
     ==================================
     -->
       <div class="rank-grid" data-tab-panel="tving" style="display: none">
-        <a class="rank-card" href="13_detail.html">
+        <a class="rank-card" th:each="post, stat : ${popularReviews['tving']}"
+           th:href="@{/review/{id}(id=${post.reviewId})}">
           <div class="rank-thumb">
-            <img
-              src="./assets/img/netflix/kpop_demon_hunters.png"
-              class="list-img"
-            />
+            <img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+                 th:src="@{'/upload/' + ${post.reviewImg}}" class="list-img" />
           </div>
-          <span class="rank-number">1</span>
-          <span class="rank-rating">★ 4.6</span>
+          <span class="rank-number" th:text="${stat.count}">1</span>
+          <span class="rank-rating" th:text="'★ ' + ${post.reviewRating}">★ 4.8</span>
           <div class="rank-body">
-            <div class="rank-title">환승연애3, 시즌 총정리</div>
-            <div class="rank-meta">예능러버 · ❤ 900</div>
+            <div class="rank-title" th:text="${post.reviewTitle}">제목</div>
+            <div class="rank-meta" th:text="${post.memberName} + ' · ❤ ' + ${post.likeCount}">작성자 · ❤ 0</div>
           </div>
         </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">2</span>
-          <span class="rank-rating">★ 4.4</span>
-          <div class="rank-body">
-            <div class="rank-title">「술꾼도시여자들」 시즌3 후기</div>
-            <div class="rank-meta">술친구 · ❤ 512</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/netflix/cyberpunk.png" class="list-img" />
-          </div>
-          <span class="rank-number">3</span>
-          <span class="rank-rating">★ 4.3</span>
-          <div class="rank-body">
-            <div class="rank-title">「가스라이팅」 몰아보기 후기</div>
-            <div class="rank-meta">드라마홀릭 · ❤ 430</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">4</span>
-          <span class="rank-rating">★ 4.2</span>
-          <div class="rank-body">
-            <div class="rank-title">「우리들의 블루스」 재방 후기</div>
-            <div class="rank-meta">감성충 · ❤ 388</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/tving/contact2020.png" class="list-img" />
-          </div>
-          <span class="rank-number">5</span>
-          <span class="rank-rating">★ 4.1</span>
-          <div class="rank-body">
-            <div class="rank-title">「신서유기」 스페셜 리뷰</div>
-            <div class="rank-meta">예능덕후 · ❤ 305</div>
-          </div>
-        </a>
+        <div class="text-muted" th:if="${#lists.isEmpty(popularReviews['tving'])}"
+             style="grid-column:1 / -1;text-align:center;padding:24px 0">
+          아직 등록된 리뷰가 없습니다.
+        </div>
       </div>
       <!-- 
     ==================================
@@ -270,61 +149,23 @@
     ==================================
     -->
       <div class="rank-grid" data-tab-panel="disney" style="display: none">
-        <a class="rank-card" href="13_detail.html">
+        <a class="rank-card" th:each="post, stat : ${popularReviews['disney']}"
+           th:href="@{/review/{id}(id=${post.reviewId})}">
           <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
+            <img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+                 th:src="@{'/upload/' + ${post.reviewImg}}" class="list-img" />
           </div>
-          <span class="rank-number">1</span>
-          <span class="rank-rating">★ 4.9</span>
+          <span class="rank-number" th:text="${stat.count}">1</span>
+          <span class="rank-rating" th:text="'★ ' + ${post.reviewRating}">★ 4.8</span>
           <div class="rank-body">
-            <div class="rank-title">「무빙」 최종화, 그 후 이야기</div>
-            <div class="rank-meta">액션러버 · ❤ 1,320</div>
+            <div class="rank-title" th:text="${post.reviewTitle}">제목</div>
+            <div class="rank-meta" th:text="${post.memberName} + ' · ❤ ' + ${post.likeCount}">작성자 · ❤ 0</div>
           </div>
         </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/jurassic_world.png" class="list-img" />
-          </div>
-          <span class="rank-number">2</span>
-          <span class="rank-rating">★ 4.5</span>
-          <div class="rank-body">
-            <div class="rank-title">「아바타: 물의 길」 재감상 후기</div>
-            <div class="rank-meta">SF덕후 · ❤ 670</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">3</span>
-          <span class="rank-rating">★ 4.4</span>
-          <div class="rank-body">
-            <div class="rank-title">「카지노」 시즌2 결말 분석</div>
-            <div class="rank-meta">느와르팬 · ❤ 540</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/disney+/avatar.jpg" class="list-img" />
-          </div>
-          <span class="rank-number">4</span>
-          <span class="rank-rating">★ 4.2</span>
-          <div class="rank-body">
-            <div class="rank-title">「삼식이 삼촌」 리뷰</div>
-            <div class="rank-meta">시대극러버 · ❤ 410</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">5</span>
-          <span class="rank-rating">★ 4.0</span>
-          <div class="rank-body">
-            <div class="rank-title">「그리드」 결말 해석</div>
-            <div class="rank-meta">미스터리광 · ❤ 290</div>
-          </div>
-        </a>
+        <div class="text-muted" th:if="${#lists.isEmpty(popularReviews['disney'])}"
+             style="grid-column:1 / -1;text-align:center;padding:24px 0">
+          아직 등록된 리뷰가 없습니다.
+        </div>
       </div>
       <!--
     ==================================
@@ -333,63 +174,23 @@
     -->
 
       <div class="rank-grid" data-tab-panel="etc" style="display: none">
-        <a class="rank-card" href="13_detail.html">
+        <a class="rank-card" th:each="post, stat : ${popularReviews['etc']}"
+           th:href="@{/review/{id}(id=${post.reviewId})}">
           <div class="rank-thumb">
-            <img src="./assets/img/wave/bumblebee.png" class="list-img" />
+            <img th:if="${post.reviewImg != null and !#strings.isEmpty(post.reviewImg)}"
+                 th:src="@{'/upload/' + ${post.reviewImg}}" class="list-img" />
           </div>
-          <span class="rank-number">1</span>
-          <span class="rank-rating">★ 4.9</span>
+          <span class="rank-number" th:text="${stat.count}">1</span>
+          <span class="rank-rating" th:text="'★ ' + ${post.reviewRating}">★ 4.8</span>
           <div class="rank-body">
-            <div class="rank-title">「체르노빌」 감상 후기 (왓챠)</div>
-            <div class="rank-meta">다큐러버 · ❤ 880</div>
+            <div class="rank-title" th:text="${post.reviewTitle}">제목</div>
+            <div class="rank-meta" th:text="${post.memberName} + ' · ❤ ' + ${post.likeCount}">작성자 · ❤ 0</div>
           </div>
         </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">2</span>
-          <span class="rank-rating">★ 4.6</span>
-          <div class="rank-body">
-            <div class="rank-title">
-              「아이돌: 익시피어스」 리뷰 (쿠팡플레이)
-            </div>
-            <div class="rank-meta">축구덕후 · ❤ 720</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/netflix/ponyo.png" class="list-img" />
-          </div>
-          <span class="rank-number">3</span>
-          <span class="rank-rating">★ 4.5</span>
-          <div class="rank-body">
-            <div class="rank-title">「소년심판」 후기 (웨이브)</div>
-            <div class="rank-meta">법정극팬 · ❤ 560</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">4</span>
-          <span class="rank-rating">★ 4.1</span>
-          <div class="rank-body">
-            <div class="rank-title">SNL 코리아 스페셜 (쿠팡플레이)</div>
-            <div class="rank-meta">예능광 · ❤ 350</div>
-          </div>
-        </a>
-        <a class="rank-card" href="13_detail.html">
-          <div class="rank-thumb">
-            <img src="./assets/img/wave/battleship.png" class="list-img" />
-          </div>
-          <span class="rank-number">5</span>
-          <span class="rank-rating">★ 4.0</span>
-          <div class="rank-body">
-            <div class="rank-title">「나 홀로 그대」 리뷰 (웨이브)</div>
-            <div class="rank-meta">로맨스팬 · ❤ 275</div>
-          </div>
-        </a>
+        <div class="text-muted" th:if="${#lists.isEmpty(popularReviews['etc'])}"
+             style="grid-column:1 / -1;text-align:center;padding:24px 0">
+          아직 등록된 리뷰가 없습니다.
+        </div>
       </div>
 
       <!-- 

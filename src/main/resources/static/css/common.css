@@ -374,19 +374,14 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
   position: relative;
 }
 #chatroomTitleText {
-  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
-  transition: color 0.2s, transform 0.1s; user-select: none;
+  display: inline-flex; align-items: center; gap: 6px; user-select: none;
 }
-#chatroomTitleText:hover { color: var(--accent); }
-#chatroomTitleText:active { transform: scale(0.98); }
 
-/* 실시간 참여자 목록 팝업 모달 */
-.chatroom-members-modal {
-  display: none; position: absolute; top: 100%; left: 16px; right: 16px; z-index: 100;
-  background: var(--bg-1, #1e1e24); border: 1px solid var(--border, #333);
-  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); padding: 12px; margin-top: 6px;
+/* 실시간 참여자 목록 - 클릭 없이 항상 표시되는 고정 바 (채팅 메시지 영역 위, 방 제목 바로 아래) */
+.chatroom-members-bar {
+  background: var(--bg-1, #1e1e24); border-bottom: 1px solid var(--border, #333);
+  padding: 10px 16px; flex-shrink: 0;
 }
-.chatroom-members-modal.open { display: block; }
 .members-modal-header {
   display: flex; justify-content: space-between; align-items: center;
   padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--border, #333);
@@ -394,9 +389,15 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
 }
 .members-close-btn { background: none; border: none; color: var(--text-2); font-size: 16px; cursor: pointer; padding: 0 4px; }
 .members-close-btn:hover { color: var(--text-0); }
+/* 항상 3명 분량 높이만 보이고, 그 이상은 스크롤(스크롤바 UI는 숨김)로 확인 */
 .members-modal-list {
-  list-style: none; margin: 0; padding: 0; max-height: 180px; overflow-y: auto;
+  list-style: none; margin: 0; padding: 0; max-height: 94px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 6px;
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* 구버전 Edge/IE */
+}
+.members-modal-list::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari, 최신 Edge */
 }
 .members-modal-item {
   display: flex; justify-content: space-between; align-items: center;
@@ -409,12 +410,24 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
 .members-modal-item .owner-badge { color: var(--accent, #e50914); font-size: 11px; font-weight: 700; }
 .members-modal-item .member-name-text { display: flex; align-items: center; gap: 6px; }
 
+/* "목록" 탭에서 방에 들어가지 않고 "N / M명"을 눌렀을 때, 그 바로 아래에 뜨는 참여 멤버 미리보기 팝업
+   (top/left는 클릭한 위치 기준으로 JS에서 매번 계산해서 지정함 - openRoomMembersPeekModal 참고) */
+.room-members-peek-modal {
+  display: none; position: fixed; z-index: 2000; width: min(280px, calc(100vw - 32px));
+  background: var(--bg-1, #1e1e24); border: 1px solid var(--border, #333);
+  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); padding: 12px;
+}
+.room-members-peek-modal.open { display: block; }
+
 /* 실제 채팅 메시지들이 쌓이는 스크롤 영역 */
 .chatroom-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 
 /* 채팅 말풍선 스타일 (퀴즈 대화, 채팅방 대화 공용) */
 .chat-msg { display: flex; gap: 8px; max-width: 85%; }
 .chat-msg .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-3); flex-shrink: 0; }
+/* 이름과 말풍선을 같은 쪽 가장자리(아바타 쪽)에 고정 - 메시지 길이가 바뀌어도 이름 위치가 안 움직이도록 */
+.chat-msg .message-container { display: flex; flex-direction: column; align-items: flex-start; }
+.chat-msg.me .message-container { align-items: flex-end; }
 .chat-msg .bubble { background: var(--bg-2); padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; }
 .chat-msg.me { align-self: flex-end; flex-direction: row-reverse; }        /* 내가 보낸 메시지는 오른쪽 정렬 */
 .chat-msg.me .bubble { background: var(--accent); color: #fff; }

@@ -49,6 +49,15 @@ public class ChatroomController {
         return null;
     }
 
+    /** 로그인한 회원이 운영자(관리자) 등급인지 확인 - 채팅방 강제삭제 권한 판단에 사용 */
+    private boolean isLoginMemberAdmin(HttpSession session) {
+        Object loginMemberObj = session.getAttribute("loginMember");
+        if (loginMemberObj instanceof MemberDTO loginMember) {
+            return "관리자".equals(loginMember.getMemberGrade());
+        }
+        return false;
+    }
+
     /**
      * 채팅방 생성
      * ★ 프론트(app.js)가 응답을 그대로 chatroomId(숫자)로 사용하므로
@@ -171,7 +180,7 @@ public class ChatroomController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 채팅방입니다.");
     }
 
-    /** 채팅방 삭제 */
+    /** 채팅방 삭제 - 방장 본인 또는 운영자(강제삭제)만 가능 */
     @DeleteMapping("/{chatroomId}")
     public ResponseEntity<?> deleteChatroom(@PathVariable("chatroomId") int chatroomId, HttpSession session) {
         Integer memberId = getLoginMemberId(session);
@@ -183,8 +192,16 @@ public class ChatroomController {
         if (existingChatroom == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 채팅방입니다.");
         }
-        if (existingChatroom.getMemberId() != memberId) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("방장만 채팅방을 삭제할 수 있습니다.");
+
+        boolean isOwner = existingChatroom.getMemberId() == memberId;
+        boolean isAdmin = isLoginMemberAdmin(session);
+        if (!isOwner && !isAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("방장 또는 운영자만 채팅방을 삭제할 수 있습니다.");
+        }
+
+        // ★ 운영자가 본인 방이 아닌 다른 방을 강제삭제하는 경우, 삭제 전에 남아있는 참여자들에게 안내
+        if (isAdmin && !isOwner) {
+            chatroomService.notifyForceDeleteByAdmin(chatroomId, memberId);
         }
 
         int result = chatroomService.deleteChatroom(chatroomId);
