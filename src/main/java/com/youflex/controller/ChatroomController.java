@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.youflex.dto.ChatroomDTO;
 import com.youflex.dto.MemberDTO;
+import com.youflex.dto.NotificationsDTO;
 import com.youflex.exception.AlreadyInRoomException;
 import com.youflex.service.ChatroomService;
+import com.youflex.service.NotificationsService;
 import jakarta.servlet.http.HttpSession;
 
 @RestController
@@ -28,9 +30,12 @@ public class ChatroomController {
 
     @Autowired
     private ChatroomService chatroomService;
-    
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private NotificationsService notificationsService;
 
     /**
      * 로그인한 회원의 memberId를 세션에서 꺼내는 공통 헬퍼
@@ -280,5 +285,51 @@ public class ChatroomController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    /**
+     * 채팅방 전용 🔔 알림 패널(#chatRoomNotifPanel) 최초 로드
+     * - 헤더 알림과 완전히 별개이며, 입장/퇴장/경고/강퇴만 여기 담긴다 (ChatroomService.sendSystemMessage 참고)
+     */
+    @GetMapping("/notifications")
+    public ResponseEntity<List<NotificationsDTO>> getChatRoomNotifications(HttpSession session) {
+        Integer memberId = getLoginMemberId(session);
+        if (memberId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(notificationsService.getChatRoomNotifications(memberId));
+    }
+
+    // 채팅방 알림 패널을 열었을 때 전부 읽음 처리
+    @PostMapping("/notifications/read")
+    public ResponseEntity<Void> markChatRoomNotificationsRead(HttpSession session) {
+        Integer memberId = getLoginMemberId(session);
+        if (memberId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        notificationsService.markAllChatRoomRead(memberId);
+        return ResponseEntity.ok().build();
+    }
+
+    // 채팅방 알림 개별 삭제(✕ 버튼)
+    @DeleteMapping("/notifications/{notificationsId}")
+    public ResponseEntity<Void> deleteChatRoomNotification(@PathVariable("notificationsId") int notificationsId, HttpSession session) {
+        Integer memberId = getLoginMemberId(session);
+        if (memberId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        notificationsService.deleteNotification(notificationsId, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 채팅방 알림 전체 삭제 버튼
+    @DeleteMapping("/notifications")
+    public ResponseEntity<Void> deleteAllChatRoomNotifications(HttpSession session) {
+        Integer memberId = getLoginMemberId(session);
+        if (memberId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        notificationsService.deleteAllChatRoomNotifications(memberId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.youflex.dto.ChatMemberDTO;
 import com.youflex.dto.ChatMessageDTO;
 import com.youflex.dto.ChatroomDTO;
 import com.youflex.exception.AlreadyInRoomException;
@@ -36,33 +37,65 @@ public class ChatroomService {
     @Autowired
     private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private NotificationsService notificationsService;
+
     // ★ 추가: 강제퇴장 처리 기준 경고 횟수
     private static final int MAX_WARNING_COUNT = 3;
 
     /**
-     * 시스템 입/퇴장/강퇴 메시지를 DB에 저장하고 해당 채팅방으로 실시간 브로드캐스트한다.
+     * 시스템 입장/퇴장/경고/강퇴 메시지를 DB에 저장하고 해당 채팅방으로 실시간 브로드캐스트하며,
+     * 채팅방 전용 🔔 알림 패널용으로 현재 방에 남아있는 참여자 각각에게 알림을 DB에 적재한다
+     * (새로고침/재접속해도 유지되고, 개별 삭제도 가능하도록).
      */
     private void sendSystemMessage(int chatroomId, int memberId, String actionText) {
         try {
             String memberName = chatMessageMapper.selectMemberName(memberId);
             if (memberName == null) memberName = "회원";
+            String content = "'" + memberName + "'님이 " + actionText;
 
             ChatMessageDTO systemMsg = ChatMessageDTO.builder()
                     .chatroomId(chatroomId)
                     .memberId(memberId)
                     .memberName("SYSTEM")
-                    .chatMessageContent("'" + memberName + "'님이 " + actionText)
+                    .chatMessageContent(content)
                     .build();
 
             // 1. DB 저장 (새로고침해도 보존됨)
             chatMessageMapper.insertChatMessage(systemMsg);
 
-            // 2. 실시간 STOMP 브로드캐스트
+            // 2. 채팅방 전용 🔔 알림을 DB에 먼저 반영 (브로드캐스트를 받은 클라이언트가 바로 다시 조회해도
+            //    실제 notifications_id가 이미 존재하도록, 브로드캐스트보다 먼저 처리)
+            String notifType = resolveChatNotifType(actionText);
+            List<ChatMemberDTO> members = chatMemberMapper.selectMembersByChatroomId(chatroomId);
+            boolean actorStillInRoom = false;
+            for (ChatMemberDTO member : members) {
+                notificationsService.recordChatRoomNotification(member.getMemberId(), notifType, content);
+                if (member.getMemberId() == memberId) {
+                    actorStillInRoom = true;
+                }
+            }
+            // ★ 강퇴 시점에는 대상 회원의 chat_member 상태가 이미 '강퇴'로 바뀐 뒤라서 위 목록에 없음.
+            //   그래도 본인 알림 내역에는 "강퇴되었다"는 기록이 남아야 하므로 별도로 챙겨서 적재한다.
+            if ("강퇴".equals(notifType) && !actorStillInRoom) {
+                notificationsService.recordChatRoomNotification(memberId, notifType, content);
+            }
+
+            // 3. 실시간 STOMP 브로드캐스트
             messagingTemplate.convertAndSend("/sub/chatroom/" + chatroomId, systemMsg);
         } catch (Exception e) {
             // 시스템 메시지 처리 실패 시 로그 기록 후 기존 흐름 유지
             e.printStackTrace();
         }
+    }
+
+    // actionText 문구로 채팅방 알림 종류(입장/퇴장/경고/강퇴)를 판별
+    private String resolveChatNotifType(String actionText) {
+        if (actionText.contains("강제퇴장")) return "강퇴";
+        if (actionText.contains("입장")) return "입장";
+        if (actionText.contains("퇴장")) return "퇴장";
+        if (actionText.contains("경고")) return "경고";
+        return "채팅";
     }
 
     /** 회원이 이미 개설한 채팅방이 있는지 여부 */
@@ -270,19 +303,9 @@ public class ChatroomService {
         // 5. 누적 경고 횟수 확인
         int totalWarnings = chatWarningMapper.countWarnings(chatroomId, targetMemberId);
 
-        // ★ 5.1 경고 부여 사유 멘트를 DB chat_message에 저장하고 실시간 브로드캐스트 (새로고침 시에도 보존됨)
-        String targetName = chatMessageMapper.selectMemberName(targetMemberId);
-        if (targetName == null) targetName = "회원";
-        String warnText = " '" + targetName + "'님이 경고를 받았습니다. (누적 " + totalWarnings + "/3회)\n사유: " + reason;
-        
-        ChatMessageDTO warnSystemMsg = ChatMessageDTO.builder()
-                .chatroomId(chatroomId)
-                .memberId(targetMemberId)
-                .memberName("SYSTEM")
-                .chatMessageContent(warnText)
-                .build();
-        chatMessageMapper.insertChatMessage(warnSystemMsg);
-        messagingTemplate.convertAndSend("/sub/chatroom/" + chatroomId, warnSystemMsg);
+        // ★ 5.1 경고 부여 사유 멘트를 시스템 메시지로 저장/브로드캐스트 + 채팅방 🔔 알림에도 반영
+        sendSystemMessage(chatroomId, targetMemberId,
+                "경고를 받았습니다. (누적 " + totalWarnings + "/3회)\n사유: " + reason);
 
         // 6. 3회 이상일 때 강제퇴장 처리
         boolean kicked = false;

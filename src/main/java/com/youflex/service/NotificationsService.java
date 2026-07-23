@@ -70,4 +70,37 @@ public class NotificationsService {
     public void deleteAll(int memberId) {
         notificationsMapper.deleteAllByMemberId(memberId);
     }
+
+    /**
+     * 채팅방 전용 🔔 알림(입장/퇴장/경고/강퇴) DB 적재 전용 - 헤더 알림과 달리 실시간 push는 하지 않는다.
+     * (채팅방은 이미 /sub/chatroom/{chatroomId} 브로드캐스트 시스템 메시지로 실시간 표시가 되고 있으므로,
+     *  여기서는 새로고침/재접속해도 유지되도록 DB에 적재하는 역할만 한다)
+     * @param memberId 알림을 받을 회원(현재 그 채팅방에 남아있는 참여자)
+     * @param type 알림 종류 (입장 / 퇴장 / 경고 / 강퇴)
+     * @param content 알림 문구 (채팅방 시스템 메시지와 동일한 문구)
+     */
+    public void recordChatRoomNotification(int memberId, String type, String content) {
+        NotificationsDTO notificationsDTO = NotificationsDTO.builder()
+                .memberId(memberId)
+                .notificationsType(type)
+                .notificationsContent(content)
+                .notificationsTargetType("chatroom")
+                .build();
+        notificationsMapper.insertNotification(notificationsDTO);
+    }
+
+    // 채팅방 🔔 알림 패널 최초 로드
+    public List<NotificationsDTO> getChatRoomNotifications(int memberId) {
+        return notificationsMapper.selectChatRoomNotifsByMemberId(memberId);
+    }
+
+    // 채팅방 알림 패널을 열었을 때 전부 읽음 처리
+    public void markAllChatRoomRead(int memberId) {
+        notificationsMapper.markAllChatRoomRead(memberId);
+    }
+
+    // 채팅방 알림 전체 삭제 버튼
+    public void deleteAllChatRoomNotifications(int memberId) {
+        notificationsMapper.deleteAllChatRoomNotifsByMemberId(memberId);
+    }
 }
