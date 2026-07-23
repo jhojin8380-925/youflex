@@ -62,20 +62,12 @@
         </form>
 
         <div class="auth-divider">또는</div>
-        <button
-          type="button"
-          class="btn btn-block social-btn kakao"
-          onclick="socialLogin('카카오')"
-        >
+        <a th:href="@{/oauth/kakao/login}" class="btn btn-block social-btn kakao">
           <span class="social-icon">💬</span> 카카오로 로그인
-        </button>
-        <button
-          type="button"
-          class="btn btn-block social-btn google"
-          onclick="socialLogin('구글')"
-        >
+        </a>
+        <a th:href="@{/oauth/google/login}" class="btn btn-block social-btn google">
           <span class="social-icon">G</span> 구글로 로그인
-        </button>
+        </a>
 
         <div class="auth-footer">
           아직 회원이 아니신가요? <a th:href="@{/join}">회원가입</a>
@@ -85,6 +77,5 @@
 
 	
     <script th:src="@{/js/app.js}"></script>
-    <script th:src="@{/js/login.js}"></script>
   </body>
 </html>

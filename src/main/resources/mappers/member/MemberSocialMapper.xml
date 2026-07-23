@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.youflex.mapper.MemberSocialMapper">
+
+    <!-- 소셜 로그인 - (제공자, 소셜 고유키)로 이미 연결된 회원번호 조회. 없으면 null -->
+    <select id="findMemberIdByTypeAndKey" resultType="int">
+        SELECT member_id
+        FROM member_social
+        WHERE member_social_type = #{memberSocialType}
+          AND member_social_key = #{memberSocialKey}
+    </select>
+
+    <!-- 소셜 계정 연결 등록 -->
+    <insert id="insertMemberSocial" parameterType="com.youflex.dto.MemberSocialDTO">
+        INSERT INTO member_social (member_id, member_social_type, member_social_key)
+        VALUES (#{memberId}, #{memberSocialType}, #{memberSocialKey})
+    </insert>
+
+</mapper>

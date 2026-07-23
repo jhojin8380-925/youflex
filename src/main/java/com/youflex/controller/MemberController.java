@@ -44,11 +44,18 @@ public class MemberController {
     private final PointService pointService;
     private final WarningService warningService;
 
-    // 로그인 폼 진입 시 rememberedId 쿠키가 있으면 아이디 입력창에 미리 채워줌
+    // 로그인 폼 진입 시 rememberedId 쿠키가 있으면 아이디 입력창에 미리 채워줌.
+    // error는 소셜로그인 콜백(SocialLoginController)에서 실패 시 붙여서 리다이렉트해오는 값.
     @GetMapping("/login")
     public String loginForm(@CookieValue(value = REMEMBER_ID_COOKIE, required = false) String rememberedId,
+                             @RequestParam(value = "error", required = false) String error,
                              Model model) {
         model.addAttribute("rememberedId", rememberedId);
+        if ("social".equals(error)) {
+            model.addAttribute("loginError", "소셜 로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
+        } else if ("withdrawn".equals(error)) {
+            model.addAttribute("loginError", "탈퇴 신청된 계정입니다.");
+        }
         return "member/login";
     }
 

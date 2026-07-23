@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.youflex.dto.MemberDTO;
+import com.youflex.dto.MemberSocialDTO;
 import com.youflex.dto.PageInfo;
 import com.youflex.mapper.MemberMapper;
 import com.youflex.mapper.MemberMappingMapper;
+import com.youflex.mapper.MemberSocialMapper;
 import com.youflex.mapper.ReviewLikeMapper;
 import com.youflex.mapper.ReviewMapper;
 import com.youflex.mapper.admin.WarningMapper;
@@ -28,6 +30,7 @@ public class MemberService {
 
     private final MemberMapper memberMapper;
     private final MemberMappingMapper preferenceMappingMapper;
+    private final MemberSocialMapper memberSocialMapper;
     private final ReviewMapper reviewMapper;
     private final ReviewLikeMapper reviewLikeMapper;
     private final WarningMapper warningMapper;
@@ -61,6 +64,34 @@ public class MemberService {
                 ? genreCategoryIds.subList(0, MAX_GENRE_PREFERENCES)
                 : genreCategoryIds;
         preferenceMappingMapper.insertPreferences(memberDTO.getMemberId(), limited);
+    }
+
+    // 소셜로그인(카카오/구글) - (제공자, 소셜 고유키)로 이미 연결된 회원이 있으면 그대로 로그인시키고,
+    // 없으면 이메일이 같은 기존(일반가입) 회원에 소셜 계정만 추가로 연결하며, 그마저 없으면 신규 회원을
+    // 만들어서 연결한다. member_loginid/member_pwd는 null로 남음(소셜 전용 계정 - database-schema.md 참고).
+    @Transactional
+    public MemberDTO loginOrRegisterSocial(String socialType, String socialKey, String email, String name) {
+        Integer existingMemberId = memberSocialMapper.findMemberIdByTypeAndKey(socialType, socialKey);
+        if (existingMemberId != null) {
+            return memberMapper.findById(existingMemberId);
+        }
+
+        MemberDTO member = memberMapper.findByEmail(email);
+        if (member == null) {
+            member = MemberDTO.builder()
+                    .memberName(name)
+                    .memberEmail(email)
+                    .memberGrade("시청자")
+                    .build();
+            memberMapper.insertMember(member); // useGeneratedKeys로 memberDTO.memberId가 채워짐
+        }
+
+        memberSocialMapper.insertMemberSocial(MemberSocialDTO.builder()
+                .memberId(member.getMemberId())
+                .memberSocialType(socialType)
+                .memberSocialKey(socialKey)
+                .build());
+        return member;
     }
 
     // ===================== 마이페이지 - 내 정보 =====================

@@ -13,6 +13,13 @@
         WHERE member_loginid = #{memberLoginid}
     </select>
 
+    <!-- 소셜 로그인 - 이메일로 기존 회원 조회(일반가입 계정과 소셜 계정 자동 연결용) -->
+    <select id="findByEmail" parameterType="string" resultType="com.youflex.dto.MemberDTO">
+        SELECT *
+        FROM member
+        WHERE member_email = #{memberEmail}
+    </select>
+
     <!-- 회원가입 시 필요한 컬럼만 저장. point 등 나머지는 DB 기본값에 맡김.
          member_grade는 서비스단(MemberService.join)에서 '시청자'로 강제 설정한 값이 들어옴
          (사용자가 폼에 등급을 끼워넣어 관리자로 자가 승격하는 것을 막기 위함). -->

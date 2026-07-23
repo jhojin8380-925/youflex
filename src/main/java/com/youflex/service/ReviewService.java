@@ -131,6 +131,16 @@ public class ReviewService {
 		reviewMapper.delete(reviewId);
 	}
 
+//	5-1) 게시글 삭제 - 관리자 전용, 작성자 본인 여부와 무관하게 삭제 가능 (신고 처리 화면의
+//	     AdminReportService.deleteReportedContent와 동일하게 하드 삭제만 수행, 소유권 체크 없음)
+	public void deleteByAdmin(int reviewId) {
+		ReviewDTO existing = reviewMapper.findById(reviewId);
+		if (existing == null) {
+			throw new ReviewNotFoundException("존재하지 않는 게시글입니다. reviewId=" + reviewId);
+		}
+		reviewMapper.delete(reviewId);
+	}
+
 
 //	마이페이지 - 내 글 탭(5개씩 페이징). page는 1부터 시작.
 	public List<ReviewDTO> getMyReviews(int memberId, int page) {

@@ -214,7 +214,7 @@ public class ReviewController {
 		return "redirect:/review/" + reviewId;
 	}
 
-	// 6) 게시글 삭제 - 작성자 본인만 가능 (하드 삭제)
+	// 6) 게시글 삭제 - 작성자 본인 또는 관리자 가능 (하드 삭제, 관리자는 소유권 체크 없이 삭제)
 	@DeleteMapping("/review/{reviewId}")
 	@ResponseBody
 	public ResponseEntity<Void> delete(@PathVariable("reviewId") int reviewId, HttpSession session) {
@@ -223,7 +223,11 @@ public class ReviewController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 		try {
-			reviewService.delete(reviewId, loginMember.getMemberId());
+			if ("관리자".equals(loginMember.getMemberGrade())) {
+				reviewService.deleteByAdmin(reviewId);
+			} else {
+				reviewService.delete(reviewId, loginMember.getMemberId());
+			}
 			return ResponseEntity.noContent().build();
 		} catch (ReviewNotFoundException e) {
 			return ResponseEntity.notFound().build();

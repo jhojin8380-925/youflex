@@ -64,11 +64,11 @@
       
       <!--
         ==================================
-        관리자 전용 삭제 버튼 (삭제 기능 자체는 아직 미구현 - 노출 조건만 수정)
+        관리자 전용 삭제 버튼 (작성자 소유권과 무관하게 삭제, deleteReview()는 서버가 관리자 여부를 보고 분기)
         ==================================
         -->
       <div class="owner-actions" th:if="${session.loginMember != null and session.loginMember.memberGrade == '관리자'}">
-        <button class="btn btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="alert('게시글이 삭제되었습니다.')">관리자 삭제</button>
+        <button class="btn btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="deleteReview()">관리자 삭제</button>
       </div>
     </div>
 
