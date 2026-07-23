@@ -4,8 +4,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.youflex.dto.admin.AdminAnswerDTO;
+import com.youflex.dto.qna.QnaDTO;
 import com.youflex.mapper.admin.AdminAnswerMapper;
 import com.youflex.mapper.qna.QnaMapper;
+import com.youflex.service.NotificationsService;
 
 /**
  * 관리자 답변(AdminAnswer) 관련 비즈니스 로직
@@ -18,6 +20,7 @@ public class AdminAnswerService {
 
     private final AdminAnswerMapper adminAnswerMapper;
     private final QnaMapper qnaMapper;
+    private final NotificationsService notificationsService;
 
     /**
      * 특정 질문(qnaId)에 등록된 관리자 답변 조회
@@ -46,6 +49,13 @@ public class AdminAnswerService {
                     .adminAnswerContent(content)
                     .build();
             adminAnswerMapper.insertAnswer(answer);
+
+            // 헤더 🔔 알림 패널에 "Q&A 답변완료 알림" 표시 (최초 답변 등록 시에만, 수정 시에는 재전송하지 않음)
+            QnaDTO qna = qnaMapper.selectQnaById(qnaId);
+            if (qna != null) {
+                notificationsService.notify(qna.getMemberId(), "QNA답변",
+                        "\"" + qna.getQnaTitle() + "\" 질문에 대한 답변이 등록되었습니다.", "qna");
+            }
         } else {
             // 기존 답변이 있으면 내용만 갱신하여 수정
             existing.setAdminAnswerContent(content);

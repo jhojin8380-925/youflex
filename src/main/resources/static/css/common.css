@@ -462,7 +462,8 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
 .notification-item.unread { background: rgba(var(--accent-rgb, 220,38,38), 0.07); border-left: 3px solid var(--accent); padding-left: 13px; }
 .notification-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
 .notification-text { font-size: 13px; color: var(--text-1); line-height: 1.5; word-break: break-all; }
-.notification-time { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+.notification-date { font-size: 11px; color: var(--text-2); margin-top: 4px; opacity: 0.75; }
+.notification-time { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 .notification-delete {
   margin-left: auto; flex-shrink: 0; align-self: flex-start;
   width: 20px; height: 20px; border-radius: 50%; border: none; background: none;
@@ -1274,10 +1275,12 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
 }
 
 /* 채팅방 알림 목록 스크롤바 숨김 처리 (스크롤 자체는 유지, 스크롤바 UI만 안 보이게) */
-#chatRoomNotifList {
+#chatRoomNotifList,
+#notificationList {
   scrollbar-width: none;      /* Firefox */
   -ms-overflow-style: none;   /* 구버전 Edge/IE */
 }
-#chatRoomNotifList::-webkit-scrollbar {
+#chatRoomNotifList::-webkit-scrollbar,
+#notificationList::-webkit-scrollbar {
   display: none;              /* Chrome, Safari, 최신 Edge */
 }

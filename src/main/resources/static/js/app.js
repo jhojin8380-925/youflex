@@ -49,10 +49,30 @@ function formatNotifTime(occurredAt) {
     return d.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
 }
 
+/** 알림 발생 날짜 포맷 (예: 2026.07.23) */
+function formatNotifDate(occurredAt) {
+    const d = occurredAt ? new Date(occurredAt) : new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}.${mm}.${dd}`;
+}
+
+/** 헤더 🔔 알림 전용 채널(/sub/member/{id}/alert)로 오는 알림 종류별 아이콘 매핑
+ *  (경고 부여 / 내 글 댓글 / QNA 답변완료 - NotificationsService.notify가 보내는 type과 매칭) */
+function getHeaderNotifIcon(type) {
+    if (type === "경고") return "⚠️";
+    if (type === "댓글" || type === "대댓글") return "💬";
+    if (type === "QNA답변") return "📩";
+    if (type === "좋아요") return "❤️";
+    return "🔔";
+}
+
 // ==========================================================================
 // ★ 헤더 🔔 알림 패널 관리 (헤더 전용)
 // ==========================================================================
 let notificationList = []; // 헤더 알림 목록 배열
+let notificationIdSeq = 1; // 알림 항목별 개별 삭제를 위한 고유 id 발급 카운터
 
 /** 헤더 🔔 버튼 위 알림 뱃지 갱신 */
 function updateNotifBadge() {
@@ -85,18 +105,42 @@ function renderNotificationList() {
             <span class="notification-icon">${notif.icon}</span>
             <div style="flex:1; min-width:0;">
                 <div class="notification-text">${notif.text}</div>
+                <div class="notification-date">${notif.date}</div>
                 <div class="notification-time">${notif.time}</div>
             </div>
+            <button type="button" class="notification-delete" aria-label="알림 삭제" data-notif-id="${notif.id}">✕</button>
         `;
         listEl.insertBefore(item, listEl.firstChild);
     });
 }
 
-/** 헤더 알림 패널에 새 알림 추가 (occurredAt: 서버가 내려준 실제 발생 시각, 생략 시 현재 시각) */
-function addNotification(icon, text, occurredAt) {
+/** 헤더 알림 패널 최초 로드 - DB(notifications 테이블)에서 최신순으로 불러와 새로고침/재접속해도 유지되게 함 */
+async function loadNotificationsFromServer() {
+    try {
+        const response = await fetch("/api/notifications");
+        if (!response.ok) return;
+        const list = await response.json();
+        notificationList = list.map(n => ({
+            id: n.notificationsId,
+            icon: getHeaderNotifIcon(n.notificationsType),
+            text: n.notificationsContent,
+            date: formatNotifDate(n.notificationsCreatedAt),
+            time: formatNotifTime(n.notificationsCreatedAt),
+            read: n.notificationsReadStatus === "읽음"
+        })).reverse(); // 서버는 최신순(DESC)으로 내려주므로, push 기반 렌더링과 맞추기 위해 오래된 순으로 뒤집음
+        updateNotifBadge();
+    } catch (error) {
+        console.error("알림 목록 로딩 실패:", error);
+    }
+}
+
+/** 헤더 알림 패널에 새 알림 추가 (occurredAt: 서버가 내려준 실제 발생 시각, id: 서버(notifications 테이블)가 발급한 실제 id) */
+function addNotification(icon, text, occurredAt, id) {
     const timeStr = formatNotifTime(occurredAt);
-    notificationList.push({ icon, text, time: timeStr, read: false });
-    if (notificationList.length > 50) notificationList.shift();
+    const dateStr = formatNotifDate(occurredAt);
+    notificationList.push({ id: id != null ? id : notificationIdSeq++, icon, text, time: timeStr, date: dateStr, read: false });
+    // ★ 저장 개수 상한을 99+ 표시 기준(99)보다 높게 잡아야 실제로 "99+"가 뜰 수 있음
+    if (notificationList.length > 100) notificationList.shift();
     updateNotifBadge();
     const panel = document.getElementById("notificationPanel");
     if (panel && panel.classList.contains("open")) {
@@ -104,11 +148,20 @@ function addNotification(icon, text, occurredAt) {
     }
 }
 
-/** 헤더 알림 패널 열기 – 모두 읽음 처리 */
+/** 헤더 알림 목록에서 개별 항목 삭제 (개별 삭제(✕) 버튼 클릭 시 호출, DB에서도 함께 삭제) */
+function removeNotification(notifId) {
+    notificationList = notificationList.filter(n => n.id !== notifId);
+    updateNotifBadge();
+    renderNotificationList();
+    fetch(`/api/notifications/${notifId}`, { method: "DELETE" }).catch(err => console.error("알림 삭제 실패:", err));
+}
+
+/** 헤더 알림 패널 열기 – 모두 읽음 처리 (DB에도 반영) */
 function openNotificationPanel() {
     notificationList.forEach(n => n.read = true);
     updateNotifBadge();
     renderNotificationList();
+    fetch("/api/notifications/read", { method: "POST" }).catch(err => console.error("알림 읽음 처리 실패:", err));
 }
 
 
@@ -156,6 +209,7 @@ function renderChatRoomNotifList() {
             <span class="notification-icon">${notif.icon}</span>
             <div style="flex:1; min-width:0;">
                 <div class="notification-text">${notif.text}</div>
+                <div class="notification-date">${notif.date}</div>
                 <div class="notification-time">${notif.time}</div>
             </div>
             <button type="button" class="notification-delete" aria-label="알림 삭제" data-notif-id="${notif.id}">✕</button>
@@ -198,7 +252,8 @@ function toggleChatRoomNotifPanel() {
 /** 채팅방 전용 알림 추가 (occurredAt: 서버가 내려준 실제 발생 시각, 생략 시 현재 시각) */
 function addChatRoomNotif(icon, text, occurredAt) {
     const timeStr = formatNotifTime(occurredAt);
-    chatRoomNotifList.push({ id: chatRoomNotifIdSeq++, icon, text, time: timeStr, read: false });
+    const dateStr = formatNotifDate(occurredAt);
+    chatRoomNotifList.push({ id: chatRoomNotifIdSeq++, icon, text, time: timeStr, date: dateStr, read: false });
     if (chatRoomNotifList.length > 100) chatRoomNotifList.shift();
     updateChatRoomNotifBadge();
     const panel = document.getElementById("chatRoomNotifPanel");
@@ -755,14 +810,12 @@ function initChatroomSocket() {
                 }
 
                 if (notice.type === "WARNING") {
-                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 경고 알림 추가
+                    // 채팅방 전용 🔔 팝업에만 경고 알림 추가 (방장이 주는 메시지별 경고는 헤더 알림과 별개)
                     addChatRoomNotif("⚠️", notice.message);
-                    addNotification("⚠️", notice.message);
                     alert(`[경고 알림]\n${notice.message}`);
                 } else if (notice.type === "KICKED") {
-                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 강퇴 알림 추가
+                    // 채팅방 전용 🔔 팝업에만 강퇴 알림 추가
                     addChatRoomNotif("🚫", notice.message);
-                    addNotification("🚫", notice.message);
                     alert(`[강제퇴장 알림]\n${notice.message}`);
                     // 현재 해당 채팅방에 입장해 있다면 즉시 세션 해제 및 목록으로 이동
                     if (currentChatroomId && currentChatroomId == notice.chatroomId) {
@@ -778,6 +831,12 @@ function initChatroomSocket() {
                         loadChatroomList(false);
                     }
                 }
+            });
+
+            // ★ 헤더 🔔 알림 전용 채널 구독 (경고 부여 / 내 글 댓글 / QNA 답변완료 - 채팅방 알림과는 완전 별개)
+            currentStompClient.subscribe(`/sub/member/${currentMemberId}/alert`, (message) => {
+                const notif = JSON.parse(message.body);
+                addNotification(getHeaderNotifIcon(notif.type), notif.message, notif.createdAt, notif.id);
             });
         }
     });
@@ -827,14 +886,12 @@ function connectChatroom(chatroomId) {
                 }
 
                 if (notice.type === "WARNING") {
-                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 경고 알림 추가
+                    // 채팅방 전용 🔔 팝업에만 경고 알림 추가 (방장이 주는 메시지별 경고는 헤더 알림과 별개)
                     addChatRoomNotif("⚠️", notice.message);
-                    addNotification("⚠️", notice.message);
                     alert(`[경고 알림]\n${notice.message}`);
                 } else if (notice.type === "KICKED") {
-                    // 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 강퇴 알림 추가
+                    // 채팅방 전용 🔔 팝업에만 강퇴 알림 추가
                     addChatRoomNotif("🚫", notice.message);
-                    addNotification("🚫", notice.message);
                     alert(`[강제퇴장 알림]\n${notice.message}`);
                     // 현재 해당 채팅방에 입장해 있다면 즉시 세션 해제 및 목록으로 이동
                     if (currentChatroomId && currentChatroomId == notice.chatroomId) {
@@ -850,6 +907,12 @@ function connectChatroom(chatroomId) {
                         loadChatroomList(false);
                     }
                 }
+            });
+
+            // ★ 헤더 🔔 알림 전용 채널 구독 (경고 부여 / 내 글 댓글 / QNA 답변완료 - 채팅방 알림과는 완전 별개)
+            currentStompClient.subscribe(`/sub/member/${currentMemberId}/alert`, (message) => {
+                const notif = JSON.parse(message.body);
+                addNotification(getHeaderNotifIcon(notif.type), notif.message, notif.createdAt, notif.id);
             });
         }
 
@@ -945,7 +1008,7 @@ function appendChatMessage(msgDTO) {
 
     messagesBox.appendChild(msgDiv);
 
-    // ★ 시스템 메시지(입장/퇴장/경고/강퇴)는 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에도 추가
+    // ★ 시스템 메시지(입장/퇴장/경고/강퇴)는 채팅방 전용 🔔 팝업에만 추가 (헤더 알림과는 별개)
     if (isSystemMsg) {
         let notifIcon = "💬";
         if (content.includes("입장했습니다")) notifIcon = "🚪";
@@ -954,13 +1017,11 @@ function appendChatMessage(msgDTO) {
         else if (content.includes("경고") || content.includes("⚠")) notifIcon = "⚠️";
         const notifText = content.split("\n")[0];
         addChatRoomNotif(notifIcon, notifText, msgDTO.chatMessageCreatedAt); // 채팅방 전용 🔔 팝업에 추가
-        addNotification(notifIcon, notifText, msgDTO.chatMessageCreatedAt); // 헤더 🔔 알림 패널에 추가
     } else if (!isMe) {
-        // 일반 채팅 메시지 → 채팅방 전용 🔔 팝업 + 헤더 🔔 알림 패널에 추가
+        // 일반 채팅 메시지 → 채팅방 전용 🔔 팝업에만 추가 (헤더 알림과는 별개)
         incrementChatUnreadBadge();
         const chatNotifText = `${msgDTO.memberName}: ${content.length > 30 ? content.substring(0, 30) + "..." : content}`;
         addChatRoomNotif("💬", chatNotifText, msgDTO.chatMessageCreatedAt);
-        addNotification("💬", chatNotifText, msgDTO.chatMessageCreatedAt);
     }
 
     // 스크롤 맨 아래로
@@ -1236,6 +1297,13 @@ function initChatroomChat() {
 
     initChatroomSocket();
 
+    // ★ 헤더 🔔 알림 패널 최초 로드 (로그인 상태일 때만) - 새로고침/재접속해도 DB에서 그대로 불러옴
+    const initMemberIdInput = document.getElementById("currentMemberId");
+    const initMemberId = initMemberIdInput ? Number(initMemberIdInput.value) : 0;
+    if (initMemberId > 0) {
+        loadNotificationsFromServer();
+    }
+
     const chatroomTrigger = document.getElementById("chatroomTrigger");
     if (chatroomTrigger) {
         chatroomTrigger.addEventListener("click", () => {
@@ -1252,7 +1320,7 @@ function initChatroomChat() {
         });
     }
 
-    // ★ 알림 전체 삭제 버튼
+    // ★ 알림 전체 삭제 버튼 (DB에서도 함께 삭제)
     const notificationClearBtn = document.getElementById("notificationClearBtn");
     if (notificationClearBtn) {
         notificationClearBtn.addEventListener("click", (e) => {
@@ -1260,6 +1328,18 @@ function initChatroomChat() {
             notificationList = [];
             updateNotifBadge();
             renderNotificationList();
+            fetch("/api/notifications", { method: "DELETE" }).catch(err => console.error("알림 전체 삭제 실패:", err));
+        });
+    }
+
+    // ★ 헤더 알림 개별 삭제(✕) 버튼: 목록이 매번 다시 그려지므로 위임 방식으로 처리
+    const notificationListEl = document.getElementById("notificationList");
+    if (notificationListEl) {
+        notificationListEl.addEventListener("click", (e) => {
+            const delBtn = e.target.closest(".notification-delete");
+            if (!delBtn) return;
+            e.stopPropagation();
+            removeNotification(Number(delBtn.dataset.notifId));
         });
     }
 

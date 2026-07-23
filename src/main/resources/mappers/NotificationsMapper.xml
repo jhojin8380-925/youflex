@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youflex.mapper.NotificationsMapper">
+
+    <insert id="insertNotification" parameterType="com.youflex.dto.NotificationsDTO" useGeneratedKeys="true" keyProperty="notificationsId">
+        INSERT INTO notifications (member_id, notifications_type, notifications_content, notifications_target_type)
+        VALUES (#{memberId}, #{notificationsType}, #{notificationsContent}, #{notificationsTargetType})
+    </insert>
+
+    <select id="selectByMemberId" resultType="com.youflex.dto.NotificationsDTO">
+        SELECT notifications_id, member_id, notifications_type, notifications_content,
+               notifications_target_type, notifications_read_status, notifications_created_at
+        FROM notifications
+        WHERE member_id = #{memberId}
+        ORDER BY notifications_created_at DESC
+        LIMIT 100
+    </select>
+
+    <update id="markAllRead">
+        UPDATE notifications
+        SET notifications_read_status = '읽음'
+        WHERE member_id = #{memberId}
+          AND notifications_read_status = '안읽음'
+    </update>
+
+    <delete id="deleteNotification">
+        DELETE FROM notifications
+        WHERE notifications_id = #{notificationsId}
+          AND member_id = #{memberId}
+    </delete>
+
+    <delete id="deleteAllByMemberId">
+        DELETE FROM notifications
+        WHERE member_id = #{memberId}
+    </delete>
+
+</mapper>

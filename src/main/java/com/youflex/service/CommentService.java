@@ -12,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.youflex.dto.CommentDTO;
 import com.youflex.dto.CommentLikeDTO;
 import com.youflex.dto.CommentReportDTO;
+import com.youflex.dto.ReviewDTO;
 import com.youflex.mapper.CommentLikeMapper;
 import com.youflex.mapper.CommentMapper;
 import com.youflex.mapper.CommentReportMapper;
+import com.youflex.mapper.ReviewMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,8 +36,10 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentLikeMapper commentLikeMapper;
     private final CommentReportMapper commentReportMapper;
+    private final ReviewMapper reviewMapper;
     private final PointService pointService;
     private final BadWordService badWordService;
+    private final NotificationsService notificationsService;
 
     /**
      * 특정 게시글의 댓글/대댓글 목록 조회
@@ -81,6 +85,15 @@ public class CommentService {
         // 금칙어가 포함되어 있으면 등록 자체를 막음
         badWordService.validateContent(commentDTO.getCommentContent());
         commentMapper.insertComment(commentDTO);
+
+        // 헤더 🔔 알림 패널에 "내 글 댓글 알림" 표시 (자기 글에 자기가 단 댓글은 알림 제외)
+        ReviewDTO review = reviewMapper.findById(commentDTO.getReviewId());
+        if (review != null && review.getMemberId() != commentDTO.getMemberId()) {
+            String content = commentDTO.getCommentContent();
+            String preview = content.length() > 30 ? content.substring(0, 30) + "..." : content;
+            notificationsService.notify(review.getMemberId(), "댓글",
+                    "\"" + review.getReviewTitle() + "\"에 댓글이 달렸습니다: " + preview, "review");
+        }
     }
 
     /**

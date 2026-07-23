@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.youflex.dto.admin.WarningDTO;
 import com.youflex.mapper.MemberMapper;
 import com.youflex.mapper.admin.WarningMapper;
+import com.youflex.service.NotificationsService;
 import com.youflex.service.PointService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class WarningService {
     private final WarningMapper warningMapper;
     private final MemberMapper memberMapper;
     private final PointService pointService;
+    private final NotificationsService notificationsService;
 
     // 경고 부여(관리자 전용). 누적 유효 경고가 임계치에 도달하면 회원을 자동으로 강제탈퇴 처리한다.
     public void issueWarning(int memberId, String reason) {
@@ -30,6 +32,8 @@ public class WarningService {
                 .warningReason(reason)
                 .build();
         warningMapper.insertWarning(warningDTO);
+        // 헤더 🔔 알림 패널에 경고 알림 표시 (project-plan.md: "경고 부여 시 개인 알림으로 경고 알림 표시")
+        notificationsService.notify(memberId, "경고", "운영자로부터 경고를 받았습니다. 사유: " + reason, "warning");
 
         int activeCount = warningMapper.countActiveWarnings(memberId);
         if (activeCount >= FORCE_WITHDRAW_THRESHOLD) {
