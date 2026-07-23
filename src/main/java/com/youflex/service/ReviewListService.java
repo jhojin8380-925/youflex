@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewListService {
 
 	private static final int PAGE_SIZE = 10;
+	private static final int POPULAR_LIST_SIZE = 5; // 메인 화면 인기 리뷰글 - 플랫폼별 top5
 
 	private final ReviewListMapper reviewListMapper;
 
@@ -46,5 +47,12 @@ public class ReviewListService {
 
 	public int getPageSize() {
 		return PAGE_SIZE;
+	}
+
+	/**
+	 * 메인 화면 - 인기 리뷰글(플랫폼별 top5). platform은 "all"/"netflix"/"tving"/"disney"/"etc".
+	 */
+	public List<ReviewDTO> getPopularReviews(String platform) {
+		return reviewListMapper.findPopular(platform, POPULAR_LIST_SIZE);
 	}
 }
