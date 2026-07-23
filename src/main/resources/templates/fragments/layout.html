@@ -17,10 +17,10 @@
   <header class="site-header" th:fragment="header">
     <div class="container">
       <a th:href="@{/}" class="logo"><img th:src="@{/img/logo.png}" alt="YouFlex" /></a>
-      <div class="search-bar">
-        <span class="icon">🔍</span>
-        <input type="text" placeholder="콘텐츠, 게시글 통합 검색" />
-      </div>
+      <form class="search-bar" th:action="@{/review/list}" method="get">
+        <button type="submit" class="icon" style="background:none; border:none; padding:0; cursor:pointer; font-size:inherit; line-height:1;">🔍</button>
+        <input type="text" name="keyword" placeholder="콘텐츠, 게시글 통합 검색" />
+      </form>
 
       <!-- 비 로그인 시(비회원) -->
       <div class="header-actions" th:if="${session.loginMember == null}">
@@ -215,28 +215,28 @@
 
         <!-- ★ 케밥 헤더 영역 ★ -->
         <div class="chatroom-title">
-          <span id="chatroomTitleText" title="클릭 시 실시간 참여자 목록 보기">💬 방 선택 없음 <small class="title-hint"
-              style="font-size: 11px; opacity: 0.8;">👥</small></span>
+          <span id="chatroomTitleText">💬 방 선택 없음</span>
 
           <div class="chatroom-title-actions">
             <button type="button" class="chatroom-menu-btn" id="chatroomMenuBtn" title="메뉴">⋮</button>
 
-            <!-- 드롭다운 메뉴 (경고 부여 / 방 나가기) -->
+            <!-- 드롭다운 메뉴 (경고 부여 / 방 나가기 / 운영자 전용 강제삭제) -->
             <div class="kebab-dropdown" id="chatroomDropdown">
               <button type="button" class="danger" id="chatroomLeaveBtn">🚪 방 나가기</button>
+              <button type="button" class="danger" id="chatroomForceDeleteBtn"
+                th:if="${session.loginMember?.memberGrade?.toString() == '관리자'}">🗑 강제삭제</button>
             </div>
           </div>
+        </div>
 
-          <!-- 실시간 참여자 목록 팝업 모달 -->
-          <div class="chatroom-members-modal" id="chatroomMembersModal">
-            <div class="members-modal-header">
-              <span id="membersModalTitle">👥 실시간 참여자 목록</span>
-              <button type="button" class="members-close-btn" id="chatroomMembersCloseBtn">&times;</button>
-            </div>
-            <ul class="members-modal-list" id="chatroomMembersList">
-              <!-- JS 동적 생성 -->
-            </ul>
+        <!-- 실시간 참여자 목록 - 클릭 없이 항상 표시 (3명 분량 고정 높이, 그 이상은 스크롤) -->
+        <div class="chatroom-members-bar" id="chatroomMembersModal">
+          <div class="members-modal-header">
+            <span id="membersModalTitle">👥 실시간 참여자</span>
           </div>
+          <ul class="members-modal-list" id="chatroomMembersList">
+            <!-- JS 동적 생성 -->
+          </ul>
         </div>
 
         <!-- 실제 메시지 대화 목록 영역 (기본 중앙 안내 문구 추가) -->

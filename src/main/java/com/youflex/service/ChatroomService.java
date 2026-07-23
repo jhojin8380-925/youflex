@@ -91,11 +91,19 @@ public class ChatroomService {
 
     // actionText 문구로 채팅방 알림 종류(입장/퇴장/경고/강퇴)를 판별
     private String resolveChatNotifType(String actionText) {
-        if (actionText.contains("강제퇴장")) return "강퇴";
+        if (actionText.contains("강제퇴장") || actionText.contains("강제 삭제")) return "강퇴";
         if (actionText.contains("입장")) return "입장";
         if (actionText.contains("퇴장")) return "퇴장";
         if (actionText.contains("경고")) return "경고";
         return "채팅";
+    }
+
+    /**
+     * ★ 추가: 운영자가 채팅방을 강제삭제하기 직전에, 남아있는 참여자들에게 안내 방송 + 개인 알림을 남긴다.
+     * (실제 삭제는 ChatroomController에서 이 호출 직후 deleteChatroom()으로 이어서 처리)
+     */
+    public void notifyForceDeleteByAdmin(int chatroomId, int adminMemberId) {
+        sendSystemMessage(chatroomId, adminMemberId, "운영자 권한으로 채팅방을 강제 삭제했습니다.");
     }
 
     /** 회원이 이미 개설한 채팅방이 있는지 여부 */
