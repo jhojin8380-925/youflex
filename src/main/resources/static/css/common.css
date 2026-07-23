@@ -421,6 +421,25 @@ body.notification-open #quizPanel.slide-panel { right: 408px; }
 .chat-msg.system { align-self: center; font-size: 11px; color: var(--text-2); background: none; white-space: pre-wrap; text-align: center; } /* "OOO님이 입장했습니다" 같은 시스템 안내 문구 */
 .chat-msg.system.warning { color: var(--danger); font-weight: 700; white-space: pre-wrap; text-align: center; } /* 경고 부여 알림 문구는 빨간색으로 강조 */
 
+/* 방 재입장 시 "안 본 메시지부터" 스크롤 기준점 - 마지막으로 읽은 위치와 새 메시지 사이의 구분선 */
+.chat-unread-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+}
+.chat-unread-divider::before,
+.chat-unread-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.4;
+}
+
 /* 패널 맨 아래, 메시지 입력창 + 전송 버튼 줄 (퀴즈/채팅방 공용) */
 .panel-input-row {
   display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0;

@@ -8,11 +8,13 @@
         VALUES (#{memberId}, #{notificationsType}, #{notificationsContent}, #{notificationsTargetType})
     </insert>
 
+    <!-- 헤더 🔔 알림(경고/댓글/QNA답변) - 채팅방 전용 알림(target_type='chatroom')은 완전히 별개라서 제외 -->
     <select id="selectByMemberId" resultType="com.youflex.dto.NotificationsDTO">
         SELECT notifications_id, member_id, notifications_type, notifications_content,
                notifications_target_type, notifications_read_status, notifications_created_at
         FROM notifications
         WHERE member_id = #{memberId}
+          AND notifications_target_type != 'chatroom'
         ORDER BY notifications_created_at DESC
         LIMIT 100
     </select>
@@ -21,9 +23,11 @@
         UPDATE notifications
         SET notifications_read_status = '읽음'
         WHERE member_id = #{memberId}
+          AND notifications_target_type != 'chatroom'
           AND notifications_read_status = '안읽음'
     </update>
 
+    <!-- 개별 삭제는 notifications_id 자체가 전역 고유값이라 target_type 구분 없이 member_id로만 범위 제한하면 충분함 -->
     <delete id="deleteNotification">
         DELETE FROM notifications
         WHERE notifications_id = #{notificationsId}
@@ -33,6 +37,32 @@
     <delete id="deleteAllByMemberId">
         DELETE FROM notifications
         WHERE member_id = #{memberId}
+          AND notifications_target_type != 'chatroom'
+    </delete>
+
+    <!-- 채팅방 전용 🔔 알림 (입장/퇴장/경고/강퇴) - 헤더 알림과는 별개로 target_type='chatroom'만 조회 -->
+    <select id="selectChatRoomNotifsByMemberId" resultType="com.youflex.dto.NotificationsDTO">
+        SELECT notifications_id, member_id, notifications_type, notifications_content,
+               notifications_target_type, notifications_read_status, notifications_created_at
+        FROM notifications
+        WHERE member_id = #{memberId}
+          AND notifications_target_type = 'chatroom'
+        ORDER BY notifications_created_at DESC
+        LIMIT 100
+    </select>
+
+    <update id="markAllChatRoomRead">
+        UPDATE notifications
+        SET notifications_read_status = '읽음'
+        WHERE member_id = #{memberId}
+          AND notifications_target_type = 'chatroom'
+          AND notifications_read_status = '안읽음'
+    </update>
+
+    <delete id="deleteAllChatRoomNotifsByMemberId">
+        DELETE FROM notifications
+        WHERE member_id = #{memberId}
+          AND notifications_target_type = 'chatroom'
     </delete>
 
 </mapper>
