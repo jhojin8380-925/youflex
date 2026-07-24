@@ -115,10 +115,10 @@ public class QnaController {
 
     /**
      * 질문 삭제
-     * - 작성자 본인 또는 관리자만 가능하도록 세션 기준으로 검증
+     * - 작성자 본인 또는 관리자 가능 (관리자는 소유권 체크 없이 삭제)
      * @param qnaId 삭제할 질문 ID
      * @param session 로그인 세션
-     * @return 삭제 성공 시 204 No Content, 미로그인 시 401
+     * @return 삭제 성공 시 204 No Content, 미로그인 시 401, 존재하지 않으면 404, 작성자/관리자가 아니면 403
      */
     @DeleteMapping("/{qnaId}")
     public ResponseEntity<Void> deleteQna(@PathVariable("qnaId") int qnaId, HttpSession session) {
@@ -126,9 +126,18 @@ public class QnaController {
         if (loginMember == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        // TODO: qnaService 쪽에서 작성자 본인 또는 관리자(loginMember.getMemberGrade() 등) 여부 확인 필요
-        qnaService.deleteQna(qnaId);
-        return ResponseEntity.noContent().build();
+        try {
+            if ("관리자".equals(loginMember.getMemberGrade())) {
+                qnaService.deleteQnaByAdmin(qnaId);
+            } else {
+                qnaService.deleteQna(qnaId, loginMember.getMemberId());
+            }
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
     // ---- 댓글 ----

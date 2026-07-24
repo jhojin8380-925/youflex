@@ -112,11 +112,33 @@ public class QnaService {
     }
 
     /**
-     * 질문 삭제
-     * - 존재 여부 체크 없이 바로 삭제 시도 (다른 메서드들과 달리 사전 검증 로직 없음)
+     * 질문 삭제 - 작성자 본인만 가능 (하드 삭제, FK CASCADE로 댓글/관리자답변까지 함께 삭제됨)
      * @param qnaId 삭제할 질문 ID
+     * @param requesterMemberId 삭제를 요청한 회원 ID
+     * @throws IllegalArgumentException 해당 ID의 질문이 존재하지 않을 경우
+     * @throws IllegalStateException 요청자가 작성자 본인이 아닐 경우
      */
-    public void deleteQna(int qnaId) {
+    public void deleteQna(int qnaId, int requesterMemberId) {
+        QnaDTO existing = qnaMapper.selectQnaById(qnaId);
+        if (existing == null) {
+            throw new IllegalArgumentException("존재하지 않는 질문입니다. qnaId=" + qnaId);
+        }
+        if (existing.getMemberId() != requesterMemberId) {
+            throw new IllegalStateException("삭제 권한이 없습니다.");
+        }
+        qnaMapper.deleteQna(qnaId);
+    }
+
+    /**
+     * 질문 삭제 - 관리자 전용, 작성자 본인 여부와 무관하게 삭제 가능 (소유권 체크 없음)
+     * @param qnaId 삭제할 질문 ID
+     * @throws IllegalArgumentException 해당 ID의 질문이 존재하지 않을 경우
+     */
+    public void deleteQnaByAdmin(int qnaId) {
+        QnaDTO existing = qnaMapper.selectQnaById(qnaId);
+        if (existing == null) {
+            throw new IllegalArgumentException("존재하지 않는 질문입니다. qnaId=" + qnaId);
+        }
         qnaMapper.deleteQna(qnaId);
     }
 }

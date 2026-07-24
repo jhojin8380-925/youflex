@@ -14,14 +14,18 @@
         <result property="qnaStatus" column="qna_status" />
         <result property="qnaIsSecret" column="qna_is_secret" />
         <result property="memberName" column="member_name" />
+        <result property="adminAnswerCreatedAt" column="admin_answer_created_at" />
     </resultMap>
 
+    <!-- admin_answer는 qna당 1건이라고 가정(AdminAnswerMapper 주석 참고)하고 LEFT JOIN -
+         관리자 페이지 "답변완료" 탭에서 admin_answer_created_at 기준 7일 경과 여부를 걸러내는 데 사용 -->
     <select id="selectQnaList" resultMap="qnaResultMap">
         SELECT q.qna_id, q.member_id, q.qna_title, q.qna_content, q.qna_hit,
                q.qna_created_at, q.qna_updated_at, q.qna_status, q.qna_is_secret,
-               m.member_name
+               m.member_name, aa.admin_answer_created_at
         FROM qna q
         JOIN member m ON q.member_id = m.member_id
+        LEFT JOIN admin_answer aa ON q.qna_id = aa.qna_id
         ORDER BY q.qna_created_at DESC
     </select>
 
