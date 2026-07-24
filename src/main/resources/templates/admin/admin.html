@@ -268,32 +268,65 @@
     =========================================
     -->
   <div data-tab-panel="qna" class="mt-24" style="display:none">
-    <table class="table">
-      <thead><tr><th>번호</th><th>제목</th><th>작성자</th><th>등록일</th><th>상태</th><th></th></tr></thead>
-      <tbody>
-        <tr th:each="q : ${qnaList}">
-          <td th:text="${q.qnaId}">1</td>
-          <td>
-            <span class="badge" th:if="${q.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:4px">🔒</span>
-            <span th:text="${q.qnaTitle}">Q. 제목</span>
-          </td>
-          <td th:text="${q.memberName}">영화광123</td>
-          <td th:text="${#temporals.format(q.qnaCreatedAt, 'yyyy-MM-dd')}">2026-06-25</td>
-          <td>
-            <span class="status-pill status-pending" th:if="${q.qnaStatus == '답변대기'}">답변대기</span>
-            <span class="status-pill status-active" th:if="${q.qnaStatus == '답변완료'}">답변완료</span>
-          </td>
-          <td class="actions">
-            <a th:href="@{/admin/qna/{id}(id=${q.qnaId})}" class="btn btn-sm"
-               th:classappend="${q.qnaStatus == '답변대기'} ? ' btn-primary' : ''"
-               th:text="${q.qnaStatus == '답변대기'} ? '답변하기' : '답변수정'">답변하기</a>
-          </td>
-        </tr>
-        <tr th:if="${#lists.isEmpty(qnaList)}">
-          <td colspan="6" class="text-muted" style="text-align:center">등록된 문의가 없습니다.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="qna-subtabs">
+      <button class="active" data-qna-subtab="waiting">답변대기</button>
+      <button data-qna-subtab="answered">답변완료</button>
+    </div>
+
+    <div data-qna-subpanel="waiting">
+      <table class="table">
+        <thead><tr><th>번호</th><th>제목</th><th>작성자</th><th>등록일</th><th>상태</th><th></th></tr></thead>
+        <tbody>
+          <tr th:each="q : ${qnaWaitingList}">
+            <td th:text="${q.qnaId}">1</td>
+            <td>
+              <span class="badge" th:if="${q.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:4px">🔒</span>
+              <span th:text="${q.qnaTitle}">Q. 제목</span>
+            </td>
+            <td th:text="${q.memberName}">영화광123</td>
+            <td th:text="${#temporals.format(q.qnaCreatedAt, 'yyyy-MM-dd')}">2026-06-25</td>
+            <td><span class="status-pill status-pending">답변대기</span></td>
+            <td class="actions">
+              <a th:href="@{/admin/qna/{id}(id=${q.qnaId})}" class="btn btn-sm btn-primary">답변하기</a>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(qnaWaitingList)}">
+            <td colspan="6" class="text-muted" style="text-align:center">답변대기 중인 문의가 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 답변완료: admin_answer_created_at 기준 7일 지난 건은 AdminViewController에서 이미 걸러진 상태로 내려옴
+         (원본 질문/답변 데이터는 그대로 유지되고, 이 탭 화면에서만 7일 후 안 보이게 되는 것) -->
+    <div data-qna-subpanel="answered" style="display:none">
+      <table class="table">
+        <thead><tr><th>번호</th><th>제목</th><th>작성자</th><th>등록일</th><th>상태</th><th>경과일</th><th></th></tr></thead>
+        <tbody>
+          <tr th:each="q : ${qnaAnsweredList}">
+            <td th:text="${q.qnaId}">1</td>
+            <td>
+              <span class="badge" th:if="${q.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:4px">🔒</span>
+              <span th:text="${q.qnaTitle}">Q. 제목</span>
+            </td>
+            <td th:text="${q.memberName}">영화광123</td>
+            <td th:text="${#temporals.format(q.qnaCreatedAt, 'yyyy-MM-dd')}">2026-06-25</td>
+            <td><span class="status-pill status-active">답변완료</span></td>
+            <td>
+              <!-- 답변일로부터 경과일. 7일 지나면 목록에서 사라지므로 5일 이상이면 빨간색으로 임박 표시 -->
+              <span th:text="${q.elapsedAnswerDays} + '일 경과'"
+                    th:style="${q.elapsedAnswerDays >= 5} ? 'color:var(--danger);font-weight:700' : ''">0일 경과</span>
+            </td>
+            <td class="actions">
+              <a th:href="@{/admin/qna/{id}(id=${q.qnaId})}" class="btn btn-sm">답변수정</a>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(qnaAnsweredList)}">
+            <td colspan="7" class="text-muted" style="text-align:center">답변완료된 문의가 없습니다. (답변 후 7일이 지나면 이 목록에서 자동으로 사라집니다)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- 
