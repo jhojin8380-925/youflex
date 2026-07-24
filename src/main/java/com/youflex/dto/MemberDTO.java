@@ -2,6 +2,8 @@ package com.youflex.dto;
 
 import java.time.LocalDateTime;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
@@ -37,4 +39,7 @@ public class MemberDTO {
 
     // join 조회용 (DB 컬럼 아님)
     private int warningCount;
+
+    // 마이페이지 프로필 이미지 수정 - 업로드된 파일 (DB 컬럼 아님)
+    private MultipartFile imgFile;
 }

@@ -40,13 +40,14 @@
         WHERE m.member_id = #{memberId}
     </select>
 
-    <!-- 마이페이지 - 회원정보 수정(이름/이메일/전화번호/비밀번호). memberGrade 등 민감 필드는 여기서 다루지 않음 -->
+    <!-- 마이페이지 - 회원정보 수정(이름/이메일/전화번호/비밀번호/프로필이미지). memberGrade 등 민감 필드는 여기서 다루지 않음 -->
     <update id="updateProfile" parameterType="com.youflex.dto.MemberDTO">
         UPDATE member
         SET member_name = #{memberName},
             member_email = #{memberEmail},
             member_phone = #{memberPhone},
-            member_pwd = #{memberPwd}
+            member_pwd = #{memberPwd},
+            member_profile_img = #{memberProfileImg}
         WHERE member_id = #{memberId}
     </update>
 

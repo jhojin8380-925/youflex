@@ -40,6 +40,11 @@ public class MemberService {
         return memberMapper.findByLoginId(memberLoginid) != null;
     }
 
+    // 이메일 중복확인(/join/check-email, 회원가입/마이페이지 저장 시 서버 재검증) - member_email UNIQUE 제약 대응
+    public boolean isEmailTaken(String memberEmail) {
+        return memberMapper.findByEmail(memberEmail) != null;
+    }
+
     // 비밀번호를 해시 없이 평문 그대로 비교(요청에 따라 해시 제거함 - 보안상 실서비스에는 부적합)
     public MemberDTO login(String memberLoginid, String rawPwd) {
         MemberDTO member = memberMapper.findByLoginId(memberLoginid);
@@ -107,11 +112,15 @@ public class MemberService {
         return currentPwd.equals(member.getMemberPwd());
     }
 
-    // 회원정보 수정 - 새 비밀번호를 입력하지 않았으면 기존 비밀번호를 그대로 유지
+    // 회원정보 수정 - 새 비밀번호를 입력하지 않았으면 기존 비밀번호를, 새 프로필 이미지를 첨부하지 않았으면
+    // 기존 이미지를 그대로 유지
     public void updateProfile(int memberId, String newPwd, MemberDTO updates) {
         MemberDTO member = memberMapper.findById(memberId);
         updates.setMemberId(memberId);
         updates.setMemberPwd(newPwd != null && !newPwd.isBlank() ? newPwd : member.getMemberPwd());
+        if (updates.getMemberProfileImg() == null || updates.getMemberProfileImg().isBlank()) {
+            updates.setMemberProfileImg(member.getMemberProfileImg());
+        }
         memberMapper.updateProfile(updates);
     }
 

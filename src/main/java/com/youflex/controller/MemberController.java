@@ -1,8 +1,15 @@
 package com.youflex.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -12,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.youflex.dto.BookmarkDTO;
@@ -43,6 +51,10 @@ public class MemberController {
     private final ReviewService reviewService;
     private final PointService pointService;
     private final WarningService warningService;
+
+    // application.properties의 youflex.upload.path값을 가져옴 (프로필 이미지 저장 경로, ReviewController와 동일한 방식)
+    @Value("${youflex.upload.path}")
+    private String uploadPath;
 
     // 로그인 폼 진입 시 rememberedId 쿠키가 있으면 아이디 입력창에 미리 채워줌.
     // error는 소셜로그인 콜백(SocialLoginController)에서 실패 시 붙여서 리다이렉트해오는 값.
@@ -120,6 +132,11 @@ public class MemberController {
             model.addAttribute("genres", genreCategoryService.getAllGenres());
             return "member/join";
         }
+        if (memberService.isEmailTaken(memberDTO.getMemberEmail())) {
+            model.addAttribute("joinError", "이미 사용 중인 이메일입니다.");
+            model.addAttribute("genres", genreCategoryService.getAllGenres());
+            return "member/join";
+        }
         memberService.join(memberDTO, genreCategoryIds);
         return "redirect:/login";
     }
@@ -129,6 +146,13 @@ public class MemberController {
     @ResponseBody
     public Map<String, Boolean> checkLoginId(@RequestParam("loginId") String loginId) {
         return Map.of("available", !memberService.isLoginIdTaken(loginId));
+    }
+
+    // join.html의 이메일 "중복확인" 버튼이 fetch로 호출하는 AJAX 엔드포인트
+    @GetMapping("/join/check-email")
+    @ResponseBody
+    public Map<String, Boolean> checkEmail(@RequestParam("email") String email) {
+        return Map.of("available", !memberService.isEmailTaken(email));
     }
 
     // 마이페이지 - 내 정보 탭(프로필 카드 + 회원정보 수정 폼)에 실제 회원 데이터를 내려줌
@@ -151,7 +175,7 @@ public class MemberController {
                                 @RequestParam("currentPassword") String currentPassword,
                                 HttpSession session,
                                 Model model,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes) throws IOException {
         Object loginMemberObj = session.getAttribute("loginMember");
         if (!(loginMemberObj instanceof MemberDTO loginMember)) {
             return "redirect:/login";
@@ -164,6 +188,20 @@ public class MemberController {
             model.addAttribute("myGenreCategoryIds", memberService.getMemberGenreCategoryIds(memberId));
             // 비밀번호가 틀리면 여기서 바로 mypage 화면을 다시 그려서 profileError를 보여주고, 저장은 하지 않음
             return "member/mypage";
+        }
+        // 이메일을 실제로 바꾸려는 경우에만 중복 확인 (본인 기존 이메일 그대로 제출하면 스킵)
+        MemberDTO currentInfo = memberService.getMemberDetail(memberId);
+        if (!currentInfo.getMemberEmail().equals(memberDTO.getMemberEmail())
+                && memberService.isEmailTaken(memberDTO.getMemberEmail())) {
+            model.addAttribute("profileError", "이미 사용 중인 이메일입니다.");
+            model.addAttribute("myInfo", currentInfo);
+            model.addAttribute("genres", genreCategoryService.getAllGenres());
+            model.addAttribute("myGenreCategoryIds", memberService.getMemberGenreCategoryIds(memberId));
+            return "member/mypage";
+        }
+        if (memberDTO.getImgFile() != null && !memberDTO.getImgFile().isEmpty()) {
+            // 새 프로필 이미지를 첨부한 경우에만 저장하고 교체 (미첨부 시 MemberService에서 기존 이미지 유지)
+            memberDTO.setMemberProfileImg(saveFile(memberDTO.getImgFile()));
         }
         memberService.updateProfile(memberId, memberDTO.getMemberPwd(), memberDTO);
         // 헤더 등에서 쓰는 session.loginMember도 최신 정보로 갱신
@@ -317,5 +355,23 @@ public class MemberController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    // ----- 파일 저장 메서드 (ReviewController와 동일한 방식) -----
+    // 반환값 : DB에 저장할 새 파일명(UUID 기반)
+    private String saveFile(MultipartFile file) throws IOException {
+        String originalName = file.getOriginalFilename();
+        String ext = originalName.substring(originalName.lastIndexOf("."));
+        String savedName = UUID.randomUUID().toString() + ext;
+
+        File uploadDir = new File(uploadPath);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+
+        Path savePath = Paths.get(uploadPath + savedName);
+        Files.copy(file.getInputStream(), savePath);
+
+        return savedName;
     }
 }

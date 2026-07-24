@@ -33,6 +33,36 @@ document.getElementById('idCheckBtn').addEventListener('click', () => {
     });
 });
 
+const emailInput = document.getElementById('member_email');
+const emailStatus = document.getElementById('emailStatus');
+document.getElementById('emailCheckBtn').addEventListener('click', () => {
+  const email = emailInput.value.trim();
+  if (!email) {
+    emailStatus.textContent = '이메일을 입력해주세요.';
+    emailStatus.className = 'id-status no';
+    return;
+  }
+  // 데모용 하드코딩 대신 MemberController의 /join/check-email를 호출해 실제 DB 기준으로 확인
+  fetch('/join/check-email?email=' + encodeURIComponent(email))
+    .then((res) => {
+      if (!res.ok) throw new Error('check-email request failed');
+      return res.json();
+    })
+    .then((data) => {
+      if (data.available) {
+        emailStatus.textContent = '사용 가능한 이메일입니다.';
+        emailStatus.className = 'id-status ok';
+      } else {
+        emailStatus.textContent = '이미 사용 중인 이메일입니다.';
+        emailStatus.className = 'id-status no';
+      }
+    })
+    .catch(() => {
+      emailStatus.textContent = '중복확인 중 오류가 발생했습니다.';
+      emailStatus.className = 'id-status no';
+    });
+});
+
 const pwInput = document.getElementById('member_pwd');
 const pwConfirmInput = document.getElementById('pwConfirmInput');
 const pwMatch = document.getElementById('pwMatch');
