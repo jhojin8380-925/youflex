@@ -1,6 +1,5 @@
 package com.youflex.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -207,10 +206,6 @@ public class ChatroomService {
     }
     /**
      * 채팅방 나가기
-     * - chat_member 참여 기록을 물리 삭제한다.
-     */
-    /**
-     * 채팅방 나가기
      * - 참여자가 나가면: chat_member 기록만 삭제
      * - 방장이 나가면: 채팅방 자체를 삭제 (모든 참여자 강제 퇴장)
      */
@@ -238,17 +233,6 @@ public class ChatroomService {
     }
 
     /**
-     * 특정 채팅방의 이전 메시지 목록 조회
-     * - 아직 메시지 전용 Mapper/테이블이 없다면 500 에러 방지를 위해 빈 리스트를 반환합니다.
-     */
-    public List<?> getMessagesByChatroomId(int chatroomId) {
-        // 추후 메시지 매퍼가 구현되면 아래와 같이 연동할 수 있습니다.
-        // return chatMessageMapper.selectMessagesByChatroomId(chatroomId);
-        
-        return new ArrayList<>();
-    }
-
-    /**
      * ★ 추가: 특정 회원의 특정 방 내 역할 조회 (방장 / 참여자 / 없음)
      * - 프론트에서 경고 버튼 노출 여부를 판단하는 데 사용
      */
@@ -264,11 +248,6 @@ public class ChatroomService {
     }
 
     /**
-     * ★ 추가: 특정 메시지에 경고 부여
-     * - 방장만 가능
-     * - 경고 누적 MAX_WARNING_COUNT(3)회 이상이면 해당 회원 강제퇴장
-     * @return 강제퇴장 처리되었으면 true
-   /**
      * ★ 수정: 특정 메시지에 경고 부여
      * - 방장만 가능
      * - 경고 누적 MAX_WARNING_COUNT(3)회 이상이면 해당 회원 강제퇴장

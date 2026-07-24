@@ -41,18 +41,10 @@
 .shop-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:16px; }
 .shop-card .price { font-size:20px; font-weight:800; color:var(--gold); margin:8px 0 16px; }
 
-/* ---------- 취향(관심 장르) 선택 모달 하단 "취소 / 저장" 버튼 줄 (common.css .genre-modal-* 껍데기에 추가) ---------- */
-.genre-modal-actions { display:flex; gap:8px; margin-top:4px; }
-.genre-modal-actions .btn { flex:1; }
 /* 내글 썸네일 추가 -나영- */
 .post-img{
   width: 100px;
   height: 100%;
-}
-/* 북마크 썸네일 추가 -나영- */
-.bookmark-img{
-  width: 268px;
-  height: 350px;
 }
 /* ---------- 내글/북마크 공통 페이지네이션 -나영- ---------- */
 .pagination {

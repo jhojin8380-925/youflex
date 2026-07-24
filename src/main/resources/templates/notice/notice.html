@@ -6,8 +6,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>YouFlex - 공지사항 / Q&A</title>
 
-	<!-- 마이그레이션 중 목업 경로(/assets/css)가 남아있던 버그 수정: static/css로 이전 완료된 실제 경로로 교체 -->
-
 	<link rel="stylesheet" th:href="@{/css/common.css}" />
 	<link rel="stylesheet" th:href="@{/css/notice.css}" />
 </head>
@@ -134,22 +132,7 @@
 	<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
 	<!-- 퀴즈 패널 열림 시 배경 오버레이 -->
 	<div class="overlay-backdrop" id="quizBackdrop"></div>
-	<aside class="slide-panel" id="quizPanel">
-		<div class="panel-header"><h3>💡 YouFlex 퀴즈</h3><button class="panel-close" id="quizClose">✕</button></div>
-		<div class="panel-body">
-			<div class="quiz-box" id="qnaQuizBox">
-				<p class="quiz-intro">객관식/OX 문제를 하루 3번까지 풀 수 있어요. 퀴즈를 시작하고 정답 버튼을 선택해보세요!</p>
-				<div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
-				<button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
-				<!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
-				<div id="qnaQuizPlay" style="display:none">
-					<div class="quiz-question" id="qnaQuizQuestion"></div>
-					<div class="quiz-options" id="qnaQuizOptions"></div>
-				</div>
-				<div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
-			</div>
-		</div>
-	</aside>
+	<aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
 
 	<!-- 채팅방 패널 열림 시 배경 오버레이 -->
 	<div class="overlay-backdrop" id="chatroomBackdrop"></div>

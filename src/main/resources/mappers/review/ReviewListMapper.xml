@@ -94,13 +94,6 @@
         </where>
     </select>
 
-    <!-- 취향 선택 모달에 뿌려줄 전체 장르 목록 -->
-    <select id="findAllGenres" resultType="com.youflex.dto.GenreCategoryDTO">
-        SELECT genre_category_id, genre_category_name
-        FROM genre_category
-        ORDER BY genre_category_id
-    </select>
-
     <!-- 메인 화면 인기 리뷰글(플랫폼별 top N) - project-plan.md 기준 "좋아요·점수 자동 선정":
          좋아요 수 내림차순이 우선, 동률이면 별점 높은 순, 그마저 같으면 최신순으로 정렬 -->
     <select id="findPopular" resultType="com.youflex.dto.ReviewDTO">

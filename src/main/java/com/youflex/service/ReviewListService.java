@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.youflex.dto.GenreCategoryDTO;
 import com.youflex.dto.ReviewDTO;
 import com.youflex.dto.ReviewListSearchDTO;
 import com.youflex.mapper.ReviewListMapper;
@@ -36,13 +35,6 @@ public class ReviewListService {
 	 */
 	public int countList(ReviewListSearchDTO searchDTO) {
 		return reviewListMapper.countList(searchDTO);
-	}
-
-	/**
-	 * 취향 선택 모달용 전체 장르 목록
-	 */
-	public List<GenreCategoryDTO> findAllGenres() {
-		return reviewListMapper.findAllGenres();
 	}
 
 	public int getPageSize() {

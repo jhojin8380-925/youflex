@@ -46,34 +46,25 @@
   </div>
 </main>
 
+
 <!-- 알림 슬라이드 패널 -->
 <div class="overlay-backdrop" id="notificationBackdrop"></div>
 <aside class="slide-panel" th:replace="~{fragments/layout :: notification}"></aside>
 
-<!-- 퀴즈 실행 플로팅 버튼(FAB) 및 퀴즈 패널 -->
-<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
-<div class="overlay-backdrop" id="quizBackdrop"></div>
-<aside class="slide-panel" id="quizPanel">
-  <div class="panel-header"><h3>💡 YouFlex 퀴즈</h3><button class="panel-close" id="quizClose">✕</button></div>
-  <div class="panel-body">
-    <div class="chat-msg"><div class="avatar"></div><div class="bubble">무엇을 도와드릴까요?</div></div>
-  </div>
-  <div class="panel-input-row"><input type="text" placeholder="질문을 입력하세요" /><button class="btn btn-primary">전송</button></div>
-</aside>
+    <!--
+  ================================
+  퀴즈 영역
+  ================================
+  -->
+    <button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
+    <div class="overlay-backdrop" id="quizBackdrop"></div>
+    <aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
 
-<!-- 커뮤니티 채팅 패널: 목록/채팅/개설 탭 구성 -->
-<div class="overlay-backdrop" id="chatroomBackdrop"></div>
-<aside class="slide-panel" id="chatroomPanel">
-  <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
-  <div class="panel-tabs" data-tab-panels>
-    <button class="active" data-tab-target="list">목록</button>
-    <button data-tab-target="chat">채팅</button>
-    <button data-tab-target="create" data-role-visible="critic,admin">개설</button>
-  </div>
-  <div class="panel-body" data-tab-panel="list"></div>
-  <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0"></div>
-  <div class="panel-body" data-tab-panel="create" style="display:none"></div>
-</aside>
+
+	<!--layout.html의 채팅방 영역 -->
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
+	<!-- 채팅방 전용 알림 슬라이드 패널 (채팅 패널 옆에 나란히 열림) -->
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chatNotif}"></aside>
 
 <!-- 공통 푸터 -->
 <footer class="site-footer main-footer" th:replace="~{fragments/layout :: footer}"></footer>

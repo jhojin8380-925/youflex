@@ -37,9 +37,6 @@
 /* ---------- "수정 완료 시 '수정됨' 표시가 노출됩니다" 노란색 안내 문구 ---------- */
 .edit-notice { display:flex; gap:8px; align-items:flex-start; background:rgba(245,197,24,0.08); border:1px solid rgba(245,197,24,0.3); border-radius:var(--radius); padding:12px 14px; font-size:12px; color:var(--gold); margin-bottom:24px; }
 
-/* ---------- 대표 이미지: 이미 등록된 썸네일 + 교체 안내 문구 (새 글쓰기와 달리 기존 이미지가 있음) ---------- */
-.upload-box { padding:16px; text-align:left; display:flex; align-items:center; gap:12px; } /* common.css 기본 upload-box(가운데 정렬, 큰 패딩)와 다르게 왼쪽 정렬 + 가로 배치로 재정의 */
-
 /* .current-thumb 주석(웅조) */
 /* .current-thumb { width:100px; height:100px; border-radius:4px; background:linear-gradient(135deg,var(--bg-3),var(--bg-2)); flex-shrink:0; } */
 /* .current-thumb > img {
@@ -69,16 +66,6 @@
 
 
 /* ── 별점 ──(웅조) */
-/* .stars { color: #f39c12; font-size: 1.1rem; letter-spacing: 2px; }
-.stars-sm { color: #f39c12; font-size: 0.9rem; }
-.rating-input { display: flex; gap: 6px; }
-.rating-input span {
-    font-size: 1.6rem;
-    cursor: pointer;
-    color: #ddd;
-    transition: color 0.1s;
-}
-.rating-input span.active { color: #f39c12; } */
 .rating-input {
   display: flex;
   gap: 2px;

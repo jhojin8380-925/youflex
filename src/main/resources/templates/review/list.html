@@ -45,7 +45,6 @@
 				<button th:classappend="${sort == null or sort == 'latest'} ? ' active' : ''"
 					data-sort="latest">최신순</button>
 				<button th:classappend="${sort == 'likes'} ? ' active' : ''" data-sort="likes">좋아요순</button>
-				<!--<button th:classappend="${sort == 'highlight'} ? ' active' : ''" data-sort="highlight">하이라이트</button>-->
 				<button th:classappend="${sort == 'views'} ? ' active' : ''" data-sort="views">조회수순</button>
 			</div>
 			<div class="write-btn-wrap" th:if="${session.loginMember != null}" style="margin-top:0">
@@ -55,13 +54,9 @@
 				<button class="btn" onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎
 					글쓰기</button>
 			</div>
-			<!--<button class="btn"
-				onclick="if(confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) location.href='/login'">✎
-				글쓰기</button>-->
-		</div>
 		</div>
 
-		<!-- 
+		<!--
 	    ===================================================================
 	    [게시글 목록 영역 - 일반 정렬 (최신순/좋아요순/조회수순)]
 	    - 왼쪽: 작성 시 등록한 썸네일 이미지
@@ -72,8 +67,7 @@
 		<div class="post-row-list mt-16" th:if="${sort != 'highlight'}">
 
 			<!-- Thymeleaf 반복문 (Spring Controller에서 Pageable size=10 설정 시 한 페이지 10개 출력) -->
-			<a class="post-row" th:each="post : ${postList}" th:href="@{/review/{id}(id=${post.reviewId})}"
-				href="13_detail.html">
+			<a class="post-row" th:each="post : ${postList}" th:href="@{/review/{id}(id=${post.reviewId})}">
 
 				<!-- 1. [가장 왼쪽] 작성 시 등록한 썸네일 이미지 -->
 				<div class="post-row-thumb"
@@ -190,7 +184,6 @@
 	<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 	<!-- 취향(관심 장르) 선택 -->
-	<!-- 취향(관심 장르) 선택 -->
 	<div class="genre-modal-backdrop" id="genreModalBackdrop">
 		<div class="genre-modal-card">
 			<h2 gnere-title>취향 선택</h2>
@@ -213,93 +206,16 @@
 	<div class="overlay-backdrop" id="notificationBackdrop"></div>
 	<aside class="slide-panel" th:replace="~{fragments/layout :: notification}"></aside>
 
-	<!--<button class="fab" id="chatbotFab" title="챗봇 실행">💬</button>-->
-	<div class="overlay-backdrop" id="chatbotBackdrop"></div>
-	<aside class="slide-panel" id="chatbotPanel">
-		<div class="panel-header">
-			<h3>🤖 YouFlex 챗봇</h3>
-			<button class="panel-close" id="chatbotClose">✕</button>
-		</div>
-		<div class="panel-body">
-			<div class="chat-msg">
-				<div class="avatar"></div>
-				<div class="bubble">무엇을 도와드릴까요?</div>
-			</div>
-			<div class="quiz-box">
-				<div class="quiz-count">🎯 오늘 남은 퀴즈 횟수: 2/3</div>
-				<button class="btn btn-sm btn-primary" id="quizStartBtn">퀴즈 시작</button>
-				<div class="quiz-options" id="quizOptions" style="display:none">
-					<button data-correct="false">디즈니플러스</button>
-					<button data-correct="true">넷플릭스</button>
-					<button data-correct="false">티빙</button>
-					<button data-correct="false">웨이브</button>
-				</div>
-			</div>
-		</div>
-		<div class="panel-input-row">
-			<input type="text" placeholder="질문을 입력하세요" />
-			<button class="btn btn-primary">전송</button>
-		</div>
-	</aside>
+	<!-- 퀴즈 실행 플로팅 버튼(FAB) 및 퀴즈 패널 -->
+	<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
+	<div class="overlay-backdrop" id="quizBackdrop"></div>
+	<aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
 
+	<!-- 커뮤니티 채팅 패널 -->
 	<div class="overlay-backdrop" id="chatroomBackdrop"></div>
-	<aside class="slide-panel" id="chatroomPanel">
-		<div class="panel-header">
-			<h3>💬 커뮤니티 채팅</h3>
-			<button class="panel-close" id="chatroomClose">✕</button>
-		</div>
-		<div class="panel-tabs" data-tab-panels>
-			<button class="active" data-tab-target="list">목록</button>
-			<button data-tab-target="chat">채팅</button>
-			<button data-tab-target="create" data-role-visible="critic,admin">개설</button>
-		</div>
-		<div class="panel-body" data-tab-panel="list">
-			<div class="room-list-item">
-				<div>
-					<div class="room-name">오늘 개봉작 실시간 토크</div>
-					<div class="room-count">18 / 30명</div>
-				</div><button class="btn btn-primary btn-sm">입장</button>
-			</div>
-			<div class="room-list-item">
-				<div>
-					<div class="room-name">넷플릭스 정주행 클럽</div>
-					<div class="room-count">27 / 30명</div>
-				</div>
-				<button class="btn btn-primary btn-sm">입장</button>
-			</div>
-		</div>
-		<div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
-			<div class="chatroom-title">
-				<span>💬 오늘 개봉작 실시간 토크</span>
-				<button class="btn btn-sm btn-danger" data-role-visible="critic,admin" onclick="giveChatWarning()">⚠ 경고
-					부여</button>
-			</div>
-			<div class="chatroom-messages" id="chatroomMessages">
-				<div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
-				<div class="chat-msg">
-					<div class="avatar"></div>
-					<div class="bubble">다들 이번 편 결말 어떻게 보셨어요?</div>
-				</div>
-				<div class="chat-msg me">
-					<div class="avatar"></div>
-					<div class="bubble">저는 반전이 좋았어요 ㅋㅋ</div>
-				</div>
-			</div>
-			<div class="panel-input-row">
-				<input type="text" id="chat_message_content" name="chat_message_content" placeholder="메시지를 입력하세요" />
-				<button class="btn btn-primary" id="chatroomSendBtn">전송</button>
-			</div>
-		</div>
-		<div class="panel-body" data-tab-panel="create" style="display:none">
-			<label class="text-muted" style="font-size:13px">방 이름</label>
-			<input type="text" id="chatroom_title" name="chatroom_title"
-				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
-			<label class="text-muted" style="font-size:13px">최대 인원</label>
-			<input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="100" value="30"
-				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
-			<button class="btn btn-primary mt-24" id="chatroomCreateBtn">채팅방 개설</button>
-		</div>
-	</aside>
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
+	<!-- 채팅방 전용 알림 슬라이드 패널 (채팅 패널 옆에 나란히 열림) -->
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chatNotif}"></aside>
 
 	<script th:src="@{/js/app.js}"></script>
 	<script th:src="@{/js/list.js}"></script>

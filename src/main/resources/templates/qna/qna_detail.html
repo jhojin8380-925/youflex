@@ -171,38 +171,13 @@
 <!-- 퀴즈 실행 플로팅 버튼(FAB) 및 퀴즈 패널 -->
 <button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
 <div class="overlay-backdrop" id="quizBackdrop"></div>
-<aside class="slide-panel" id="quizPanel">
-  <div class="panel-header"><h3>💡 YouFlex 퀴즈</h3><button class="panel-close" id="quizClose">✕</button></div>
-  <div class="panel-body">
-    <!-- 퀴즈 기능 영역: 하루 3회(객관식+OX 합산) 제한 -->
-    <div class="quiz-box" id="qnaQuizBox">
-      <p class="quiz-intro">객관식/OX 문제를 하루 3번(합산)까지 풀 수 있어요. 퀴즈를 시작하고 정답 버튼을 선택해보세요!</p>
-      <div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
-      <button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
-      <!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
-      <div id="qnaQuizPlay" style="display:none">
-        <div class="quiz-question" id="qnaQuizQuestion"></div>
-        <div class="quiz-options" id="qnaQuizOptions"></div>
-      </div>
-      <div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
-    </div>
-  </div>
-</aside>
+<aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
 
-<!-- 커뮤니티 채팅 패널: 목록/채팅/개설 탭 구성 -->
+<!-- 커뮤니티 채팅 패널 -->
 <div class="overlay-backdrop" id="chatroomBackdrop"></div>
-<aside class="slide-panel" id="chatroomPanel">
-  <div class="panel-header"><h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button></div>
-  <div class="panel-tabs" data-tab-panels>
-    <button class="active" data-tab-target="list">목록</button>
-    <button data-tab-target="chat">채팅</button>
-    <!-- data-role-visible: critic 또는 admin 권한을 가진 사용자에게만 노출 (JS에서 처리 추정) -->
-    <button data-tab-target="create" data-role-visible="critic,admin">개설</button>
-  </div>
-  <div class="panel-body" data-tab-panel="list"></div>
-  <div class="panel-body" data-tab-panel="chat" style="display:none;padding:0"></div>
-  <div class="panel-body" data-tab-panel="create" style="display:none"></div>
-</aside>
+<aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
+<!-- 채팅방 전용 알림 슬라이드 패널 (채팅 패널 옆에 나란히 열림) -->
+<aside class="slide-panel" th:replace="~{fragments/layout :: chatNotif}"></aside>
 
 <!-- 공통 푸터 -->
 <footer class="site-footer main-footer" th:replace="~{fragments/layout :: footer}"></footer>

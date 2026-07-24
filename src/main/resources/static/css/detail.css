@@ -48,9 +48,6 @@ background: linear-gradient(90deg, #ffffff 0%, #ffd47a 60%, var(--accent) 100%);
   background-clip: text;
   color: transparent;
   animation: heading-shine 4s ease-in-out infinite, heading-fade-in 0.6s ease-out;}
-/* '리뷰 평점'글씨 효과 수정(웅조) */
-.rating-text span{color: lightgray;}
-
 /* ---------- 리뷰 본문 (대표 이미지 + 텍스트 + 관련작품 뱃지) ---------- */
 
 /* 사진 영역 수정완료 */ 
