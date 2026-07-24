@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>YouFlex - 관리자 페이지</title>
-<link rel="stylesheet" href="./css/common.css" />
-<link rel="stylesheet" href="./css/admin.css" />
+<link rel="stylesheet" th:href="@{/css/common.css}" />
+<link rel="stylesheet" th:href="{/css/admin.css}" />
 </head>
 <body>
 
@@ -20,6 +20,7 @@
 <nav class="category-nav" th:replace="~{fragments/layout :: nav}"></nav>
 
 <!-- 채팅방 -->
+<div class="overlay-backdrop" id="chatroomBackdrop"></div>
 <aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
 	<!-- 채팅방 전용 알림 슬라이드 패널 (채팅 패널 옆에 나란히 열림) -->
 	<aside class="slide-panel" th:replace="~{fragments/layout :: chatNotif}"></aside>
