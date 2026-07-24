@@ -555,3 +555,14 @@ document.querySelectorAll(".report-subtabs button").forEach((btn) => {
     });
   });
 });
+
+// Q&A 답변 탭의 답변대기/답변완료 서브탭 (위 report-subtabs와 동일한 방식, attribute만 분리)
+document.querySelectorAll(".qna-subtabs button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".qna-subtabs button").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("[data-qna-subpanel]").forEach((panel) => {
+      panel.style.display = panel.dataset.qnaSubpanel === btn.dataset.qnaSubtab ? "" : "none";
+    });
+  });
+});

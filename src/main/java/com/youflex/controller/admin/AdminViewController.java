@@ -1,5 +1,7 @@
 package com.youflex.controller.admin;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.youflex.dto.MemberDTO;
 import com.youflex.dto.ReportDTO;
+import com.youflex.dto.qna.QnaDTO;
 import com.youflex.service.BadWordService;
 import com.youflex.service.BannerService;
 import com.youflex.service.admin.AdminReportService;
@@ -27,6 +30,9 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminViewController {
+
+        // Q&A 답변완료 탭 - 답변 등록일(admin_answer_created_at) 기준 이 일수가 지나면 탭 목록에서 숨김(원본 데이터는 유지)
+        private static final long QNA_ANSWERED_VISIBLE_DAYS = 7;
 
         private final MemberService memberService;
         private final AdminReportService adminReportService;
@@ -60,8 +66,21 @@ public class AdminViewController {
                 model.addAttribute("reportList", pendingReports);
                 model.addAttribute("resolvedReportList", resolvedReports);
 
-                // Q&A 답변 탭 - 검색/페이징이 없어 전체 목록을 SSR로 한 번에 내려줌
-                model.addAttribute("qnaList", qnaService.getQnaList());
+                // Q&A 답변 탭 - 답변대기/답변완료 서브탭으로 분리. 검색/페이징이 없어 전체를 SSR로 한 번에 내려줌
+                // 답변완료는 admin_answer_created_at 기준 QNA_ANSWERED_VISIBLE_DAYS(7일)가 지나면 목록에서 제외
+                // (qna_status/답변/원본 게시글은 그대로 유지되고, 이 탭 화면에서만 안 보이는 것)
+                List<QnaDTO> allQna = qnaService.getQnaList();
+                LocalDateTime now = LocalDateTime.now();
+                List<QnaDTO> qnaWaitingList = allQna.stream()
+                                .filter(q -> !"답변완료".equals(q.getQnaStatus())).toList();
+                List<QnaDTO> qnaAnsweredList = allQna.stream()
+                                .filter(q -> "답변완료".equals(q.getQnaStatus())
+                                                && q.getAdminAnswerCreatedAt() != null
+                                                && ChronoUnit.DAYS.between(q.getAdminAnswerCreatedAt(), now) < QNA_ANSWERED_VISIBLE_DAYS)
+                                .peek(q -> q.setElapsedAnswerDays(ChronoUnit.DAYS.between(q.getAdminAnswerCreatedAt(), now)))
+                                .toList();
+                model.addAttribute("qnaWaitingList", qnaWaitingList);
+                model.addAttribute("qnaAnsweredList", qnaAnsweredList);
 
                 // 배너 설정 탭
                 model.addAttribute("bannerList", bannerService.getBannerList());

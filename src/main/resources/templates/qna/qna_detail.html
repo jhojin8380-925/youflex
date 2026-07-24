@@ -34,10 +34,11 @@
         <span class="badge" th:if="${qna.qnaIsSecret == '비밀'}" style="background:var(--danger);color:#fff;margin-right:8px">🔒 비공개</span>
         <span th:text="${qna.qnaTitle}">제목</span>
       </h1>
-      <!-- 작성자 본인에게만 노출. th:if로 세션의 loginMember.memberId와 게시글 작성자 memberId를 직접 비교 (Spring Security sec:authorize 미사용) -->
-      <div class="owner-actions" th:if="${session.loginMember != null and session.loginMember.memberId == qna.memberId}"
+      <!-- 수정/삭제 버튼 영역. 수정은 작성자 본인만, 삭제는 작성자 본인 또는 관리자에게 노출 -->
+      <div class="owner-actions"
+           th:if="${session.loginMember != null and (session.loginMember.memberId == qna.memberId or session.loginMember.memberGrade == '관리자')}"
            style="display:flex;gap:8px;flex-shrink:0">
-        <a th:href="@{/qna/{id}/update(id=${qna.qnaId})}" class="btn btn-sm">수정</a>
+        <a th:if="${session.loginMember.memberId == qna.memberId}" th:href="@{/qna/{id}/update(id=${qna.qnaId})}" class="btn btn-sm">수정</a>
         <!-- 삭제 버튼: confirm 후 하단 스크립트의 deleteQna() 호출 -->
         <button class="btn btn-sm" style="border-color:var(--danger);color:var(--danger)"
                 th:onclick="|if(confirm('정말 삭제하시겠습니까?')) deleteQna(${qna.qnaId})|">삭제</button>
