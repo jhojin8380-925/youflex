@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.youflex.dto.ReviewDTO;
 import com.youflex.dto.ReviewListSearchDTO;
+import com.youflex.service.GenreCategoryService;
 import com.youflex.service.ReviewListService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,12 +18,11 @@ import lombok.RequiredArgsConstructor;
 public class ReviewListController {
 
 	private final ReviewListService reviewListService;
+	private final GenreCategoryService genreCategoryService; // [추가] 취향 선택 모달용 장르 목록 조회
 
 	/**
-	 * 게시글 목록 페이지
-	 * - /review/list
-	 * - /review/list?page=2
-	 * - /review/list?keyword=검색어&sort=latest&period=all
+	 * 게시글 목록 페이지 - /review/list - /review/list?page=2 -
+	 * /review/list?keyword=검색어&sort=latest&period=all
 	 */
 	@GetMapping("/review/list")
 	public String list(ReviewListSearchDTO searchDTO, Model model) {
@@ -41,6 +41,9 @@ public class ReviewListController {
 		model.addAttribute("keyword", searchDTO.getKeyword());
 		model.addAttribute("sort", searchDTO.getSort() == null ? "latest" : searchDTO.getSort());
 		model.addAttribute("platform", searchDTO.getPlatform() == null ? "all" : searchDTO.getPlatform());
+
+		// [추가] 상세검색 > 취향선택 모달에 뿌릴 장르 목록
+		model.addAttribute("genres", genreCategoryService.getAllGenres());
 
 		return "review/list";
 	}

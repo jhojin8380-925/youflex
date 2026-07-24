@@ -1868,13 +1868,25 @@ function resetChatView() {
         membersListEl.innerHTML = "";
     }
 }
+
 // ---- 취향/장르 선택 칩 (클릭 시 선택 표시 토글) ----
 function initGenreChips() {
+    document.querySelectorAll(".genre-chip").forEach((chip) => {
+        // list.html의 상세검색 모달(listGenreModalBackdrop)은 list.js가
+        // 별도로(최대 3개 제한 등) 처리하므로 여기서는 건드리지 않음
+        if (chip.closest("#genreGrid")) return;
+        if (chip.closest("#listGenreModalBackdrop")) return;
+        chip.addEventListener("click", () => chip.classList.toggle("selected"));
+    });
+}
+
+// ---- 취향/장르 선택 칩 (클릭 시 선택 표시 토글) ----
+/*function initGenreChips() {
     document.querySelectorAll(".genre-chip").forEach((chip) => {
         if (chip.closest("#genreGrid")) return;
         chip.addEventListener("click", () => chip.classList.toggle("selected"));
     });
-}
+}*/
 
 // ---- 드롭다운 메뉴 (마이페이지 등에서 사용) ----
 function initDropdowns() {
