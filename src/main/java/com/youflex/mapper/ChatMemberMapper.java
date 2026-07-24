@@ -32,11 +32,7 @@ public interface ChatMemberMapper {
     int deleteChatMember(@Param("chatroomId") int chatroomId,
                           @Param("memberId") int memberId);
 
- // int 타입으로 변경
-    int countActiveChatMemberByMemberId(int memberId);
-    
- // ChatMemberMapper.java (인터페이스)
-    Integer selectActiveChatroomIdByMemberId(int memberId); // Integer로 변경
+    Integer selectActiveChatroomIdByMemberId(int memberId);
 
 	int countMembersInChatroom(int chatroomId);
 

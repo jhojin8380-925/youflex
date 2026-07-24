@@ -16,6 +16,9 @@
 -->
 <header th:replace="~{fragments/layout :: header}"></header>
 
+<!-- 공통 네비게이션 바 -->
+<nav class="category-nav" th:replace="~{fragments/layout :: nav}"></nav>
+
 <main class="container">
   <div class="notice-detail-wrap">
 
@@ -52,6 +55,14 @@
 <div class="overlay-backdrop" id="notificationBackdrop"></div>
 <aside class="slide-panel" th:replace="~{fragments/layout :: notification}"></aside>
 
+<!-- 퀴즈 실행 플로팅 버튼(FAB) 및 퀴즈 패널 -->
+<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
+<div class="overlay-backdrop" id="quizBackdrop"></div>
+<aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
+
+<aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
+	<!-- 채팅방 전용 알림 슬라이드 패널 (채팅 패널 옆에 나란히 열림) -->
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chatNotif}"></aside>
 <!-- 공통 푸터 -->
 <footer class="site-footer main-footer" th:replace="~{fragments/layout :: footer}"></footer>
 

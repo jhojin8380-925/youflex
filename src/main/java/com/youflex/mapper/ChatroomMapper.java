@@ -24,17 +24,4 @@ public interface ChatroomMapper {
      * - 1개 이상이면 이미 개설한 방이 있는 것으로 판단
      */
     int countChatroomByMemberId(int memberId);
-
-    int chatChatroomByChatId(int chatroomId);
-
-    // ---- 입장/나가기 (chatroom_member 테이블) ----
-
-    /** 이미 참여 중인지 확인 (0이면 미참여) */
-    int countChatroomMember(@Param("chatroomId") int chatroomId, @Param("memberId") int memberId);
-
-    /** 채팅방 참여 기록 INSERT */
-    int insertChatroomMember(@Param("chatroomId") int chatroomId, @Param("memberId") int memberId);
-
-    /** 채팅방 참여 기록 DELETE (나가기) */
-    int deleteChatroomMember(@Param("chatroomId") int chatroomId, @Param("memberId") int memberId);
 }

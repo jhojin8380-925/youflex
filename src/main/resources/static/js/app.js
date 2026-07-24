@@ -537,17 +537,6 @@ function initQnaQuiz() {
         .catch(() => {});
 }
 
-// ==========  평론가/관리자가  채팅 내에서 특정 사용자에게 경고를 부여하는 로직 =================
-// ★ 수정: 닉네임 prompt 방식 대신, 메시지별 "⚠ 경고" 버튼(giveWarningToMessage)으로 대체됨.
-//   케밥 메뉴의 "경고 부여" 버튼은 이제 안내만 표시한다.
-function giveChatWarning() {
-    if (currentChatroomRole === "방장") {
-        alert("상대방 메시지에 마우스를 올리면 나타나는 '⚠ 경고' 버튼을 이용해주세요.");
-    } else {
-        alert("방장만 경고를 부여할 수 있습니다.");
-    }
-}
-
 // ★ 추가: 특정 메시지(chatMessageId)에 경고 부여 (방장 전용)
 async function giveWarningToMessage(chatMessageId) {
     const reason = prompt("경고 사유를 입력하세요.");
@@ -572,38 +561,6 @@ async function giveWarningToMessage(chatMessageId) {
         console.error("경고 부여 실패:", error);
         alert("서버 연결에 실패했습니다.");
     }
-}
-/**
- * 메시지 전송 처리 함수
- */
-function sendChatMessage() {
-    const titleEl = document.getElementById('chatroomTitleText');
-    const messagesEl = document.getElementById('chatroomMessages');
-    const inputEl = document.getElementById('chat_message_content');
-
-    // ★ 1. 선택된 방이 없는지 검증 (방 미선택 상태 차단)
-    const isNoRoomSelected =
-        !titleEl ||
-        titleEl.innerText.includes("방 선택 없음") ||
-        (messagesEl && messagesEl.querySelector('.chat-empty-state'));
-
-    if (isNoRoomSelected) {
-        alert("입장한 채팅방이 존재하지 않습니다.");
-        if (inputEl) inputEl.value = ""; // 입력했던 텍스트 초기화
-        return; // 전송 로직 중단
-    }
-
-    // ★ 2. 입력값 유효성 검사
-    const content = inputEl ? inputEl.value.trim() : "";
-    if (!content) {
-        alert("메시지를 입력해 주세요.");
-        return;
-    }
-
-    // ===================================================
-    // ★ 3. 기존 메시지 전송 로직 (여기서부터 기존 코드 실행)
-    // ===================================================
-    // 예: websocket.send(...) 또는 fetch API 호출
 }
 // ==========================================================================
 // 채팅방 목록: 렌더링 + 초기 조회(fetch) + 실시간 반영(WebSocket/STOMP)
@@ -801,40 +758,6 @@ function markChatroomViewedNow(chatroomId) {
 }
 
 /**
- * 참여 중인 방 [대화하기] 클릭 시
- * ★ 더 이상 버튼의 onclick으로 직접 호출되지 않음 (렌더링 함수에서 인라인 onclick 제거함).
- *   기존 목업 단계에서 쓰이던 함수라 그대로 남겨두되, 실제 흐름은
- *   chatroomListContainer의 이벤트 위임 -> switchToChatroom() 이 담당함.
- */
-function openChatRoom(roomId, roomTitle = "") {
-    // 1. 채팅 탭으로 화면 전환
-    switchTab("chat");
-
-    // 2. 해당 방 데이터 로드 (예시 메시지 삽입)
-    const messageArea = document.getElementById("chatMessages");
-    if (messageArea) {
-        messageArea.innerHTML = `
-      <div class="chat-bubble">💬 <strong>[${roomTitle || roomId}]</strong> 방에 입장했습니다.</div>
-      <div class="chat-bubble">자유롭게 대화를 나눠보세요.</div>
-    `;
-    }
-}
-
-/**
- * 신규 방 [입장] 클릭 시
- * ★ 더 이상 버튼의 onclick으로 직접 호출되지 않음 (렌더링 함수에서 인라인 onclick 제거함).
- *   기존 목업 단계에서 쓰이던 함수라 그대로 남겨두되, 실제 흐름은
- *   chatroomListContainer의 이벤트 위임 -> enterChatroom() 이 담당함.
- */
-function joinChatRoom(roomId, roomTitle = "") {
-    alert(`[${roomTitle || roomId}] 채팅방에 참여했습니다!`);
-
-    // 입장 후 바로 해당 대화방으로 이동
-    openChatRoom(roomId, roomTitle);
-}
-
-
-/**
  * 채팅방 목록을 서버(GET /api/chatroom)에서 받아옴
  */
 async function loadChatroomList(autoEnterMyRoom = true) {
@@ -939,87 +862,6 @@ function initChatroomSocket() {
 
     return currentStompClient;
 }
-// ==========================================================================
-// ! 웹소켓(STOMP) 연결 및 실시간 채널 구독 관리 수정 추가 !
-// ==========================================================================
-
-
-// 소켓 연결 및 특정 채팅방 구독 함수
-function connectChatroom(chatroomId) {
-    if (typeof SockJS === "undefined" || typeof Stomp === "undefined") {
-        console.warn("SockJS/Stomp 라이브러리가 로드되지 않았습니다.");
-        return null;
-    }
-
-    if (currentStompClient && currentStompClient.connected) {
-        // 이미 연결되어 있다면 해당 방만 구독 추가
-        subscribeChatroom(chatroomId);
-        return currentStompClient;
-    }
-
-    const socket = new SockJS('/ws-connect');
-    currentStompClient = Stomp.over(socket);
-    currentStompClient.debug = null;
-
-    currentStompClient.connect({}, () => {
-        // 1. 전체 채팅방 목록 구독
-        currentStompClient.subscribe('/sub/chatroom-list', (message) => {
-            const rooms = JSON.parse(message.body);
-            renderChatroomList(rooms);
-        });
-
-        // ★ 회원 개인 전용 알림 채널 구독 (경고 알림 및 3회 경고 시 즉시 강제퇴장 처리)
-        const memberIdInput = document.getElementById("currentMemberId");
-        const currentMemberId = memberIdInput ? Number(memberIdInput.value) : 0;
-        if (currentMemberId > 0) {
-            currentStompClient.subscribe(`/sub/member/${currentMemberId}/notice`, (message) => {
-                const notice = JSON.parse(message.body);
-
-                // 알림 도착 시 채팅 패널이 닫혀있으면 💬 뱃지 +1
-                const chatPanel = document.getElementById("chatroomPanel");
-                if (!chatPanel || !chatPanel.classList.contains("open")) {
-                    incrementChatUnreadBadge();
-                }
-
-                if (notice.type === "WARNING") {
-                    // ★ 개인 전용 채널로는 더 이상 🔔 알림을 추가하지 않음 - 채팅방 브로드캐스트 시스템 메시지(appendChatMessage)로만
-                    //   모두에게 동일하게 보이는 알림 하나만 남긴다(중복 제거). 여기서는 즉시 안내 팝업만 띄움.
-                    alert(`[경고 알림]\n${notice.message}`);
-                } else if (notice.type === "KICKED") {
-                    // ★ 강퇴도 마찬가지로 🔔 알림은 브로드캐스트 시스템 메시지에만 맡기고, 여기서는 팝업 + 강제 퇴장 처리만 수행
-                    alert(`[강제퇴장 알림]\n${notice.message}`);
-                    // 현재 해당 채팅방에 입장해 있다면 즉시 세션 해제 및 목록으로 이동
-                    if (currentChatroomId && currentChatroomId == notice.chatroomId) {
-                        if (currentChatroomSubscription) {
-                            currentChatroomSubscription.unsubscribe();
-                            currentChatroomSubscription = null;
-                        }
-                        currentChatroomId = null;
-                        currentChatroomRole = null;
-                        resetChatView();
-                        const listTabButton = document.querySelector("[data-tab-target='list']");
-                        if (listTabButton) listTabButton.click();
-                        loadChatroomList(false);
-                    }
-                }
-            });
-
-            // ★ 헤더 🔔 알림 전용 채널 구독 (경고 부여 / 내 글 댓글 / QNA 답변완료 - 채팅방 알림과는 완전 별개)
-            currentStompClient.subscribe(`/sub/member/${currentMemberId}/alert`, (message) => {
-                const notif = JSON.parse(message.body);
-                addNotification(getHeaderNotifIcon(notif.type), notif.message, notif.createdAt, notif.id);
-            });
-        }
-
-        // 2. 현재 입장한 채팅방 메시지 구독
-        if (chatroomId) {
-            subscribeChatroom(chatroomId);
-        }
-    });
-
-    return currentStompClient;
-}
-
 // 개별 방 구독 전용 함수
 function subscribeChatroom(chatroomId) {
     if (!currentStompClient || !currentStompClient.connected) {
@@ -1436,8 +1278,6 @@ function initChatroomChat() {
     if (input && sendBtn) {
         // 기존 initChatroomChat() 내부의 send 함수를 아래와 같이 수정합니다.
         const send = () => {
-            console.log("send()호출");
-
             // ★ 1. 방 선택 안 됨 / 입장한 방 없음 검증 추가
             const titleEl = document.getElementById('chatroomTitleText');
             const messagesEl = document.getElementById('chatroomMessages');
@@ -1470,7 +1310,6 @@ function initChatroomChat() {
                     memberName: myName,
                     chatMessageContent: text
                 }));
-                console.log("--- 메시지 전송됨 ---", text);
             } else {
                 console.warn("소켓이 연결되어 있지 않습니다.");
             }
@@ -1481,7 +1320,6 @@ function initChatroomChat() {
 
         // 클릭 시 폼 제출(새로고침) 기본 동작 방지 추가
         sendBtn.addEventListener("click", (e) => {
-            console.log("전송 버튼 클릭!");
             e.preventDefault();
             send();
         });
@@ -1880,14 +1718,6 @@ function initGenreChips() {
     });
 }
 
-// ---- 취향/장르 선택 칩 (클릭 시 선택 표시 토글) ----
-/*function initGenreChips() {
-    document.querySelectorAll(".genre-chip").forEach((chip) => {
-        if (chip.closest("#genreGrid")) return;
-        chip.addEventListener("click", () => chip.classList.toggle("selected"));
-    });
-}*/
-
 // ---- 드롭다운 메뉴 (마이페이지 등에서 사용) ----
 function initDropdowns() {
     document.querySelectorAll("[data-dropdown-trigger]").forEach((trigger) => {
@@ -1954,13 +1784,10 @@ function initCategoryNav() {
     if (!nav) return;
 
     const pathname = location.pathname;
-    const isSinglePageList = pathname.split("/").pop() === "04_list.html";
     const isReviewList = pathname.endsWith("/review/list");
-    const current = isSinglePageList
-        ? new URLSearchParams(location.search).get("cat") || "all"
-        : isReviewList
-            ? new URLSearchParams(location.search).get("platform") || "all"
-            : document.body.dataset.navCurrent || "";
+    const current = isReviewList
+        ? new URLSearchParams(location.search).get("platform") || "all"
+        : document.body.dataset.navCurrent || "";
 
     nav.querySelectorAll("a[data-nav]").forEach((a) => {
         a.classList.toggle("active", a.dataset.nav === current);
@@ -2007,7 +1834,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initTabs(".notice-tabs");
 
     initChatroomChat();
-    /*initChatroomMenu()*/;   // 케밥 메뉴 및 나가기 기능 초기화
     initGenreChips();
     initQnaQuiz();
 });

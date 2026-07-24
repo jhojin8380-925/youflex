@@ -12,63 +12,26 @@
 <body>
 
 
-	<!--  
+	<!--
   ==================================
-  공통 헤더바  
-  ==================================
-  -->
-	<!-- 
-  ==================================
-  비회원(구경꾼) 헤더바
-  ==================================
-  -->
-	<!-- <header class="site-header">
-  <div class="container">
-    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
-    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
-    <div class="header-actions">
-      <a href="02_login.html" class="btn btn-ghost">로그인</a>
-    </div>
-  </div>
-</header> -->
-
-	<!-- 
-  ==================================
-  회원(시청자이상) 헤더바 
+  공통 헤더바
   ==================================
   -->
 	<header th:replace="~{fragments/layout :: header}"></header>
 
-	<!-- 
+	<!--
   ==================================
-  관리자 헤더바 
+  공통 네비게이션 바
   ==================================
   -->
-	<!-- <header class="site-header">
-  <div class="container">
-    <a href="01_main.html" class="logo"><img src="assets/img/logo.png" alt="YouFlex" /></a>
-    <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="콘텐츠, 게시글 통합 검색" /></div>
-    <div class="header-actions">
-      <a href="02_login.html" class="btn btn-ghost">로그인</a>
-      <a href="15_admin.html" class="btn btn-ghost" style="color:var(--danger)">⚙ 관리자 페이지</a>
-      <a href="14_mypage.html" class="btn btn-ghost">마이페이지</a>
-      <a href="#" class="btn btn-ghost">로그아웃</a>
-      <button class="icon-btn" id="notificationTrigger">🔔<span class="badge">3</span></button>
-      <button class="icon-btn" id="chatroomTrigger">💬<span class="badge">3</span></button>
-    </div>
-  </div>
-</header> -->
+	<nav class="category-nav" th:replace="~{fragments/layout :: nav}"></nav>
 
-
-	<!-- 
+	<!--
   ==================================
   메인 영역
   ==================================
 -->
 	<main class="container">
-
-		<!-- enctype="multipart/form-data" 사진 파일을 전송하기 위해 작성 -->
-		<!--<form class="card" th:action="@{/review/write}" method="post" enctype="multipart/form-data"></form>-->
 
 		<div class="write-page-grid">
 			<div class="write-wrap">
@@ -119,13 +82,6 @@
 					<!-- 별점 수정(웅조) -->
 					<div class="form-group">
 						<label><span class="gradient-star-text">관람평 (⭐/5.0)</span></label>
-						<!-- <div class="rating-input">
-					<span class="active">★</span>
-					<span class="active">★</span>
-					<span class="active">★</span>
-					<span class="active">★</span>
-					<span>★</span>
-				</div> -->
 						<div class="rating-input">
 							<div class="star-box" data-value="1">
 								<span class="half left">★</span>
@@ -157,8 +113,6 @@
 					<div class="form-row">
 						<label>대표 이미지</label>
 						<div class="wrap-representative-img">
-							<!-- <div class="upload-box"> -->
-							<!-- <input> 추가완료 -->
 							<input type="file" name="imgFile" id="imgInput" accept="image/*" style="font-size:0.85rem;"
 								class="representative-img">
 							<img id="imgPreview" alt="미리보기"
@@ -191,38 +145,22 @@
 				</form>
 			</div>
 
-			<!-- 
+			<!--
     ==================================
-    임시저장 영역 
+    임시저장 목록 영역
     ==================================
     -->
-			<!-- 작성 페이지 2단 그리드 레이아웃 -->
-			<div class="write-page-grid">
+			<aside class="draft-sidebar">
+				<h3>임시저장 목록</h3>
 
-				<!-- [왼쪽] 글 작성 메인 폼 영역 -->
-				<div class="write-wrap">
-					<!-- 기존 작성 폼 내용들... -->
+				<!-- 데이터가 없을 때 보일 안내 메시지 -->
+				<div id="draftEmptyMsg" style="color: var(--text-2); font-size: 13px;">
+					임시저장된 글이 없습니다.
 				</div>
 
-				<!-- [오른쪽] 임시저장 목록 사이드바 (CSS의 .draft-sidebar 활용) -->
-				<aside class="draft-sidebar">
-					<h3>임시저장 목록</h3>
-
-					<!-- 데이터가 없을 때 보일 안내 메시지 -->
-					<div id="draftEmptyMsg" style="color: var(--text-2); font-size: 13px;">
-						임시저장된 글이 없습니다.
-					</div>
-
-					<!-- write.js에서 목록을 추가해 줄 컨테이너 -->
-					<div id="draftList"></div>
-				</aside>
-
-			</div>
-			<!--<aside class="draft-sidebar">
-				<h3>임시저장 목록</h3>
+				<!-- write.js에서 목록을 추가해 줄 컨테이너 -->
 				<div id="draftList"></div>
-				<p class="text-muted" id="draftEmptyMsg" style="font-size:12px">임시저장된 글이 없습니다.</p>
-			</aside>-->
+			</aside>
 		</div>
 	</main>
 
@@ -247,80 +185,17 @@
   -->
 	<button class="fab" id="quizFab" title="퀴즈 실행">💡</button>
 	<div class="overlay-backdrop" id="quizBackdrop"></div>
-	<aside class="slide-panel" id="quizPanel">
-		<div class="panel-header">
-			<h3>💡 YouFlex 퀴즈</h3><button class="panel-close" id="quizClose">✕</button>
-		</div>
-		<div class="panel-body">
-			<div class="quiz-box" id="qnaQuizBox">
-				<p class="quiz-intro">객관식/OX 문제를 하루 3번(합산)까지 풀 수 있어요. 퀴즈를 시작하고 정답 버튼을 선택해보세요!</p>
-				<div class="quiz-count" id="qnaQuizCount">🎯 오늘 남은 퀴즈 횟수: 3/3</div>
-				<button class="btn btn-sm btn-primary" id="qnaQuizStartBtn">퀴즈 시작</button>
-				<!-- 문제 출제 시 이 안에 질문/선택지 버튼이 채워짐(app.js의 initQnaQuiz가 채움) -->
-				<div id="qnaQuizPlay" style="display:none">
-					<div class="quiz-question" id="qnaQuizQuestion"></div>
-					<div class="quiz-options" id="qnaQuizOptions"></div>
-				</div>
-				<div class="quiz-result" id="qnaQuizResult" style="display:none"></div>
-			</div>
-		</div>
-	</aside>
+	<aside class="slide-panel" id="quizPanel" th:replace="~{fragments/layout :: quiz}"></aside>
 
-	<!-- 
+	<!--
   ================================
   채팅방 영역
   ================================
   -->
 	<div class="overlay-backdrop" id="chatroomBackdrop"></div>
-	<aside class="slide-panel" id="chatroomPanel">
-		<div class="panel-header">
-			<h3>💬 커뮤니티 채팅</h3><button class="panel-close" id="chatroomClose">✕</button>
-		</div>
-		<div class="panel-tabs" data-tab-panels>
-			<button class="active" data-tab-target="list">목록</button>
-			<button data-tab-target="chat">채팅</button>
-			<button data-tab-target="create" data-role-visible="critic,admin">개설</button>
-		</div>
-		<div class="panel-body" data-tab-panel="list">
-			<div class="room-list-item">
-				<div>
-					<div class="room-name">오늘 개봉작 실시간 토크</div>
-					<div class="room-count">18 / 30명</div>
-				</div><button class="btn btn-primary btn-sm">입장</button>
-			</div>
-		</div>
-		<div class="panel-body" data-tab-panel="chat" style="display:none;padding:0">
-			<div class="chatroom-title">
-				<span>💬 오늘 개봉작 실시간 토크</span>
-				<button class="btn btn-sm btn-danger" data-role-visible="critic,admin" onclick="giveChatWarning()">⚠ 경고
-					부여</button>
-			</div>
-			<div class="chatroom-messages" id="chatroomMessages">
-				<div class="chat-msg system">‘영화광123’님이 입장했습니다</div>
-				<div class="chat-msg">
-					<div class="avatar"></div>
-					<div class="bubble">다들 이번 편 결말 어떻게 보셨어요?</div>
-				</div>
-				<div class="chat-msg me">
-					<div class="avatar"></div>
-					<div class="bubble">저는 반전이 좋았어요 ㅋㅋ</div>
-				</div>
-			</div>
-			<div class="panel-input-row">
-				<input type="text" id="chat_message_content" name="chat_message_content" placeholder="메시지를 입력하세요" />
-				<button class="btn btn-primary" id="chatroomSendBtn">전송</button>
-			</div>
-		</div>
-		<div class="panel-body" data-tab-panel="create" style="display:none">
-			<label class="text-muted" style="font-size:13px">방 이름</label>
-			<input type="text" id="chatroom_title" name="chatroom_title"
-				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
-			<label class="text-muted" style="font-size:13px">최대 인원</label>
-			<input type="number" id="chatroom_max_member" name="chatroom_max_member" min="2" max="30" value="10"
-				style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:10px;color:#fff" />
-			<button class="btn btn-primary mt-24" id="chatroomCreateBtn">채팅방 개설</button>
-		</div>
-	</aside>
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chat}"></aside>
+	<!-- 채팅방 전용 알림 슬라이드 패널 (채팅 패널 옆에 나란히 열림) -->
+	<aside class="slide-panel" th:replace="~{fragments/layout :: chatNotif}"></aside>
 
 	<!-- 취향(관심 장르) 선택 -->
 	<div class="genre-modal-backdrop" id="genreModalBackdrop">

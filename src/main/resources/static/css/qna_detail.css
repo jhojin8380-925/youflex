@@ -25,7 +25,6 @@
 .qna-comment-author { font-weight: 700; font-size: 13px; margin-right: 8px; }
 .qna-comment-date { font-size: 12px; color: var(--text-2); }
 .qna-comment-body { font-size: 14px; color: var(--text-1); margin-top: 4px; }
-.qna-comment-more { color: var(--text-2); cursor: pointer; padding: 0 4px; flex-shrink: 0; } /* 댓글 오른쪽의 "⋮" 더보기 아이콘 */
 
 /* "신고" 클릭 시 댓글 바로 아래로 펼쳐지는 인라인 신고폼 (13_detail.html의 답글 작성폼과 같은 자리·같은 방식) */
 .qna-report-form { flex: 0 0 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding: 12px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; }

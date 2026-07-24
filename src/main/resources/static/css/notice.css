@@ -15,8 +15,3 @@
 .notice-table td.meta, .notice-table th.meta { color:var(--text-2); white-space:nowrap; }          /* 작성자/날짜/조회수처럼 회색으로 표시할 칸 */
 .notice-table a.title-link { color:var(--text-0); }
 .notice-table a.title-link:hover { color:var(--accent); }
-
-/* ---------- Q&A 목록의 "답변대기 / 답변완료" 상태 알약 뱃지 ---------- */
-.answer-pill { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; white-space:nowrap; }
-.answer-done { background:rgba(53,196,107,0.15); color:var(--success); } /* 답변완료 - 초록 */
-.answer-wait { background:rgba(245,197,24,0.15); color:var(--gold); }    /* 답변대기 - 골드 */

@@ -89,11 +89,6 @@
         <button class="btn btn-sm" onclick="deleteReview()">삭제</button>
       </div>
     </div>
-    <!-- .text-muted 주석(웅조) -->
-    <!-- <div class="text-muted" style="font-size:13px;margin:-10px 0 10px" data-role-visible="user,critic,admin">
-      내 별점 매기기: <span class="stars" style="cursor:pointer;letter-spacing:2px">☆☆☆☆☆</span> <span style="font-size:12px">(0.5점 단위 선택 가능)</span>
-    </div> -->
-
     <!-- 대표 이미지 -->
     <div class="post-body-img" th:if="${review.reviewImg != null}">
       <img th:src="@{'/upload/' + ${review.reviewImg}}" th:alt="${review.reviewTitle}">

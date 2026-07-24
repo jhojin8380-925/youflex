@@ -60,17 +60,7 @@ public class ReviewService {
 			reviewMapper.insertReviewGenres(generatedReviewId, genreCategoryIds);
 		}
 	}
-	
-//	2) 전체 게시글 목록 조회
-	public List<ReviewDTO> findAll(String keywor, int offset, int size){
-		return reviewMapper.findAll(keywor, offset, size);
-	}
-	
-//	+) 검색 결과 전체 개수 조회
-	public int countAll(String keyword) {
-		return reviewMapper.countAll(keyword);
-	}
-	
+
 //	3) 게시글 상세 조회 (항상 조회수 증가)
 	public ReviewDTO findById(int reviewId) {
 		return findById(reviewId, true);

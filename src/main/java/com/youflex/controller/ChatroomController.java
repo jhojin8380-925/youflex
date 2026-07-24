@@ -60,11 +60,6 @@ public class ChatroomController {
 
     /**
      * 채팅방 생성
-     * ★ 프론트(app.js)가 응답을 그대로 chatroomId(숫자)로 사용하므로
-     *   객체가 아니라 생성된 chatroomId만 반환한다.
-     */
-    /**
-     * 채팅방 생성
      * ★ 프론트(app.js)가 응답을 받아 바로 입장할 수 있도록 생성된 chatroomId(숫자)를 반환한다.
      */
     @PostMapping

@@ -83,16 +83,4 @@
 		WHERE member_id = #{memberId}
 	</select>
 
-	<!-- 채팅방 아이디로 채팅 연결 가능 여부 체크 (방 존재 여부 카운트) -->
-	<select id="chatChatroomByChatId" parameterType="int" resultType="int">
-		SELECT COUNT(*)
-		FROM chatroom
-		WHERE chatroom_id = #{chatroomId}
-	</select>
-	<!-- ★ 추가: 채팅방 제목 중복 검사 쿼리 -->
-	<select id="countChatroomByTitle" resultType="int">
-		SELECT COUNT(*)
-		FROM chatroom
-		WHERE chatroom_title = #{chatroomTitle}
-	</select>
 </mapper>

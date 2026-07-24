@@ -25,26 +25,6 @@
 }
 .taste-btn:hover { border-color:var(--accent); color:var(--accent); }
 
-/* 대표 이미지 영역 수정 완료 */
-.upload-box {
-   display: flex;
-   padding: 0;
-
-  /* 이미지가 꽉 차게 이미지를 감싸는 부모 요소의 여백 및 테두리 설정 (필요시) */
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden; /* 이미지가 부모의 둥근 모서리를 벗어나지 않게 함 */
-  width: 100%;
-}
-
-.upload-box img {
-  display: block;      /* 인라인 블록 속성을 제거하여 하단 여백 해결 (핵심) */
-  width: 100%;         /* 부모 요소의 너비에 맞춤 */
-  height: auto;        /* 비율 유지 */
-  object-fit: cover;   /* 이미지가 비율을 유지하며 부모 영역을 꽉 채우도록 함 (잘림 방지) */
-}
-
-
 /* ---------- 오른쪽 "임시저장 목록" 사이드바 ---------- */
 .draft-sidebar { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:sticky; top:20px; } /* 스크롤해도 화면에 붙어있게 sticky */
 .draft-sidebar h3 { font-size:15px; margin:0 0 14px; }
@@ -78,16 +58,6 @@
 }
 
 /* ── 별점 ── */
-/* .stars { color: #f39c12; font-size: 1.1rem; letter-spacing: 2px; }
-.stars-sm { color: #f39c12; font-size: 0.9rem; }
-.rating-input { display: flex; gap: 6px; }
-.rating-input span {
-    font-size: 1.6rem;
-    cursor: pointer;
-    color: #ddd;
-    transition: color 0.1s;
-}
-.rating-input span.active { color: #f39c12; } */
 .rating-input {
   display: flex;
   gap: 2px;
